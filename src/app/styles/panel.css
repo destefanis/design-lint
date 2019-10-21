@@ -1,0 +1,139 @@
+.panel {
+  flex: 1 0 60%;
+  height: 100%;
+  border-left: 1px solid #ebebeb;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.title-wrapper {
+  position: relative;
+}
+
+.title-wrapper:hover .copy-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.panel-title {
+  font-size: 14px;
+  padding: 16px;
+  margin: 0;
+  font-weight: 500;
+  max-width: 80%;
+  line-height: 1.2;
+  color: #2c2c2c;
+}
+
+.section-title {
+  padding: 8px 16px;
+  margin: 0;
+  color: #2c2c2c;
+}
+
+.panel-list {
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.panel-list-item {
+  position: relative;
+  list-style: none;
+  padding: 8px 16px 8px 14px;
+  display: flex;
+  flex-flow: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: flex-start;
+  border-left: 2px solid transparent;
+  transition: border-color 100ms ease;
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+.panel-list-item:hover {
+  border-color: #18a0fb;
+}
+
+.panel-list-item:hover .copy-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.copy-button {
+  opacity: 0;
+  transform: translateY(3px);
+  transition: all 100ms ease-in, transform 150ms ease-in;
+  text-transform: capitalize;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid #18a0fb;
+  color: #18a0fb;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.copy-button--style {
+  right: -8px;
+}
+
+.copy-button--style-title {
+  top: -4px;
+  right: -8px;
+}
+
+.copy-button:hover {
+  border-color: rgb(86, 81, 255);
+  color: rgb(86, 81, 255);
+}
+
+.panel-list-item:nth-child(odd) {
+  background: #f9f9f9;
+}
+
+.list-item-key {
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #888;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+
+.list-item-value {
+  color: #2c2c2c;
+  width: 86%;
+  word-wrap: break-word;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.item-value--array {
+  color: #2c2c2c;
+  letter-spacing: 0.5px;
+}
+
+.item-value--object {
+  /* color: rgb(86, 81, 255); */
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+.item-value--string {
+  /* color: #08ca77; */
+}
+
+.style-key,
+.key--fillStyleId,
+.key--EffectStyleId,
+.key--strokeStyleId,
+.key--backgroundStyleId .key--gridStyleId,
+.key--masterComponent,
+.key--textStyleId {
+  color: rgb(86, 81, 255);
+}
