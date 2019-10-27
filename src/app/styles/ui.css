@@ -90,6 +90,21 @@ button {
   border: 1px solid transparent;
   transition: border-color 100ms ease;
   cursor: pointer;
+  position: relative;
+}
+
+.error-count {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: #fe6262;
+  color: #fff;
+  height: 16px;
+  min-width: 16px;
+  padding: 2px;
+  border-radius: 50%;
+  line-height: 16px;
+  text-align: center;
 }
 
 .list-flex-row:hover {

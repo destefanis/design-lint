@@ -7,7 +7,8 @@ import classNames from "classnames";
 declare function require(path: string): any;
 
 const App = ({}) => {
-  const [nodeArray, setNodeAarray] = useState([]);
+  const [nodeArray, setNodeArray] = useState([]);
+  const [errorArray, setErrorArray] = useState([]);
   const [selectedNode, setSelectedNode] = React.useState({});
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
@@ -20,17 +21,24 @@ const App = ({}) => {
     onRunApp();
 
     window.onmessage = event => {
-      const { type, message } = event.data.pluginMessage;
+      const { type, message, errors } = event.data.pluginMessage;
 
       // Plugin code returns this message after finished a loop.
       // The data received is serialized so we need to parse it before use.
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
-        setNodeAarray(nodeObject);
+        setNodeArray(nodeObject);
+        setErrorArray(errors);
 
         // Fetch the first nodes properties
         parent.postMessage(
-          { pluginMessage: { type: "fetch-layer-data", id: nodeObject[0].id } },
+          {
+            pluginMessage: {
+              type: "fetch-layer-data",
+              id: nodeObject[0].id,
+              nodeArray: nodeObject
+            }
+          },
           "*"
         );
 
@@ -95,6 +103,12 @@ const App = ({}) => {
     const { activeNodeIds, onClick } = props;
     const node = props.node;
     let childNodes = null;
+    let errorObject = null;
+
+    // Check to see if this node has corresponding errors.
+    if (errorArray.some(e => e.id === node.id)) {
+      errorObject = errorArray.find(e => e.id === node.id);
+    }
 
     // The component calls itself if there are children
     if (node.children) {
@@ -138,6 +152,9 @@ const App = ({}) => {
             />
           </span>
           <span className="list-name">{node.name.substring(0, 46)}</span>
+          {errorObject ? (
+            <span className="error-count">{errorObject.errors.length}</span>
+          ) : null}
         </div>
         {childNodes ? <ul className="sub-list">{childNodes}</ul> : null}
       </li>

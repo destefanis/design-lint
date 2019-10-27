@@ -4,27 +4,41 @@ figma.ui.onmessage = msg => {
   // Fetch a specific node by ID.
   if (msg.type === "fetch-layer-data") {
     let layer = figma.getNodeById(msg.id);
-    determineType(layer);
+    let layerArray = [];
 
-    if (layer["children"]) {
-      lintChildLayers(layer["children"]);
-    }
+    layerArray.push(layer);
+
+    figma.currentPage.selection = layerArray;
+    figma.viewport.scrollAndZoomIntoView(layerArray);
+
+    console.log(msg.nodeArray);
+
+    // determineType(layer);
+
+    // if (layer["children"]) {
+    //   lintChildLayers(layer["children"]);
+    // }
+
+    //
 
     let layerData = JSON.stringify(layer);
 
     figma.ui.postMessage({
       type: "fetched layer",
       message: layerData
+      // errors: lint(msg.nodeArray),
     });
   }
 
-  function lintChildLayers(layers) {
-    layers.forEach(function(childLayer) {
-      determineType(childLayer);
+  function lintLayers(layers) {
+    layers.forEach(function(node) {
+      determineType(node);
 
-      if (childLayer["children"]) {
-        lintChildLayers(childLayer["children"]);
+      if (node["children"]) {
+        lintLayers(node["children"]);
       }
+
+      return node;
     });
   }
 
@@ -40,10 +54,29 @@ figma.ui.onmessage = msg => {
     return node;
   }
 
-  function updateNodes(selection) {
-    // Loop through the current selection in Figma.
-    let allNodes = traverse(selection);
-    let serializedNodes = JSON.stringify(allNodes, [
+  function traverseNodes(selection) {
+    let traversedNodes = traverse(selection);
+
+    return traversedNodes;
+  }
+
+  function lint(nodes) {
+    let errorArray = [];
+
+    nodes.forEach(function(node) {
+      let newObject = {};
+      newObject.id = node.id;
+      newObject.errors = determineType(node);
+
+      errorArray.push(newObject);
+    });
+
+    return errorArray;
+  }
+
+  // Serialize nodes to pass back to the UI.
+  function seralizeNodes(nodes) {
+    let serializedNodes = JSON.stringify(nodes, [
       "name",
       "type",
       "children",
@@ -57,12 +90,13 @@ figma.ui.onmessage = msg => {
     if (figma.currentPage.selection.length === 0) {
       return;
     } else {
-      let selection = figma.currentPage.selection;
+      let nodes = traverseNodes(figma.currentPage.selection);
 
       // Pass the array back to the UI to be displayed.
       figma.ui.postMessage({
         type: "complete",
-        message: updateNodes(selection)
+        message: seralizeNodes(nodes),
+        errors: lint(nodes)
       });
     }
   }
@@ -72,12 +106,12 @@ figma.ui.onmessage = msg => {
     if (figma.currentPage.selection.length === 0) {
       return;
     } else {
-      let selection = figma.currentPage.selection;
-
+      let nodes = traverseNodes(figma.currentPage.selection);
       // Pass the array back to the UI to be displayed.
       figma.ui.postMessage({
         type: "complete",
-        message: updateNodes(selection)
+        message: seralizeNodes(nodes),
+        errors: lint(nodes)
       });
     }
   }
@@ -96,10 +130,10 @@ figma.ui.onmessage = msg => {
         return;
       }
       case "RECTANGLE": {
-        lintShapeRules(node);
+        return lintShapeRules(node);
       }
       case "TEXT": {
-        lintTextRules(node);
+        return lintTextRules(node);
       }
       default: {
         // do nothing
@@ -132,8 +166,6 @@ figma.ui.onmessage = msg => {
       }
     }
 
-    console.log(errors);
-
     return errors;
   }
 
@@ -160,7 +192,6 @@ figma.ui.onmessage = msg => {
       }
     }
 
-    console.log(errors);
     return errors;
   }
 };
