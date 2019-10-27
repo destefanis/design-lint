@@ -27,6 +27,7 @@ const App = ({}) => {
       // The data received is serialized so we need to parse it before use.
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
+        console.log(errors);
         setNodeArray(nodeObject);
         setErrorArray(errors);
 
@@ -54,6 +55,12 @@ const App = ({}) => {
         });
       } else if (type === "fetched layer") {
         setSelectedNode(selectedNode => JSON.parse(message));
+
+        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+      } else if (type === "updated errors") {
+        console.log(errors);
+        setErrorArray(errors);
+        console.log("errors called");
       }
     };
   }, []);
