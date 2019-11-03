@@ -30,18 +30,6 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // function lintLayers(layers) {
-  //   layers.forEach(function(node) {
-  //     determineType(node);
-
-  //     if (node["children"]) {
-  //       lintLayers(node["children"]);
-  //     }
-
-  //     return node;
-  //   });
-  // }
-
   // Traverses the node tree
   function traverse(node) {
     if ("children" in node) {
@@ -72,14 +60,22 @@ figma.ui.onmessage = msg => {
     return serializedNodes;
   }
 
-  // Checks each node for errors, returns an error object.
   function lint(nodes) {
     let errorArray = [];
 
-    nodes.forEach(function(node) {
+    nodes.forEach(node => {
+      // Create a new object.
       let newObject = {};
+
+      // Give it the existing node id.
       newObject.id = node.id;
+
+      // Check object for errors.
       newObject.errors = determineType(node);
+
+      if (node["children"]) {
+        errorArray.push(...lint(node["children"]));
+      }
 
       errorArray.push(newObject);
     });
@@ -93,6 +89,9 @@ figma.ui.onmessage = msg => {
       return;
     } else {
       let nodes = traverseNodes(figma.currentPage.selection);
+
+      // Maintain the original tree structure so we can enable
+      // refreshing the tree and live updating errors.
       originalNodeTree = nodes;
 
       // Pass the array back to the UI to be displayed.
@@ -114,7 +113,8 @@ figma.ui.onmessage = msg => {
       case "LINE":
       case "BOOLEAN_OPERATION":
       case "FRAME":
-      case "VECTOR": {
+      case "VECTOR":
+      case "GROUP": {
         let errors = [];
         return errors;
       }

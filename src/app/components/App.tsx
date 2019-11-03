@@ -13,12 +13,42 @@ const App = ({}) => {
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
 
+  let newWindowFocus = false;
+  let counter = 0;
+
+  const onFocus = () => {
+    newWindowFocus = true;
+    counter = 0;
+  };
+
+  const onBlur = () => {
+    newWindowFocus = false;
+    pollForChanges();
+  };
+
+  // Recursive function for detecting if the user updates a layer.
+  // polls for up to two minutes.
+  function pollForChanges() {
+    if (newWindowFocus === false && counter < 600) {
+      parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+      counter++;
+
+      setTimeout(() => {
+        pollForChanges();
+      }, 500);
+    }
+  }
+
   const onRunApp = React.useCallback(() => {
     parent.postMessage({ pluginMessage: { type: "run-app" } }, "*");
   }, []);
 
   React.useEffect(() => {
     onRunApp();
+    pollForChanges();
+
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
 
     window.onmessage = event => {
       const { type, message, errors } = event.data.pluginMessage;
@@ -107,12 +137,11 @@ const App = ({}) => {
     const { activeNodeIds, onClick } = props;
     const node = props.node;
     let childNodes = null;
-    let errorObject = null;
+    let errorObject = { errors: [] };
 
     // Check to see if this node has corresponding errors.
     if (errorArray.some(e => e.id === node.id)) {
       errorObject = errorArray.find(e => e.id === node.id);
-      console.log(errorObject);
     }
 
     // The component calls itself if there are children
@@ -157,9 +186,9 @@ const App = ({}) => {
             />
           </span>
           <span className="list-name">{node.name.substring(0, 46)}</span>
-          {errorObject ? (
+          {errorObject.errors.length >= 1 && (
             <span className="error-count">{errorObject.errors.length}</span>
-          ) : null}
+          )}
         </div>
         {childNodes ? <ul className="sub-list">{childNodes}</ul> : null}
       </li>

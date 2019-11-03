@@ -136,7 +136,7 @@ button {
 }
 
 .sub-list {
-  width: 100%;
+  width: calc(100% - 24px);
   margin: 0;
   -webkit-padding-start: 0;
   padding: 0 0 0 24px;
