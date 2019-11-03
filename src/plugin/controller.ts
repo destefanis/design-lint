@@ -8,50 +8,39 @@ figma.ui.onmessage = msg => {
     let layer = figma.getNodeById(msg.id);
     let layerArray = [];
 
+    // Using selection and viewport requires an array.
     layerArray.push(layer);
 
+    // Moves the layer into focus and selects so the user can update it.
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
-
-    // determineType(layer);
-
-    // if (layer["children"]) {
-    //   lintChildLayers(layer["children"]);
-    // }
-
-    // Need to figure out how to update the error array given the object is parsed.
-    // Could there be a function for sending a message that just updates the errors?
 
     let layerData = JSON.stringify(layer);
 
     figma.ui.postMessage({
       type: "fetched layer",
       message: layerData
-      // errors: lint(msg.nodeArray),
     });
   }
 
   if (msg.type === "update-errors") {
-    console.log("called");
-    console.log(originalNodeTree);
-
     figma.ui.postMessage({
       type: "updated errors",
       errors: lint(originalNodeTree)
     });
   }
 
-  function lintLayers(layers) {
-    layers.forEach(function(node) {
-      determineType(node);
+  // function lintLayers(layers) {
+  //   layers.forEach(function(node) {
+  //     determineType(node);
 
-      if (node["children"]) {
-        lintLayers(node["children"]);
-      }
+  //     if (node["children"]) {
+  //       lintLayers(node["children"]);
+  //     }
 
-      return node;
-    });
-  }
+  //     return node;
+  //   });
+  // }
 
   // Traverses the node tree
   function traverse(node) {
@@ -71,6 +60,19 @@ figma.ui.onmessage = msg => {
     return traversedNodes;
   }
 
+  // Serialize nodes to pass back to the UI.
+  function seralizeNodes(nodes) {
+    let serializedNodes = JSON.stringify(nodes, [
+      "name",
+      "type",
+      "children",
+      "id"
+    ]);
+
+    return serializedNodes;
+  }
+
+  // Checks each node for errors, returns an error object.
   function lint(nodes) {
     let errorArray = [];
 
@@ -85,18 +87,6 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
-  // Serialize nodes to pass back to the UI.
-  function seralizeNodes(nodes) {
-    let serializedNodes = JSON.stringify(nodes, [
-      "name",
-      "type",
-      "children",
-      "id"
-    ]);
-
-    return serializedNodes;
-  }
-
   // Initalize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
@@ -104,6 +94,7 @@ figma.ui.onmessage = msg => {
     } else {
       let nodes = traverseNodes(figma.currentPage.selection);
       originalNodeTree = nodes;
+
       // Pass the array back to the UI to be displayed.
       figma.ui.postMessage({
         type: "complete",
@@ -124,7 +115,8 @@ figma.ui.onmessage = msg => {
       case "BOOLEAN_OPERATION":
       case "FRAME":
       case "VECTOR": {
-        return;
+        let errors = [];
+        return errors;
       }
       case "RECTANGLE": {
         return lintShapeRules(node);

@@ -27,7 +27,6 @@ const App = ({}) => {
       // The data received is serialized so we need to parse it before use.
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
-        console.log(errors);
         setNodeArray(nodeObject);
         setErrorArray(errors);
 
@@ -58,9 +57,7 @@ const App = ({}) => {
 
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
-        console.log(errors);
         setErrorArray(errors);
-        console.log("errors called");
       }
     };
   }, []);
@@ -115,6 +112,7 @@ const App = ({}) => {
     // Check to see if this node has corresponding errors.
     if (errorArray.some(e => e.id === node.id)) {
       errorObject = errorArray.find(e => e.id === node.id);
+      console.log(errorObject);
     }
 
     // The component calls itself if there are children
