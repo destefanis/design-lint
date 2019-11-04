@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import "../styles/reset.css";
 import "../styles/ui.css";
 import classNames from "classnames";
+import ErrorPanel from "./ErrorPanel";
 
 declare function require(path: string): any;
 
@@ -10,6 +11,8 @@ const App = ({}) => {
   const [nodeArray, setNodeArray] = useState([]);
   const [errorArray, setErrorArray] = useState([]);
   const [selectedNode, setSelectedNode] = React.useState({});
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [activeError, setActiveError] = React.useState({});
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
 
@@ -111,6 +114,12 @@ const App = ({}) => {
         { pluginMessage: { type: "fetch-layer-data", id: id } },
         "*"
       );
+
+      let activeId = errorArray.find(e => e.id === id);
+
+      if (activeId.errors.length) {
+        setActiveError(selectedNode);
+      }
 
       setSelectedListItem(selectedListItems => {
         selectedListItems.splice(0, selectedListItems.length);
