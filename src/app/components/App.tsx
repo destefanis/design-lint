@@ -15,6 +15,19 @@ const App = ({}) => {
 
   let newWindowFocus = false;
   let counter = 0;
+  let totalErrorCount = determineCount(errorArray);
+
+  function determineCount(array) {
+    let count = 0;
+
+    array.forEach(arrayItem => {
+      if (arrayItem.errors) {
+        count = count + arrayItem.errors.length;
+      }
+    });
+
+    return count;
+  }
 
   const onFocus = () => {
     newWindowFocus = true;
@@ -45,7 +58,6 @@ const App = ({}) => {
 
   React.useEffect(() => {
     onRunApp();
-    pollForChanges();
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
@@ -133,11 +145,31 @@ const App = ({}) => {
     }
   }
 
+  // Recursive function for finding the amount of errors
+  // nested within this nodes children.
+  function findNestedErrors(node) {
+    let errorCount = 0;
+
+    node.children.forEach(childNode => {
+      if (errorArray.some(e => e.id === childNode.id)) {
+        let childErrorObject = errorArray.find(e => e.id === childNode.id);
+        errorCount = errorCount + childErrorObject.errors.length;
+      }
+
+      if (childNode.children) {
+        errorCount = errorCount + findNestedErrors(childNode);
+      }
+    });
+
+    return errorCount;
+  }
+
   function ListItem(props) {
     const { activeNodeIds, onClick } = props;
     const node = props.node;
     let childNodes = null;
     let errorObject = { errors: [] };
+    let childErrorsCount = 0;
 
     // Check to see if this node has corresponding errors.
     if (errorArray.some(e => e.id === node.id)) {
@@ -146,6 +178,9 @@ const App = ({}) => {
 
     // The component calls itself if there are children
     if (node.children) {
+      // Find errors in this node's children.
+      childErrorsCount = findNestedErrors(node);
+
       let reversedArray = node.children.slice().reverse();
       childNodes = reversedArray.map(function(childNode) {
         return (
@@ -186,6 +221,11 @@ const App = ({}) => {
             />
           </span>
           <span className="list-name">{node.name.substring(0, 46)}</span>
+          {childErrorsCount >= 1 && (
+            <span className="child-error-count">
+              {/* {childErrorsCount} */}
+            </span>
+          )}
           {errorObject.errors.length >= 1 && (
             <span className="error-count">{errorObject.errors.length}</span>
           )}
@@ -199,6 +239,7 @@ const App = ({}) => {
     <div>
       <div className="flex-wrapper">
         <NodeList />
+        <div className="total-error-count">Total Errors: {totalErrorCount}</div>
       </div>
     </div>
   );

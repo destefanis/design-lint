@@ -62,6 +62,7 @@ figma.ui.onmessage = msg => {
 
   function lint(nodes) {
     let errorArray = [];
+    let childArray = [];
 
     nodes.forEach(node => {
       // Create a new object.
@@ -73,7 +74,12 @@ figma.ui.onmessage = msg => {
       // Check object for errors.
       newObject.errors = determineType(node);
 
+      // Recursively run this function to flatten out children and grandchildren nodes
       if (node["children"]) {
+        node["children"].forEach(childNode => {
+          childArray.push(childNode.id);
+        });
+        newObject.children = childArray;
         errorArray.push(...lint(node["children"]));
       }
 

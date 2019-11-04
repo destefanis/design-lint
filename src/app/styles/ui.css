@@ -24,7 +24,7 @@ button {
 
 .flex-wrapper {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: column nowrap;
   width: 100%;
   height: 100%;
 }
@@ -96,7 +96,7 @@ button {
 .error-count {
   position: absolute;
   top: 6px;
-  right: 8px;
+  right: 16px;
   background: #fe6262;
   color: #fff;
   height: 16px;
@@ -105,6 +105,29 @@ button {
   border-radius: 50%;
   line-height: 16px;
   text-align: center;
+}
+
+.child-error-count {
+  /* position: absolute; */
+  content: "";
+  /* top: 12px;
+  right: 24px; */
+  background: #fe6262;
+  color: #333333;
+  height: 2px;
+  min-width: 2px;
+  padding: 2px;
+  border-radius: 50%;
+  line-height: 16px;
+  text-align: center;
+}
+
+.total-error-count {
+  align-self: flex-end;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  padding: 8px 18px 8px 16px;
 }
 
 .list-flex-row:hover {
