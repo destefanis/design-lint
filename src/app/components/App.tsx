@@ -47,11 +47,29 @@ const App = ({}) => {
   function pollForChanges() {
     if (newWindowFocus === false && counter < 600) {
       parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+
+      console.log("pollin");
+
+      if (activeError) {
+        let activeId = errorArray.find(e => e.id === selectedNode.id);
+
+        console.log(activeId);
+        setActiveError(activeId);
+      }
+
       counter++;
 
       setTimeout(() => {
         pollForChanges();
       }, 500);
+    }
+  }
+
+  function updateVisibility() {
+    if (isVisible === true) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
     }
   }
 
@@ -99,10 +117,12 @@ const App = ({}) => {
         });
       } else if (type === "fetched layer") {
         setSelectedNode(selectedNode => JSON.parse(message));
-
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
-        setErrorArray(errors);
+        // @todo Need to update panel.
+        if (JSON.stringify(errorArray) !== JSON.stringify(errors)) {
+          setErrorArray(errors);
+        }
       }
     };
   }, []);
@@ -118,7 +138,12 @@ const App = ({}) => {
       let activeId = errorArray.find(e => e.id === id);
 
       if (activeId.errors.length) {
-        setActiveError(selectedNode);
+        setActiveError(activeId);
+        if (isVisible === true) {
+          setIsVisible(false);
+        } else {
+          setIsVisible(true);
+        }
       }
 
       setSelectedListItem(selectedListItems => {
@@ -249,6 +274,14 @@ const App = ({}) => {
       <div className="flex-wrapper">
         <NodeList />
         <div className="total-error-count">Total Errors: {totalErrorCount}</div>
+        {Object.keys(activeError).length !== 0 ? (
+          <ErrorPanel
+            visibility={isVisible}
+            node={selectedNode}
+            errors={activeError}
+            onClick={updateVisibility}
+          />
+        ) : null}
       </div>
     </div>
   );

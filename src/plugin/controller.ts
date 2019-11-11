@@ -15,7 +15,18 @@ figma.ui.onmessage = msg => {
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
 
-    let layerData = JSON.stringify(layer);
+    let layerData = JSON.stringify(layer, [
+      "name",
+      "description",
+      "fills",
+      "key",
+      "type",
+      "remote",
+      "paints",
+      "fontName",
+      "fontSize",
+      "font"
+    ]);
 
     figma.ui.postMessage({
       type: "fetched layer",

@@ -1,0 +1,73 @@
+.error-panel {
+  height: calc(100% - 30px);
+  width: 240px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  background: #fff;
+  padding: 16px;
+  transform: translateX(100%);
+  transition: transform 200ms ease-in;
+}
+
+.is-visible {
+  transform: translateX(0);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #000;
+  height: 100%;
+  width: 100%;
+  animation: fadeIn 250ms;
+  animation-fill-mode: forwards;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.name-wrapper {
+  display: flex;
+  flex-flow: row;
+}
+
+.name-icon img {
+  height: 14px;
+  width: 14px;
+}
+
+.node-name {
+  flex: auto;
+  margin-bottom: 16px;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.error-label {
+  color: #fe6262;
+  margin-bottom: 4px;
+}
+
+.error-list {
+  margin: 0;
+  padding: 0;
+}
+
+.error-list-item {
+  padding: 16px;
+  border: 1px solid #dcddde;
+  border-radius: 4px;
+  color: #333333;
+  margin-bottom: 8px;
+}
