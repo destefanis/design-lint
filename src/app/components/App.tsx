@@ -47,16 +47,6 @@ const App = ({}) => {
   function pollForChanges() {
     if (newWindowFocus === false && counter < 600) {
       parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
-
-      console.log("pollin");
-
-      if (activeError) {
-        let activeId = errorArray.find(e => e.id === selectedNode.id);
-
-        console.log(activeId);
-        setActiveError(activeId);
-      }
-
       counter++;
 
       setTimeout(() => {
@@ -70,6 +60,22 @@ const App = ({}) => {
       setIsVisible(false);
     } else {
       setIsVisible(true);
+    }
+  }
+
+  function updatePanel(id) {
+    // This array is full then empty?
+    console.log(errorArray);
+    let activeId = errorArray.find(e => e.id === id);
+
+    if (activeId.errors.length) {
+      setActiveError(activeId);
+
+      if (isVisible === true) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
     }
   }
 
@@ -93,7 +99,7 @@ const App = ({}) => {
         setNodeArray(nodeObject);
         setErrorArray(errors);
 
-        // Fetch the first nodes properties
+        // Fetch the first nodes properties.
         parent.postMessage(
           {
             pluginMessage: {
@@ -116,13 +122,16 @@ const App = ({}) => {
           return activeNodeIds.concat(nodeObject[0].id);
         });
       } else if (type === "fetched layer") {
+        // Grabs the properties of the first layer.
         setSelectedNode(selectedNode => JSON.parse(message));
+        // Ask the controller to lint the layers for errors.
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
-        // @todo Need to update panel.
-        if (JSON.stringify(errorArray) !== JSON.stringify(errors)) {
-          setErrorArray(errors);
-        }
+        // Once the errors are returned, update the error array.
+        setErrorArray(errors);
+        // SelectedNode is apparently blank here even though
+        // it has state above.
+        // updatePanel(selectedNode.id); returns an error.
       }
     };
   }, []);
@@ -135,16 +144,8 @@ const App = ({}) => {
         "*"
       );
 
-      let activeId = errorArray.find(e => e.id === id);
-
-      if (activeId.errors.length) {
-        setActiveError(activeId);
-        if (isVisible === true) {
-          setIsVisible(false);
-        } else {
-          setIsVisible(true);
-        }
-      }
+      // Opens the panel if theres an error.
+      updatePanel(id);
 
       setSelectedListItem(selectedListItems => {
         selectedListItems.splice(0, selectedListItems.length);

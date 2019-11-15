@@ -16,6 +16,7 @@ figma.ui.onmessage = msg => {
     figma.viewport.scrollAndZoomIntoView(layerArray);
 
     let layerData = JSON.stringify(layer, [
+      "id",
       "name",
       "description",
       "fills",
