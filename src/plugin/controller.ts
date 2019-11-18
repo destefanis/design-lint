@@ -8,6 +8,8 @@ figma.ui.onmessage = msg => {
     let layer = figma.getNodeById(msg.id);
     let layerArray = [];
 
+    console.log(layer);
+
     // Using selection and viewport requires an array.
     layerArray.push(layer);
 
@@ -123,7 +125,6 @@ figma.ui.onmessage = msg => {
 
   function determineType(node) {
     switch (node.type) {
-      case "COMPONENT":
       case "INSTANCE":
       case "ELLIPSE":
       case "POLYGON":
@@ -142,10 +143,23 @@ figma.ui.onmessage = msg => {
       case "TEXT": {
         return lintTextRules(node);
       }
+      case "COMPONENT": {
+        return lintComponentRules(node);
+      }
       default: {
         // do nothing
       }
     }
+  }
+
+  function lintComponentRules(node) {
+    let errors = [];
+
+    if (node.remote === false) {
+      errors.push("Component isn't from library");
+    }
+
+    return errors;
   }
 
   function lintTextRules(node) {
@@ -178,14 +192,37 @@ figma.ui.onmessage = msg => {
 
   function lintShapeRules(node) {
     let errors = [];
+    const radiusValues = [0, 4, 8];
 
     if (node.fills.length) {
-      if (node.fillStyleId === "") {
+      if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
+        // We may need an array to loop through fill types.
         errors.push("Missing Fill Style");
       }
     }
 
-    // Todo Radius
+    // If the radius isn't even on all sides, check each corner.
+    if (node.cornerRadius.typeof === "symbol") {
+      if (radiusValues.indexOf(node.topLeftRadius) === -1) {
+        errors.push("Incorrect Top Left Radius");
+      }
+
+      if (radiusValues.indexOf(node.topRightRadius) === -1) {
+        errors.push("Incorrect Top Right Radius");
+      }
+
+      if (radiusValues.indexOf(node.bottomLeftRadius) === -1) {
+        errors.push("Incorrect Bottom Left Radius");
+      }
+
+      if (radiusValues.indexOf(node.bottomRightRadius) === -1) {
+        errors.push("Incorrect Bottom Right Radius");
+      }
+    } else {
+      if (radiusValues.indexOf(node.cornerRadius) === -1) {
+        errors.push("Incorrect Border Radius");
+      }
+    }
 
     if (node.strokes.length) {
       if (node.strokeStyleId === "") {
