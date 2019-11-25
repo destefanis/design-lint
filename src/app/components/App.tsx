@@ -165,6 +165,7 @@ const App = ({}) => {
           <ErrorPanel
             visibility={isVisible}
             node={selectedNode}
+            errorArray={errorArray}
             errors={activeError}
             onClick={updateVisibility}
           />

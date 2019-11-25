@@ -1,14 +1,13 @@
 import * as React from "react";
+import ErrorList from "./ErrorList";
 import "../styles/error-panel.css";
 
 function ErrorPanel(props) {
   const isVisible = props.visibility;
   const node = props.node;
-  const errors = props.errors.errors;
-
-  const errorListItems = errors.map(error => (
-    <li className="error-list-item">{error}</li>
-  ));
+  // let errors = props.errors.errors;
+  let activeId = props.errorArray.find(e => e.id === node.id);
+  let errors = activeId.errors;
 
   function handleChange() {
     props.onClick();
@@ -26,7 +25,7 @@ function ErrorPanel(props) {
           <h2 className="node-name">{node.name.substring(0, 46)}</h2>
         </div>
         <h4 className="error-label">{errors.length} errors</h4>
-        <ul className="errors-list">{errorListItems}</ul>
+        <ErrorList errors={errors} />
       </div>
       {isVisible ? (
         <div className="overlay" onClick={handleChange}></div>
