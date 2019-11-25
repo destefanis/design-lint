@@ -8,8 +8,6 @@ figma.ui.onmessage = msg => {
     let layer = figma.getNodeById(msg.id);
     let layerArray = [];
 
-    console.log(layer);
-
     // Using selection and viewport requires an array.
     layerArray.push(layer);
 

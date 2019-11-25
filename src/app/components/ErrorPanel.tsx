@@ -1,5 +1,4 @@
 import * as React from "react";
-// import { useState, useEffect, useRef } from "react";
 import "../styles/error-panel.css";
 
 function ErrorPanel(props) {
