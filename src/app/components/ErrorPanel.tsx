@@ -5,7 +5,6 @@ import "../styles/error-panel.css";
 function ErrorPanel(props) {
   const isVisible = props.visibility;
   const node = props.node;
-  // let errors = props.errors.errors;
   let activeId = props.errorArray.find(e => e.id === node.id);
   let errors = activeId.errors;
 

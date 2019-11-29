@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 320, height: 440 });
+figma.showUI(__html__, { width: 320, height: 480 });
 
 let originalNodeTree = [];
 
@@ -123,7 +123,10 @@ figma.ui.onmessage = msg => {
 
   function determineType(node) {
     switch (node.type) {
-      case "INSTANCE":
+      case "INSTANCE": {
+        let errors = [];
+        return errors;
+      }
       case "ELLIPSE":
       case "POLYGON":
       case "STAR":
@@ -150,11 +153,23 @@ figma.ui.onmessage = msg => {
     }
   }
 
+  function createErrorObject(node, type, message) {
+    let error = {};
+
+    error.message = message;
+    error.type = type;
+    error.node = node;
+
+    return error;
+  }
+
   function lintComponentRules(node) {
     let errors = [];
 
     if (node.remote === false) {
-      errors.push("Component isn't from library");
+      errors.push(
+        createErrorObject(node, "component", "Component isn't from library")
+      );
     }
 
     return errors;
@@ -164,24 +179,26 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     if (node.textStyleId === "") {
-      errors.push("Missing Text Style");
+      errors.push(createErrorObject(node, "text", "Missing text style"));
     }
 
     if (node.fills.length) {
       if (node.fillStyleId === "") {
-        errors.push("Missing Fill Style");
+        errors.push(createErrorObject(node, "fill", "Missing fill style"));
       }
     }
 
     if (node.strokes.length) {
       if (node.strokeStyleId === "") {
-        errors.push("Missing Stroke Style");
+        errors.push(createErrorObject(node, "stroke", "Missing stroke style"));
       }
     }
 
     if (node.effects.length) {
       if (node.effectStyleId === "") {
-        errors.push("Missing Effects Style");
+        errors.push(
+          createErrorObject(node, "effects", "Missing effects style")
+        );
       }
     }
 
@@ -190,47 +207,60 @@ figma.ui.onmessage = msg => {
 
   function lintShapeRules(node) {
     let errors = [];
+    let cornerType = node.cornerRadius;
     const radiusValues = [0, 4, 8];
 
     if (node.fills.length) {
       if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
         // We may need an array to loop through fill types.
-        errors.push("Missing Fill Style");
+        errors.push(createErrorObject(node, "fill", "Missing fill style"));
       }
     }
 
     // If the radius isn't even on all sides, check each corner.
-    if (node.cornerRadius.typeof === "symbol") {
+    if (typeof cornerType === "symbol") {
       if (radiusValues.indexOf(node.topLeftRadius) === -1) {
-        errors.push("Incorrect Top Left Radius");
+        errors.push(
+          createErrorObject(node, "radius", "Incorrect Top Left Radius")
+        );
       }
 
       if (radiusValues.indexOf(node.topRightRadius) === -1) {
-        errors.push("Incorrect Top Right Radius");
+        errors.push(
+          createErrorObject(node, "radius", "Incorrect top right radius")
+        );
       }
 
       if (radiusValues.indexOf(node.bottomLeftRadius) === -1) {
-        errors.push("Incorrect Bottom Left Radius");
+        errors.push(
+          createErrorObject(node, "radius", "Incorrect bottom left radius")
+        );
       }
 
       if (radiusValues.indexOf(node.bottomRightRadius) === -1) {
-        errors.push("Incorrect Bottom Right Radius");
+        errors.push(
+          createErrorObject(node, "radius", "Incorrect bottom right radius")
+        );
       }
     } else {
       if (radiusValues.indexOf(node.cornerRadius) === -1) {
-        errors.push("Incorrect Border Radius");
+        errors.push(
+          createErrorObject(node, "radius", "Incorrect border radius")
+        );
       }
     }
 
     if (node.strokes.length) {
       if (node.strokeStyleId === "") {
-        errors.push("Missing Stroke Style");
+        errors.push(createErrorObject(node, "stroke", "Missing stroke style"));
       }
     }
 
     if (node.effects.length) {
       if (node.effectStyleId === "") {
-        errors.push("Missing Effects Style");
+        errors.push(
+          createErrorObject(node, "effects", "Missing effects style")
+        );
       }
     }
 

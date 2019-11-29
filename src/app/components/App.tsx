@@ -100,14 +100,13 @@ const App = ({}) => {
     window.onmessage = event => {
       const { type, message, errors } = event.data.pluginMessage;
 
-      // Plugin code returns this message after finished a loop.
-      // The data received is serialized so we need to parse it before use.
+      // Plugin code returns this message after finished a loop through the layers.
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
         setNodeArray(nodeObject);
         setErrorArray(errors);
 
-        // Fetch the first nodes properties.
+        // Fetch the first nodes properties and lint them.
         parent.postMessage(
           {
             pluginMessage: {
@@ -125,22 +124,17 @@ const App = ({}) => {
           return selectedListItems.concat(nodeObject[0].id);
         });
 
-        // Expand the item in the side menu
         setActiveNodeIds(activeNodeIds => {
           return activeNodeIds.concat(nodeObject[0].id);
         });
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
         setSelectedNode(selectedNode => JSON.parse(message));
-
         // Ask the controller to lint the layers for errors.
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
-        // Update the panel errors here too.
         setErrorArray(errors);
-        // let currentError = activeError;
-        // setActiveError(currentError);
       }
     };
   }, []);
@@ -160,13 +154,15 @@ const App = ({}) => {
             activeNodeIds={activeNodeIds}
           />
         ) : null}
-        <div className="total-error-count">Total Errors: {totalErrorCount}</div>
+        <div className="total-error-count">
+          <h5 className="total-error-header">Total Errors:</h5>
+          <span className="error-count">{totalErrorCount}</span>
+        </div>
         {Object.keys(activeError).length !== 0 ? (
           <ErrorPanel
             visibility={isVisible}
             node={selectedNode}
             errorArray={errorArray}
-            errors={activeError}
             onClick={updateVisibility}
           />
         ) : null}

@@ -1,9 +1,9 @@
 import * as React from "react";
-import classNames from "classnames";
 
 function ErrorList(props) {
+  console.log(props);
   const errorListItems = props.errors.map(error => (
-    <li className="error-list-item">{error}</li>
+    <li className="error-list-item">{error.message}</li>
   ));
 
   return <ul className="errors-list">{errorListItems}</ul>;
