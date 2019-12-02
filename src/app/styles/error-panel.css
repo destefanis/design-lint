@@ -40,6 +40,13 @@
 .name-wrapper {
   display: flex;
   flex-flow: row;
+  align-content: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.name-icon {
+  margin: auto;
 }
 
 .name-icon img {
@@ -49,14 +56,16 @@
 
 .node-name {
   flex: auto;
-  margin-bottom: 16px;
-  margin-left: 8px;
-  font-size: 14px;
+  margin-bottom: auto;
+  margin-left: 12px;
+  font-size: 16px;
 }
 
 .error-label {
   color: #fe6262;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .error-list {
@@ -70,4 +79,18 @@
   border-radius: 4px;
   color: #333333;
   margin-bottom: 8px;
+  display: flex;
+  flex-flow: row;
+  align-content: center;
+  justify-content: flex-start;
+  font-size: 14px;
+}
+
+.error-type {
+  margin-right: 12px;
+}
+
+.error-type img {
+  height: 14px;
+  width: 14px;
 }
