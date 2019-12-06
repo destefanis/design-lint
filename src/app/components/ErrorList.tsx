@@ -1,17 +1,28 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 function ErrorList(props) {
+  let contextTrigger = null;
+
+  const toggleMenu = e => {
+    contextTrigger.handleContextClick(e);
+  };
+
   const spring = {
     type: "spring",
     damping: 20,
     stiffness: 200
   };
 
-  const errorListItems = props.errors.map(error => (
+  function handleClick(e, data) {
+    console.log("called");
+  }
+
+  const errorListItems = props.errors.map((error, index) => (
     <motion.li
       className="error-list-item"
-      key={error.node.id + error.type}
+      key={error.node.id + index}
       initial={{ opacity: 0, y: 10, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 1, y: -10, scale: 0 }}
@@ -22,8 +33,22 @@ function ErrorList(props) {
       </span>
       <span className="error-description">{error.message}</span>
       <span className="context-icon">
-        <img src={require("../assets/context.svg")} />
+        <ContextMenuTrigger
+          id={error.node.id + index}
+          ref={c => (contextTrigger = c)}
+        >
+          <img onClick={toggleMenu} src={require("../assets/context.svg")} />
+        </ContextMenuTrigger>
       </span>
+
+      <ContextMenu id={error.node.id + index}>
+        <MenuItem data={{ foo: "bar" }} onClick={handleClick}>
+          Ignore
+        </MenuItem>
+        <MenuItem data={{ foo: "bar" }} onClick={handleClick}>
+          Ignore All
+        </MenuItem>
+      </ContextMenu>
     </motion.li>
   ));
 

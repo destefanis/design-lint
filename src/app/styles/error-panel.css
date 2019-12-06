@@ -127,3 +127,23 @@
 .success-emoji {
   margin: auto;
 }
+
+.react-contextmenu {
+  background: #2c2c2c;
+  border-radius: 4px;
+  box-shadow: 0 6px 11px rgba(0, 0, 0, 0.11);
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.react-contextmenu-item {
+  padding: 8px 32px;
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  transition: 150ms ease;
+}
+
+.react-contextmenu-item:hover {
+  background: #18a0fb;
+}
