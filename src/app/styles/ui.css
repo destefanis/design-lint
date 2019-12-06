@@ -102,16 +102,16 @@ button {
   height: 16px;
   min-width: 16px;
   padding: 2px;
-  border-radius: 50%;
+  border-radius: 32px;
   line-height: 16px;
   text-align: center;
 }
 
 .child-error-count {
-  /* position: absolute; */
+  position: absolute;
   content: "";
-  /* top: 12px;
-  right: 24px; */
+  /* top: 12px; */
+  right: 20px;
   background: #fe6262;
   color: #333333;
   height: 2px;
@@ -136,6 +136,8 @@ button {
 
 .total-error-count .error-count {
   top: 8px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .total-error-header {
