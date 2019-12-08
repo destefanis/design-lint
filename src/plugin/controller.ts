@@ -153,8 +153,13 @@ figma.ui.onmessage = msg => {
     }
   }
 
+  // function createErrorObject(node, type, message, serializedValue, value) {
   function createErrorObject(node, type, message) {
-    let error = {};
+    let error = {
+      message: "",
+      type: "",
+      node: ""
+    };
 
     error.message = message;
     error.type = type;
@@ -177,8 +182,24 @@ figma.ui.onmessage = msg => {
 
   function lintTextRules(node) {
     let errors = [];
+    console.log(node);
 
     if (node.textStyleId === "") {
+      let textObject = {
+        font: "",
+        fontStyle: "",
+        fontSize: "",
+        lineHeight: {}
+      };
+
+      textObject.font = node.fontName.family;
+      textObject.fontStyle = node.fontName.style;
+      textObject.fontSize = node.fontSize;
+      textObject.lineHeight = node.lineHeight;
+
+      let serializedtextStyle =
+        textObject.font + textObject.fontStyle + textObject.fontSize;
+
       errors.push(createErrorObject(node, "text", "Missing text style"));
     }
 
@@ -209,6 +230,7 @@ figma.ui.onmessage = msg => {
     let errors = [];
     let cornerType = node.cornerRadius;
     const radiusValues = [0, 4, 8];
+    console.log(node);
 
     if (node.fills.length) {
       if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {

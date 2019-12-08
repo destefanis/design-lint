@@ -15,9 +15,10 @@ function ErrorList(props) {
     stiffness: 200
   };
 
-  function handleClick(e, data) {
-    console.log("called");
-  }
+  // Pass the error we want to ignore back to our parent.
+  const handleIgnoreClick = id => {
+    props.onIgnoredUpdate(id);
+  };
 
   const errorListItems = props.errors.map((error, index) => (
     <motion.li
@@ -42,10 +43,21 @@ function ErrorList(props) {
       </span>
 
       <ContextMenu id={error.node.id + index}>
-        <MenuItem data={{ foo: "bar" }} onClick={handleClick}>
+        <MenuItem
+          onClick={event => {
+            event.stopPropagation();
+            handleIgnoreClick(error.node.id);
+          }}
+        >
           Ignore
         </MenuItem>
-        <MenuItem data={{ foo: "bar" }} onClick={handleClick}>
+        <MenuItem
+          data={{ foo: "bar" }}
+          onClick={event => {
+            event.stopPropagation();
+            // handleClick(error.node.id);
+          }}
+        >
           Ignore All
         </MenuItem>
       </ContextMenu>

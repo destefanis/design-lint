@@ -9,6 +9,7 @@ declare function require(path: string): any;
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
+  const [ignoredErrorArray, setIgnoreErrorArray] = useState([]);
   const [activeError, setActiveError] = React.useState({});
   const [selectedNode, setSelectedNode] = React.useState({});
   const [isVisible, setIsVisible] = React.useState(false);
@@ -34,6 +35,10 @@ const App = ({}) => {
 
   const updateActiveError = error => {
     setActiveError(error);
+  };
+
+  const updateIgnoredErrors = error => {
+    setIgnoreErrorArray(error);
   };
 
   const updateVisible = val => {
@@ -163,6 +168,8 @@ const App = ({}) => {
             visibility={isVisible}
             node={selectedNode}
             errorArray={errorArray}
+            onIgnoredUpdate={updateIgnoredErrors}
+            ignoredErrorArray={ignoredErrorArray}
             onClick={updateVisibility}
           />
         ) : null}
