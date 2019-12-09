@@ -182,7 +182,6 @@ figma.ui.onmessage = msg => {
 
   function lintTextRules(node) {
     let errors = [];
-    console.log(node);
 
     if (node.textStyleId === "") {
       let textObject = {
@@ -230,7 +229,6 @@ figma.ui.onmessage = msg => {
     let errors = [];
     let cornerType = node.cornerRadius;
     const radiusValues = [0, 4, 8];
-    console.log(node);
 
     if (node.fills.length) {
       if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {

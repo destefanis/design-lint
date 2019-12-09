@@ -14,6 +14,7 @@ function ErrorPanel(props) {
     closed: { opacity: 0, x: "100%" }
   };
 
+  // Open and closes the panel.
   function handleChange() {
     props.onClick();
   }
@@ -26,7 +27,6 @@ function ErrorPanel(props) {
   return (
     <React.Fragment>
       <motion.div
-        // className={`error-panel ${isVisible ? "is-visible" : ""}`}
         className={`error-panel`}
         animate={isVisible ? "open" : "closed"}
         transition={{ duration: 0.3, type: "tween" }}

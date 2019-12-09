@@ -17,6 +17,10 @@ const App = ({}) => {
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
 
+  let newWindowFocus = false;
+  let counter = 0;
+  let totalErrorCount = determineCount(errorArray);
+
   const updateSelectedList = id => {
     setSelectedListItem(selectedListItems => {
       selectedListItems.splice(0, selectedListItems.length);
@@ -25,7 +29,8 @@ const App = ({}) => {
 
     setActiveNodeIds(activeNodeIds => {
       if (activeNodeIds.includes(id)) {
-        // The ID is already in the active node list, so we probably want to remove it
+        // The ID is already in the active node list,
+        // so we probably want to remove it
         return activeNodeIds.filter(activeNodeId => activeNodeId !== id);
       }
       // Since the ID is not already in the list, we want to add it
@@ -37,29 +42,34 @@ const App = ({}) => {
     setActiveError(error);
   };
 
+  // Separate array of containing errors the user want's to ignore.
   const updateIgnoredErrors = error => {
-    setIgnoreErrorArray(error);
+    if (ignoredErrorArray.includes(error)) {
+    } else {
+      setIgnoreErrorArray([error].concat(ignoredErrorArray));
+    }
+  };
+
+  // @todo Should determine the list within the app/render/component.
+  const updateErrorArray = errors => {
+    let filteredErrorArray = errors;
+
+    ignoredErrorArray.forEach(id => {
+      // Check if any of our ignored errors exist within our error array.
+      if (filteredErrorArray.some(item => item.id === id)) {
+        // Find and update the "error" array of the matching node.
+        let obj = filteredErrorArray.find(x => x.id === id);
+        let index = filteredErrorArray.indexOf(obj);
+        filteredErrorArray.fill((obj.errors = []), index, index++);
+      }
+    });
+
+    setErrorArray(filteredErrorArray);
   };
 
   const updateVisible = val => {
     setIsVisible(val);
   };
-
-  let newWindowFocus = false;
-  let counter = 0;
-  let totalErrorCount = determineCount(errorArray);
-
-  function determineCount(array) {
-    let count = 0;
-
-    array.forEach(arrayItem => {
-      if (arrayItem.errors) {
-        count = count + arrayItem.errors.length;
-      }
-    });
-
-    return count;
-  }
 
   const onFocus = () => {
     newWindowFocus = true;
@@ -70,6 +80,10 @@ const App = ({}) => {
     newWindowFocus = false;
     pollForChanges();
   };
+
+  const onRunApp = React.useCallback(() => {
+    parent.postMessage({ pluginMessage: { type: "run-app" } }, "*");
+  }, []);
 
   // Recursive function for detecting if the user updates a layer.
   // polls for up to two minutes.
@@ -84,6 +98,18 @@ const App = ({}) => {
     }
   }
 
+  function determineCount(array) {
+    let count = 0;
+
+    array.forEach(arrayItem => {
+      if (arrayItem.errors) {
+        count = count + arrayItem.errors.length;
+      }
+    });
+
+    return count;
+  }
+
   function updateVisibility() {
     if (isVisible === true) {
       setIsVisible(false);
@@ -92,9 +118,10 @@ const App = ({}) => {
     }
   }
 
-  const onRunApp = React.useCallback(() => {
-    parent.postMessage({ pluginMessage: { type: "run-app" } }, "*");
-  }, []);
+  useEffect(() => {
+    updateErrorArray(errorArray);
+    console.log(ignoredErrorArray);
+  }, [ignoredErrorArray]);
 
   React.useEffect(() => {
     onRunApp();
@@ -109,7 +136,7 @@ const App = ({}) => {
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
         setNodeArray(nodeObject);
-        setErrorArray(errors);
+        updateErrorArray(errors);
 
         // Fetch the first nodes properties and lint them.
         parent.postMessage(
@@ -135,11 +162,12 @@ const App = ({}) => {
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
         setSelectedNode(selectedNode => JSON.parse(message));
+
         // Ask the controller to lint the layers for errors.
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
-        setErrorArray(errors);
+        updateErrorArray(errors);
       }
     };
   }, []);
@@ -155,6 +183,7 @@ const App = ({}) => {
             visibility={isVisible}
             nodeArray={nodeArray}
             errorArray={errorArray}
+            ignoredErrorArray={ignoredErrorArray}
             selectedListItems={selectedListItems}
             activeNodeIds={activeNodeIds}
           />

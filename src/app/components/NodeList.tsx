@@ -1,5 +1,4 @@
 import * as React from "react";
-// import { useState, useEffect, useRef } from "react";
 import ListItem from "./ListItem";
 
 function NodeList(props) {
