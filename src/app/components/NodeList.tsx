@@ -30,6 +30,7 @@ function NodeList(props) {
 
     const listItems = nodes.map(node => (
       <ListItem
+        ignoredErrorArray={props.ignoredErrorArray}
         activeNodeIds={props.activeNodeIds}
         onClick={handleNodeClick}
         selectedListItems={props.selectedListItems}

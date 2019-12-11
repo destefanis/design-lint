@@ -6,6 +6,18 @@ import "../styles/error-panel.css";
 function ErrorPanel(props) {
   const isVisible = props.visibility;
   const node = props.node;
+  let filteredErrorArray = props.errorArray;
+
+  props.ignoredErrorArray.forEach(id => {
+    // Check if any of our ignored errors exist within our error array.
+    if (filteredErrorArray.some(item => item.id === id)) {
+      // Find and update the "error" array of the matching node.
+      let obj = filteredErrorArray.find(x => x.id === id);
+      let index = filteredErrorArray.indexOf(obj);
+      filteredErrorArray.fill((obj.errors = []), index, index++);
+    }
+  });
+
   let activeId = props.errorArray.find(e => e.id === node.id);
   let errors = activeId.errors;
 

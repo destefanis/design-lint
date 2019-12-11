@@ -42,7 +42,6 @@ const App = ({}) => {
     setActiveError(error);
   };
 
-  // Separate array of containing errors the user want's to ignore.
   const updateIgnoredErrors = error => {
     if (ignoredErrorArray.includes(error)) {
     } else {
@@ -50,21 +49,8 @@ const App = ({}) => {
     }
   };
 
-  // @todo Should determine the list within the app/render/component.
   const updateErrorArray = errors => {
-    let filteredErrorArray = errors;
-
-    ignoredErrorArray.forEach(id => {
-      // Check if any of our ignored errors exist within our error array.
-      if (filteredErrorArray.some(item => item.id === id)) {
-        // Find and update the "error" array of the matching node.
-        let obj = filteredErrorArray.find(x => x.id === id);
-        let index = filteredErrorArray.indexOf(obj);
-        filteredErrorArray.fill((obj.errors = []), index, index++);
-      }
-    });
-
-    setErrorArray(filteredErrorArray);
+    setErrorArray(errors);
   };
 
   const updateVisible = val => {
@@ -117,11 +103,6 @@ const App = ({}) => {
       setIsVisible(true);
     }
   }
-
-  useEffect(() => {
-    updateErrorArray(errorArray);
-    console.log(ignoredErrorArray);
-  }, [ignoredErrorArray]);
 
   React.useEffect(() => {
     onRunApp();

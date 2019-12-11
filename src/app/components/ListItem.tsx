@@ -7,11 +7,19 @@ function ListItem(props) {
   let childNodes = null;
   let errorObject = { errors: [] };
   let childErrorsCount = 0;
-  let childErrorArray = props.errorArray;
+  let filteredErrorArray = props.errorArray;
+
+  props.ignoredErrorArray.forEach(id => {
+    if (filteredErrorArray.some(item => item.id === id)) {
+      let obj = filteredErrorArray.find(x => x.id === id);
+      let index = filteredErrorArray.indexOf(obj);
+      filteredErrorArray.fill((obj.errors = []), index, index++);
+    }
+  });
 
   // Check to see if this node has corresponding errors.
-  if (props.errorArray.some(e => e.id === node.id)) {
-    errorObject = props.errorArray.find(e => e.id === node.id);
+  if (filteredErrorArray.some(e => e.id === node.id)) {
+    errorObject = filteredErrorArray.find(e => e.id === node.id);
   }
 
   // The component calls itself if there are children
@@ -23,9 +31,10 @@ function ListItem(props) {
     childNodes = reversedArray.map(function(childNode) {
       return (
         <ListItem
+          ignoredErrorArray={props.ignoredErrorArray}
           activeNodeIds={props.activeNodeIds}
           selectedListItems={props.selectedListItems}
-          errorArray={childErrorArray}
+          errorArray={filteredErrorArray}
           onClick={onClick}
           key={childNode.id}
           node={childNode}
@@ -40,8 +49,8 @@ function ListItem(props) {
     let errorCount = 0;
 
     node.children.forEach(childNode => {
-      if (props.errorArray.some(e => e.id === childNode.id)) {
-        let childErrorObject = props.errorArray.find(
+      if (filteredErrorArray.some(e => e.id === childNode.id)) {
+        let childErrorObject = filteredErrorArray.find(
           e => e.id === childNode.id
         );
         errorCount = errorCount + childErrorObject.errors.length;
