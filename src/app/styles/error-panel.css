@@ -7,6 +7,8 @@
   z-index: 10;
   background: #fff;
   padding: 16px;
+  display: flex;
+  flex-flow: column;
   /* transform: translateX(100%); */
   /* transition: transform 200ms ease-in; */
 }
@@ -146,4 +148,23 @@
 
 .react-contextmenu-item:hover {
   background: #18a0fb;
+}
+
+.button-wrapper {
+  align-self: flex-end;
+  justify-self: flex-end;
+  margin-top: auto;
+  width: 100%;
+}
+
+.button {
+  box-shadow: none;
+  border: none;
+  background: #18a0fb;
+  padding: 16px 16px;
+  margin: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  width: 100%;
 }

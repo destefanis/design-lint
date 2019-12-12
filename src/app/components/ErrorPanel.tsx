@@ -76,6 +76,9 @@ function ErrorPanel(props) {
             </motion.h3>
           </AnimatePresence>
         )}
+        <div className="button-wrapper">
+          <button className="button button--next">Next Error</button>
+        </div>
       </motion.div>
 
       {isVisible ? (
