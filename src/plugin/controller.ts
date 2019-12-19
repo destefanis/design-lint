@@ -200,7 +200,6 @@ figma.ui.onmessage = msg => {
       textObject.fontStyle = node.fontName.style;
       textObject.fontSize = node.fontSize;
       textObject.lineHeight = node.lineHeight.value;
-      console.log(node);
 
       let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
 
@@ -237,10 +236,23 @@ figma.ui.onmessage = msg => {
     let cornerType = node.cornerRadius;
     const radiusValues = [0, 4, 8];
 
+    console.log(node);
+
     if (node.fills.length) {
       if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
+        let fillValues = [];
+
+        node["fills"].forEach(fill => {
+          if (fill.type === "SOLID") {
+            let rgbObj = convertColor(fill.color);
+            fillValues.push(RGBToHex(rgbObj.r, rgbObj.g, rgbObj.b));
+          }
+        });
+
         // We may need an array to loop through fill types.
-        errors.push(createErrorObject(node, "fill", "Missing fill style"));
+        errors.push(
+          createErrorObject(node, "fill", "Missing fill style", fillValues)
+        );
       }
     }
 
@@ -294,3 +306,46 @@ figma.ui.onmessage = msg => {
     return errors;
   }
 };
+
+const convertColor = color => {
+  const colorObj = color;
+  const figmaColor = {};
+
+  Object.entries(colorObj).forEach(cf => {
+    const [key, value] = cf;
+    console.log(value);
+    if (["r", "g", "b"].includes(key)) {
+      figmaColor[key] = (value * 255).toFixed(0);
+    }
+    if (key === "alpha") {
+      figmaColor[key] = value;
+    }
+  });
+  return figmaColor;
+};
+
+function RGBToHex(r, g, b) {
+  r = Number(r).toString(16);
+  g = Number(g).toString(16);
+  b = Number(b).toString(16);
+
+  if (r.length == 1) r = "0" + r;
+  if (g.length == 1) g = "0" + g;
+  if (b.length == 1) b = "0" + b;
+
+  return "#" + r + g + b;
+}
+
+function RGBAToHexA(r, g, b, a) {
+  r = Number(r).toString(16);
+  g = Number(g).toString(16);
+  b = Number(b).toString(16);
+  a = Math.round(a * 255).toString(16);
+
+  if (r.length == 1) r = "0" + r;
+  if (g.length == 1) g = "0" + g;
+  if (b.length == 1) b = "0" + b;
+  if (a.length == 1) a = "0" + a;
+
+  return "#" + r + g + b + a;
+}
