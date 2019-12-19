@@ -181,6 +181,7 @@ const App = ({}) => {
             onIgnoredUpdate={updateIgnoredErrors}
             ignoredErrorArray={ignoredErrorArray}
             onClick={updateVisibility}
+            onSelectedListUpdate={updateSelectedList}
           />
         ) : null}
       </div>

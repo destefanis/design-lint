@@ -29,18 +29,25 @@ function ErrorList(props) {
       exit={{ opacity: 1, y: -10, scale: 0 }}
       layoutTransition={spring}
     >
-      <span className="error-type">
-        <img src={require("../assets/" + error.type.toLowerCase() + ".svg")} />
-      </span>
-      <span className="error-description">{error.message}</span>
-      <span className="context-icon">
-        <ContextMenuTrigger
-          id={error.node.id + index}
-          ref={c => (contextTrigger = c)}
-        >
-          <img onClick={toggleMenu} src={require("../assets/context.svg")} />
-        </ContextMenuTrigger>
-      </span>
+      <div className="flex-row">
+        <span className="error-type">
+          <img
+            src={require("../assets/" + error.type.toLowerCase() + ".svg")}
+          />
+        </span>
+        <span className="error-description">
+          <div className="error-description__message">{error.message}</div>
+        </span>
+        <span className="context-icon">
+          <ContextMenuTrigger
+            id={error.node.id + index}
+            ref={c => (contextTrigger = c)}
+          >
+            <img onClick={toggleMenu} src={require("../assets/context.svg")} />
+          </ContextMenuTrigger>
+        </span>
+      </div>
+      {error.value ? <div className="current-value">{error.value}</div> : null}
 
       <ContextMenu id={error.node.id + index}>
         <MenuItem

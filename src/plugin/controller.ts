@@ -154,16 +154,21 @@ figma.ui.onmessage = msg => {
   }
 
   // function createErrorObject(node, type, message, serializedValue, value) {
-  function createErrorObject(node, type, message) {
+  function createErrorObject(node, type, message, value?) {
     let error = {
       message: "",
       type: "",
-      node: ""
+      node: "",
+      value: ""
     };
 
     error.message = message;
     error.type = type;
     error.node = node;
+
+    if (value !== undefined) {
+      error.value = value;
+    }
 
     return error;
   }
@@ -194,12 +199,14 @@ figma.ui.onmessage = msg => {
       textObject.font = node.fontName.family;
       textObject.fontStyle = node.fontName.style;
       textObject.fontSize = node.fontSize;
-      textObject.lineHeight = node.lineHeight;
+      textObject.lineHeight = node.lineHeight.value;
+      console.log(node);
 
-      let serializedtextStyle =
-        textObject.font + textObject.fontStyle + textObject.fontSize;
+      let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
 
-      errors.push(createErrorObject(node, "text", "Missing text style"));
+      errors.push(
+        createErrorObject(node, "text", "Missing text style", currentStyle)
+      );
     }
 
     if (node.fills.length) {

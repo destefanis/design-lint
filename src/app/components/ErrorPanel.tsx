@@ -1,12 +1,18 @@
 import * as React from "react";
 import ErrorList from "./ErrorList";
+import NextButton from "./NextButton";
+import PrevButton from "./PrevButton";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/error-panel.css";
+import { filter } from "../../../node_modules/@types/minimatch";
 
 function ErrorPanel(props) {
   const isVisible = props.visibility;
   const node = props.node;
-  let filteredErrorArray = props.errorArray;
+  const reducedErrorArray = props.errorArray.filter(
+    item => item.errors.length >= 1
+  );
+  let filteredErrorArray = reducedErrorArray;
 
   props.ignoredErrorArray.forEach(id => {
     // Check if any of our ignored errors exist within our error array.
@@ -25,6 +31,54 @@ function ErrorPanel(props) {
     open: { opacity: 1, x: 0 },
     closed: { opacity: 0, x: "100%" }
   };
+
+  function handlePrevNavigation() {
+    let currentIndex = filteredErrorArray.findIndex(
+      item => item.id === activeId.id
+    );
+    if (filteredErrorArray[currentIndex + 1] !== undefined) {
+      activeId = filteredErrorArray[currentIndex + 1];
+    } else if (currentIndex !== 0) {
+      activeId = filteredErrorArray[0];
+    } else {
+      activeId = filteredErrorArray[currentIndex - 1];
+    }
+
+    props.onSelectedListUpdate(activeId.id);
+
+    parent.postMessage(
+      { pluginMessage: { type: "fetch-layer-data", id: activeId.id } },
+      "*"
+    );
+  }
+
+  function handleNextNavigation() {
+    let currentIndex = filteredErrorArray.findIndex(
+      item => item.id === activeId.id
+    );
+    let lastItem = currentIndex + filteredErrorArray.length - 1;
+
+    if (filteredErrorArray[currentIndex - 1] !== undefined) {
+      activeId = filteredErrorArray[currentIndex - 1];
+    } else if (filteredErrorArray.length === 1) {
+      activeId = filteredErrorArray[0];
+    } else {
+      activeId = filteredErrorArray[lastItem];
+    }
+
+    props.onSelectedListUpdate(activeId.id);
+
+    parent.postMessage(
+      { pluginMessage: { type: "fetch-layer-data", id: activeId.id } },
+      "*"
+    );
+  }
+
+  function autoNavigate() {
+    setTimeout(function() {
+      if (filteredErrorArray.length > 0) handleNextNavigation();
+    }, 1000);
+  }
 
   // Open and closes the panel.
   function handleChange() {
@@ -60,6 +114,7 @@ function ErrorPanel(props) {
           </React.Fragment>
         ) : (
           <AnimatePresence>
+            {autoNavigate()}
             <motion.h3
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -72,12 +127,21 @@ function ErrorPanel(props) {
                   src={require("../assets/confetti.svg")}
                 />
               </div>
-              All errors fixed!
+              All errors fixed! Navigating to next error.
             </motion.h3>
           </AnimatePresence>
         )}
         <div className="button-wrapper">
-          <button className="button button--next">Next Error</button>
+          <PrevButton
+            filteredErrorArray={filteredErrorArray}
+            onHandleNav={handlePrevNavigation}
+            activeId={activeId}
+          />
+          <NextButton
+            filteredErrorArray={filteredErrorArray}
+            onHandleNav={handleNextNavigation}
+            activeId={activeId}
+          />
         </div>
       </motion.div>
 
