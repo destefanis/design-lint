@@ -99,22 +99,22 @@ function ErrorPanel(props) {
         variants={variants}
       >
         <div className="name-wrapper">
-          <span className="name-icon">
+          {/* <span className="name-icon">
             <img
               src={require("../assets/" + node.type.toLowerCase() + ".svg")}
             />
-          </span>
+          </span> */}
           <h2 className="node-name">{node.name.substring(0, 46)}</h2>
         </div>
 
         {errors.length ? (
           <React.Fragment>
-            <h4 className="error-label">{errors.length} errors</h4>
+            <h4 className="error-label">Errors — {errors.length}</h4>
             <ErrorList onIgnoredUpdate={handleIgnoreChange} errors={errors} />
           </React.Fragment>
         ) : (
           <AnimatePresence>
-            {autoNavigate()}
+            {/* {autoNavigate()} */}
             <motion.h3
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -127,7 +127,7 @@ function ErrorPanel(props) {
                   src={require("../assets/confetti.svg")}
                 />
               </div>
-              All errors fixed! Navigating to next error.
+              All errors fixed!
             </motion.h3>
           </AnimatePresence>
         )}

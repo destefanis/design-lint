@@ -30,7 +30,7 @@ function NextButton(props) {
         disabled
         className="button button--disabled button--next"
       >
-        Next
+        Next →
       </button>
     );
   }

@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 320, height: 480 });
+figma.showUI(__html__, { width: 360, height: 600 });
 
 let originalNodeTree = [];
 
@@ -153,7 +153,7 @@ figma.ui.onmessage = msg => {
     }
   }
 
-  // function createErrorObject(node, type, message, serializedValue, value) {
+  // Generic function for creating an error object to pass to the app.
   function createErrorObject(node, type, message, value?) {
     let error = {
       message: "",
@@ -171,6 +171,19 @@ figma.ui.onmessage = msg => {
     }
 
     return error;
+  }
+
+  function determineFill(fills) {
+    let fillValues = [];
+
+    fills.forEach(fill => {
+      if (fill.type === "SOLID") {
+        let rgbObj = convertColor(fill.color);
+        fillValues.push(RGBToHex(rgbObj.r, rgbObj.g, rgbObj.b));
+      }
+    });
+
+    return fillValues;
   }
 
   function lintComponentRules(node) {
@@ -209,8 +222,16 @@ figma.ui.onmessage = msg => {
     }
 
     if (node.fills.length) {
-      if (node.fillStyleId === "") {
-        errors.push(createErrorObject(node, "fill", "Missing fill style"));
+      if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
+        // We may need an array to loop through fill types.
+        errors.push(
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            determineFill(node.fills)
+          )
+        );
       }
     }
 
@@ -240,18 +261,14 @@ figma.ui.onmessage = msg => {
 
     if (node.fills.length) {
       if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
-        let fillValues = [];
-
-        node["fills"].forEach(fill => {
-          if (fill.type === "SOLID") {
-            let rgbObj = convertColor(fill.color);
-            fillValues.push(RGBToHex(rgbObj.r, rgbObj.g, rgbObj.b));
-          }
-        });
-
         // We may need an array to loop through fill types.
         errors.push(
-          createErrorObject(node, "fill", "Missing fill style", fillValues)
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            determineFill(node.fills)
+          )
         );
       }
     }
@@ -291,15 +308,54 @@ figma.ui.onmessage = msg => {
 
     if (node.strokes.length) {
       if (node.strokeStyleId === "") {
-        errors.push(createErrorObject(node, "stroke", "Missing stroke style"));
+        let strokeObject = {
+          strokeWeight: "",
+          strokeAlign: "",
+          strokeFills: []
+        };
+
+        strokeObject.strokeWeight = node.strokeWeight;
+        strokeObject.strokeAlign = node.strokeAlign;
+        strokeObject.strokeFills = determineFill(node.strokes);
+
+        let currentStyle = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
+
+        errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            currentStyle
+          )
+        );
       }
     }
 
     if (node.effects.length) {
       if (node.effectStyleId === "") {
-        errors.push(
-          createErrorObject(node, "effects", "Missing effects style")
-        );
+        node.effects.forEach(effect => {
+          let effectsObject = {
+            type: "",
+            radius: ""
+          };
+
+          if (effect.type === "DROP_SHADOW") {
+            effectsObject.type = "Drop Shadow";
+            effectsObject.radius = effect.radius;
+            // let effectsFill = determineFill(effect.color);
+
+            let currentStyle = `${effectsObject.type} / ${effectsObject.radius}`;
+
+            errors.push(
+              createErrorObject(
+                node,
+                "effects",
+                "Missing effects style",
+                currentStyle
+              )
+            );
+          }
+        });
       }
     }
 
@@ -313,7 +369,7 @@ const convertColor = color => {
 
   Object.entries(colorObj).forEach(cf => {
     const [key, value] = cf;
-    console.log(value);
+
     if (["r", "g", "b"].includes(key)) {
       figmaColor[key] = (value * 255).toFixed(0);
     }
