@@ -333,29 +333,55 @@ figma.ui.onmessage = msg => {
 
     if (node.effects.length) {
       if (node.effectStyleId === "") {
+        const effectsArray = [];
+
         node.effects.forEach(effect => {
           let effectsObject = {
             type: "",
-            radius: ""
+            radius: "",
+            offsetX: "",
+            offsetY: "",
+            fill: ""
           };
+
+          // All effects have a radius.
+          effectsObject.radius = effect.radius;
 
           if (effect.type === "DROP_SHADOW") {
             effectsObject.type = "Drop Shadow";
-            effectsObject.radius = effect.radius;
-            // let effectsFill = determineFill(effect.color);
-
-            let currentStyle = `${effectsObject.type} / ${effectsObject.radius}`;
-
-            errors.push(
-              createErrorObject(
-                node,
-                "effects",
-                "Missing effects style",
-                currentStyle
-              )
+            let effectsFill = convertColor(effect.color);
+            effectsObject.fill = RGBToHex(
+              effectsFill.r,
+              effectsFill.g,
+              effectsFill.b
             );
+          } else if (effect.type === "INNER_SHADOW") {
+            let effectsFill = convertColor(effect.color);
+            effectsObject.fill = RGBToHex(
+              effectsFill.r,
+              effectsFill.g,
+              effectsFill.b
+            );
+            effectsObject.type = "Drop Shadow";
+          } else if (effect.type === "LAYER_BLUR") {
+            effectsObject.type = "Layer Blur";
+          } else {
+            effectsObject.type = "Background Blur";
           }
+
+          effectsArray.unshift(effectsObject);
         });
+
+        let currentStyle = `${effectsArray[0].type} / ${effectsArray[0].radius}px`;
+
+        errors.push(
+          createErrorObject(
+            node,
+            "effects",
+            "Missing effects style",
+            currentStyle
+          )
+        );
       }
     }
 
@@ -373,7 +399,7 @@ const convertColor = color => {
     if (["r", "g", "b"].includes(key)) {
       figmaColor[key] = (value * 255).toFixed(0);
     }
-    if (key === "alpha") {
+    if (key === "a") {
       figmaColor[key] = value;
     }
   });

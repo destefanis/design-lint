@@ -162,13 +162,14 @@
 .react-contextmenu-item {
   padding: 8px 32px;
   cursor: pointer;
-  background: transparent;
+  background-color: transparent;
   color: #fff;
   transition: 150ms ease;
 }
 
 .react-contextmenu-item:hover {
-  background: #18a0fb;
+  background-color: #18a0fb;
+  border-radius: 4px;
 }
 
 .button-wrapper {
