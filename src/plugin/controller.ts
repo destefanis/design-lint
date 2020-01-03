@@ -341,7 +341,8 @@ figma.ui.onmessage = msg => {
             radius: "",
             offsetX: "",
             offsetY: "",
-            fill: ""
+            fill: "",
+            value: ""
           };
 
           // All effects have a radius.
@@ -349,30 +350,32 @@ figma.ui.onmessage = msg => {
 
           if (effect.type === "DROP_SHADOW") {
             effectsObject.type = "Drop Shadow";
-            let effectsFill = convertColor(effect.color);
-            effectsObject.fill = RGBToHex(
-              effectsFill.r,
-              effectsFill.g,
-              effectsFill.b
-            );
           } else if (effect.type === "INNER_SHADOW") {
-            let effectsFill = convertColor(effect.color);
-            effectsObject.fill = RGBToHex(
-              effectsFill.r,
-              effectsFill.g,
-              effectsFill.b
-            );
-            effectsObject.type = "Drop Shadow";
+            effectsObject.type = "Inner Shadow";
           } else if (effect.type === "LAYER_BLUR") {
             effectsObject.type = "Layer Blur";
           } else {
             effectsObject.type = "Background Blur";
           }
 
+          if (effect.color) {
+            let effectsFill = convertColor(effect.color);
+            effectsObject.fill = RGBToHex(
+              effectsFill.r,
+              effectsFill.g,
+              effectsFill.b
+            );
+            effectsObject.offsetX = effect.offset.x;
+            effectsObject.offsetY = effect.offset.y;
+            effectsObject.value = `${effectsObject.type} ${effectsObject.fill} ${effectsObject.radius}px X: ${effectsObject.offsetX}, Y: ${effectsObject.offsetY}`;
+          } else {
+            effectsObject.value = `${effectsObject.type} ${effectsObject.radius}px`;
+          }
+
           effectsArray.unshift(effectsObject);
         });
 
-        let currentStyle = `${effectsArray[0].type} / ${effectsArray[0].radius}px`;
+        let currentStyle = effectsArray[0].value;
 
         errors.push(
           createErrorObject(
