@@ -20,7 +20,7 @@ function PrevButton(props) {
   if (PrevAvailable(props.activeId.id, props.filteredErrorArray)) {
     prevButton = (
       <button onClick={selectPrev} className="button button--previous">
-        Previous
+        ← Previous
       </button>
     );
   } else {

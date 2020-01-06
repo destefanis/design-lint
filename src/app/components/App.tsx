@@ -44,6 +44,7 @@ const App = ({}) => {
 
   const updateIgnoredErrors = error => {
     if (ignoredErrorArray.includes(error)) {
+      // Don't add if it exists in the array already.
     } else {
       setIgnoreErrorArray([error].concat(ignoredErrorArray));
     }

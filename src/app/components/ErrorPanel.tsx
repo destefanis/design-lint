@@ -4,7 +4,6 @@ import NextButton from "./NextButton";
 import PrevButton from "./PrevButton";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/error-panel.css";
-import { filter } from "../../../node_modules/@types/minimatch";
 
 function ErrorPanel(props) {
   const isVisible = props.visibility;
@@ -14,13 +13,18 @@ function ErrorPanel(props) {
   );
   let filteredErrorArray = reducedErrorArray;
 
-  props.ignoredErrorArray.forEach(id => {
+  props.ignoredErrorArray.forEach(error => {
     // Check if any of our ignored errors exist within our error array.
-    if (filteredErrorArray.some(item => item.id === id)) {
-      // Find and update the "error" array of the matching node.
-      let obj = filteredErrorArray.find(x => x.id === id);
-      let index = filteredErrorArray.indexOf(obj);
-      filteredErrorArray.fill((obj.errors = []), index, index++);
+    if (filteredErrorArray.some(item => item.id === error.node.id)) {
+      // Find the error within our array.
+      let obj = filteredErrorArray.find(x => x.id === error.node.id);
+      // Find the error within the specific node.
+      let ignoredErrorObject = obj.errors.find(x => x.value === error.value);
+      // todo fix weird double error replacement.
+      let errorIndex = obj.errors.indexOf(ignoredErrorObject);
+      obj.errors[errorIndex] = "";
+      // let updatedError = obj.errors.splice(errorIndex, 1);
+      console.log(updatedError);
     }
   });
 

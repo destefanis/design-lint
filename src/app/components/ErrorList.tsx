@@ -3,12 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 function ErrorList(props) {
-  let contextTrigger = null;
-
-  const toggleMenu = e => {
-    contextTrigger.handleContextClick(e);
-  };
-
   const spring = {
     type: "spring",
     damping: 20,
@@ -16,8 +10,8 @@ function ErrorList(props) {
   };
 
   // Pass the error we want to ignore back to our parent.
-  const handleIgnoreClick = id => {
-    props.onIgnoredUpdate(id);
+  const handleIgnoreClick = error => {
+    props.onIgnoredUpdate(error);
   };
 
   const errorListItems = props.errors.map((error, index) => (
@@ -40,32 +34,24 @@ function ErrorList(props) {
         </span>
         <span className="context-icon">
           <ContextMenuTrigger
-            id={error.node.id + index}
-            ref={c => (contextTrigger = c)}
+            holdToDisplay={0}
+            id={error.node.id + error.value}
           >
-            <img onClick={toggleMenu} src={require("../assets/context.svg")} />
+            <img src={require("../assets/context.svg")} />
           </ContextMenuTrigger>
         </span>
       </div>
+
       {error.value ? <div className="current-value">{error.value}</div> : null}
 
-      <ContextMenu id={error.node.id + index}>
+      <ContextMenu id={error.node.id + error.value}>
         <MenuItem
           onClick={event => {
             event.stopPropagation();
-            handleIgnoreClick(error.node.id);
+            handleIgnoreClick(error);
           }}
         >
           Ignore
-        </MenuItem>
-        <MenuItem
-          data={{ foo: "bar" }}
-          onClick={event => {
-            event.stopPropagation();
-            // handleClick(error.node.id);
-          }}
-        >
-          Ignore All
         </MenuItem>
       </ContextMenu>
     </motion.li>

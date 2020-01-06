@@ -20,7 +20,7 @@ function NextButton(props) {
   if (NextAvailable(props.activeId.id, props.filteredErrorArray)) {
     nextButton = (
       <button onClick={selectNext} className="button button--next">
-        Next
+        Next →
       </button>
     );
   } else {

@@ -373,10 +373,26 @@ figma.ui.onmessage = msg => {
       if (fill.type === "SOLID") {
         let rgbObj = convertColor(fill.color);
         fillValues.push(RGBToHex(rgbObj.r, rgbObj.g, rgbObj.b));
+      } else if (fill.type === "IMAGE") {
+        fillValues.push("Image - " + fill.imageHash);
+      } else {
+        const gradientValues = [];
+        fill.gradientStops.forEach(gradientStops => {
+          let gradientColorObject = convertColor(gradientStops.color);
+          gradientValues.push(
+            RGBToHex(
+              gradientColorObject.r,
+              gradientColorObject.g,
+              gradientColorObject.b
+            )
+          );
+        });
+        let gradientValueString = gradientValues.toString();
+        fillValues.push(`${fill.type} ${gradientValueString}`);
       }
     });
 
-    return fillValues;
+    return fillValues[0];
   }
 
   function lintComponentRules(node) {
@@ -404,7 +420,6 @@ figma.ui.onmessage = msg => {
 
   function lintShapeRules(node) {
     let errors = [];
-    console.log(node);
 
     checkFills(node, errors);
     checkRadius(node, errors);
