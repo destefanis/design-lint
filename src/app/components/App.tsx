@@ -43,8 +43,12 @@ const App = ({}) => {
   };
 
   const updateIgnoredErrors = error => {
-    if (ignoredErrorArray.includes(error)) {
-      // Don't add if it exists in the array already.
+    if (ignoredErrorArray.some(e => e.node.id === error.node.id)) {
+      if (ignoredErrorArray.some(e => e.value === error.value)) {
+        return;
+      } else {
+        setIgnoreErrorArray([error].concat(ignoredErrorArray));
+      }
     } else {
       setIgnoreErrorArray([error].concat(ignoredErrorArray));
     }
@@ -81,7 +85,7 @@ const App = ({}) => {
 
       setTimeout(() => {
         pollForChanges();
-      }, 500);
+      }, 1000);
     }
   }
 
@@ -180,7 +184,7 @@ const App = ({}) => {
             node={selectedNode}
             errorArray={errorArray}
             onIgnoredUpdate={updateIgnoredErrors}
-            ignoredErrorArray={ignoredErrorArray}
+            ignoredErrors={ignoredErrorArray}
             onClick={updateVisibility}
             onSelectedListUpdate={updateSelectedList}
           />

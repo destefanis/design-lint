@@ -8,23 +8,30 @@ import "../styles/error-panel.css";
 function ErrorPanel(props) {
   const isVisible = props.visibility;
   const node = props.node;
-  const reducedErrorArray = props.errorArray.filter(
+
+  // Reduce the size of our array of errors by removing
+  // nodes with no errors on them.
+  let filteredErrorArray = props.errorArray.filter(
     item => item.errors.length >= 1
   );
-  let filteredErrorArray = reducedErrorArray;
 
-  props.ignoredErrorArray.forEach(error => {
-    // Check if any of our ignored errors exist within our error array.
-    if (filteredErrorArray.some(item => item.id === error.node.id)) {
-      // Find the error within our array.
-      let obj = filteredErrorArray.find(x => x.id === error.node.id);
-      // Find the error within the specific node.
-      let ignoredErrorObject = obj.errors.find(x => x.value === error.value);
-      // todo fix weird double error replacement.
-      let errorIndex = obj.errors.indexOf(ignoredErrorObject);
-      obj.errors[errorIndex] = "";
-      // let updatedError = obj.errors.splice(errorIndex, 1);
-      console.log(updatedError);
+  filteredErrorArray.forEach(item => {
+    // Check each layer/node to see if an error that matches it's layer id
+    if (props.ignoredErrors.some(x => x.node.id === item.id)) {
+      // When we know a matching error exists loop over all the ignored
+      // errors until we find it.
+      props.ignoredErrors.forEach(ignoredError => {
+        if (ignoredError.node.id === item.id) {
+          // Loop over every error this layer/node until we find the
+          // error that should be ignored, then remove it.
+          for (let i = 0; i < item.errors.length; i++) {
+            if (item.errors[i].value === ignoredError.value) {
+              item.errors.splice(i, 1);
+              i--;
+            }
+          }
+        }
+      });
     }
   });
 
@@ -96,7 +103,7 @@ function ErrorPanel(props) {
 
   return (
     <React.Fragment>
-      <motion.div
+      <div
         className={`error-panel`}
         animate={isVisible ? "open" : "closed"}
         transition={{ duration: 0.3, type: "tween" }}
@@ -147,7 +154,7 @@ function ErrorPanel(props) {
             activeId={activeId}
           />
         </div>
-      </motion.div>
+      </div>
 
       {isVisible ? (
         <div className="overlay" onClick={handleChange}></div>

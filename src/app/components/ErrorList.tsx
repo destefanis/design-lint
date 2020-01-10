@@ -18,8 +18,6 @@ function ErrorList(props) {
     <motion.li
       className="error-list-item"
       key={error.node.id + index}
-      initial={{ opacity: 0, y: 10, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 1, y: -10, scale: 0 }}
       layoutTransition={spring}
     >
