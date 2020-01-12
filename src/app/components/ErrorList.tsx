@@ -18,6 +18,10 @@ function ErrorList(props) {
     props.onIgnoreAll(error);
   };
 
+  const handleSelectAll = error => {
+    props.onSelectAll(error);
+  };
+
   const errorListItems = props.errors.map((error, index) => (
     <motion.li
       className="error-list-item"
@@ -66,7 +70,7 @@ function ErrorList(props) {
         <MenuItem
           onClick={event => {
             event.stopPropagation();
-            // handleIgnoreClick(error);
+            handleSelectAll(error);
           }}
         >
           Select All

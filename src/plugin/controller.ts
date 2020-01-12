@@ -47,6 +47,21 @@ figma.ui.onmessage = msg => {
     figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
   }
 
+  if (msg.type === "select-multiple-layers") {
+    const layerArray = msg.nodeArray;
+    let nodesToBeSelected = [];
+
+    layerArray.forEach(item => {
+      let layer = figma.getNodeById(item);
+      // Using selection and viewport requires an array.
+      nodesToBeSelected.push(layer);
+    });
+
+    // Moves the layer into focus and selects so the user can update it.
+    figma.currentPage.selection = nodesToBeSelected;
+    figma.viewport.scrollAndZoomIntoView(nodesToBeSelected);
+  }
+
   // Traverses the node tree
   function traverse(node) {
     if ("children" in node) {

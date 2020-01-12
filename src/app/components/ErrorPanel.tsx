@@ -101,6 +101,34 @@ function ErrorPanel(props) {
     props.onIgnoredUpdate(error);
   }
 
+  function handleSelectAll(error) {
+    // props.onIgnoredUpdate(error);
+    let nodesToBeSelected = [];
+
+    filteredErrorArray.forEach(node => {
+      node.errors.forEach(item => {
+        if (item.value === error.value) {
+          if (item.type === error.type) {
+            nodesToBeSelected.push(item.node.id);
+          }
+        }
+      });
+    });
+
+    if (nodesToBeSelected.length) {
+      // props.onIgnoreAll(nodesToBeSelected);
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "select-multiple-layers",
+            nodeArray: nodesToBeSelected
+          }
+        },
+        "*"
+      );
+    }
+  }
+
   function handleIgnoreAll(error) {
     let errorsToBeIgnored = [];
 
@@ -142,6 +170,7 @@ function ErrorPanel(props) {
             <ErrorList
               onIgnoredUpdate={handleIgnoreChange}
               onIgnoreAll={handleIgnoreAll}
+              onSelectAll={handleSelectAll}
               errors={errors}
             />
           </React.Fragment>
