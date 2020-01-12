@@ -7,13 +7,30 @@ function ListItem(props) {
   let childNodes = null;
   let errorObject = { errors: [] };
   let childErrorsCount = 0;
-  let filteredErrorArray = props.errorArray;
 
-  props.ignoredErrorArray.forEach(id => {
-    if (filteredErrorArray.some(item => item.id === id)) {
-      let obj = filteredErrorArray.find(x => x.id === id);
-      let index = filteredErrorArray.indexOf(obj);
-      filteredErrorArray.fill((obj.errors = []), index, index++);
+  // Reduce the size of our array of errors by removing
+  // nodes with no errors on them.
+  let filteredErrorArray = props.errorArray.filter(
+    item => item.errors.length >= 1
+  );
+
+  filteredErrorArray.forEach(item => {
+    // Check each layer/node to see if an error that matches it's layer id
+    if (props.ignoredErrorArray.some(x => x.node.id === item.id)) {
+      // When we know a matching error exists loop over all the ignored
+      // errors until we find it.
+      props.ignoredErrorArray.forEach(ignoredError => {
+        if (ignoredError.node.id === item.id) {
+          // Loop over every error this layer/node until we find the
+          // error that should be ignored, then remove it.
+          for (let i = 0; i < item.errors.length; i++) {
+            if (item.errors[i].value === ignoredError.value) {
+              item.errors.splice(i, 1);
+              i--;
+            }
+          }
+        }
+      });
     }
   });
 

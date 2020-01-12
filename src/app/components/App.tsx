@@ -4,6 +4,7 @@ import "../styles/reset.css";
 import "../styles/ui.css";
 import ErrorPanel from "./ErrorPanel";
 import NodeList from "./NodeList";
+import TotalErrorCount from "./TotalErrorCount";
 
 declare function require(path: string): any;
 
@@ -19,7 +20,6 @@ const App = ({}) => {
 
   let newWindowFocus = false;
   let counter = 0;
-  let totalErrorCount = determineCount(errorArray);
 
   const updateSelectedList = id => {
     setSelectedListItem(selectedListItems => {
@@ -40,6 +40,10 @@ const App = ({}) => {
 
   const updateActiveError = error => {
     setActiveError(error);
+  };
+
+  const ignoreAll = errors => {
+    setIgnoreErrorArray(ignoredErrorArray => [...ignoredErrorArray, ...errors]);
   };
 
   const updateIgnoredErrors = error => {
@@ -89,18 +93,6 @@ const App = ({}) => {
     }
   }
 
-  function determineCount(array) {
-    let count = 0;
-
-    array.forEach(arrayItem => {
-      if (arrayItem.errors) {
-        count = count + arrayItem.errors.length;
-      }
-    });
-
-    return count;
-  }
-
   function updateVisibility() {
     if (isVisible === true) {
       setIsVisible(false);
@@ -110,17 +102,34 @@ const App = ({}) => {
   }
 
   React.useEffect(() => {
+    // Update client storage so the next time we run the app
+    // we don't have to ignore our errors again.
+    if (ignoredErrorArray.length) {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "update-storage",
+            storageArray: ignoredErrorArray
+          }
+        },
+        "*"
+      );
+    }
+  }, [ignoredErrorArray]);
+
+  React.useEffect(() => {
     onRunApp();
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
 
     window.onmessage = event => {
-      const { type, message, errors } = event.data.pluginMessage;
+      const { type, message, errors, storage } = event.data.pluginMessage;
 
       // Plugin code returns this message after finished a loop through the layers.
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
+
         setNodeArray(nodeObject);
         updateErrorArray(errors);
 
@@ -145,6 +154,12 @@ const App = ({}) => {
         setActiveNodeIds(activeNodeIds => {
           return activeNodeIds.concat(nodeObject[0].id);
         });
+      } else if (type === "fetched storage") {
+        let clientStorage = JSON.parse(storage);
+        setIgnoreErrorArray(ignoredErrorArray => [
+          ...ignoredErrorArray,
+          ...clientStorage
+        ]);
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
         setSelectedNode(selectedNode => JSON.parse(message));
@@ -174,16 +189,17 @@ const App = ({}) => {
             activeNodeIds={activeNodeIds}
           />
         ) : null}
-        <div className="total-error-count">
-          <h5 className="total-error-header">Total Errors:</h5>
-          <span className="error-count">{totalErrorCount}</span>
-        </div>
+        <TotalErrorCount
+          errorArray={errorArray}
+          ignoredErrors={ignoredErrorArray}
+        />
         {Object.keys(activeError).length !== 0 ? (
           <ErrorPanel
             visibility={isVisible}
             node={selectedNode}
             errorArray={errorArray}
             onIgnoredUpdate={updateIgnoredErrors}
+            onIgnoreAll={ignoreAll}
             ignoredErrors={ignoredErrorArray}
             onClick={updateVisibility}
             onSelectedListUpdate={updateSelectedList}

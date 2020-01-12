@@ -97,13 +97,31 @@ function ErrorPanel(props) {
   }
 
   // Passes the ignored error back to it's parent.
-  function handleIgnoreChange(id) {
-    props.onIgnoredUpdate(id);
+  function handleIgnoreChange(error) {
+    props.onIgnoredUpdate(error);
+  }
+
+  function handleIgnoreAll(error) {
+    let errorsToBeIgnored = [];
+
+    filteredErrorArray.forEach(node => {
+      node.errors.forEach(item => {
+        if (item.value === error.value) {
+          if (item.type === error.type) {
+            errorsToBeIgnored.push(item);
+          }
+        }
+      });
+    });
+
+    if (errorsToBeIgnored.length) {
+      props.onIgnoreAll(errorsToBeIgnored);
+    }
   }
 
   return (
     <React.Fragment>
-      <div
+      <motion.div
         className={`error-panel`}
         animate={isVisible ? "open" : "closed"}
         transition={{ duration: 0.3, type: "tween" }}
@@ -121,7 +139,11 @@ function ErrorPanel(props) {
         {errors.length ? (
           <React.Fragment>
             <h4 className="error-label">Errors — {errors.length}</h4>
-            <ErrorList onIgnoredUpdate={handleIgnoreChange} errors={errors} />
+            <ErrorList
+              onIgnoredUpdate={handleIgnoreChange}
+              onIgnoreAll={handleIgnoreAll}
+              errors={errors}
+            />
           </React.Fragment>
         ) : (
           <AnimatePresence>
@@ -154,7 +176,7 @@ function ErrorPanel(props) {
             activeId={activeId}
           />
         </div>
-      </div>
+      </motion.div>
 
       {isVisible ? (
         <div className="overlay" onClick={handleChange}></div>

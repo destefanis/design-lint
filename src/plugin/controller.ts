@@ -42,6 +42,11 @@ figma.ui.onmessage = msg => {
     });
   }
 
+  if (msg.type === "update-storage") {
+    let arrayToBeStored = JSON.stringify(msg.storageArray);
+    figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
+  }
+
   // Traverses the node tree
   function traverse(node) {
     if ("children" in node) {
@@ -117,6 +122,13 @@ figma.ui.onmessage = msg => {
         type: "complete",
         message: seralizeNodes(nodes),
         errors: lint(nodes)
+      });
+
+      figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {
+        figma.ui.postMessage({
+          type: "fetched storage",
+          storage: result
+        });
       });
     }
   }

@@ -14,6 +14,10 @@ function ErrorList(props) {
     props.onIgnoredUpdate(error);
   };
 
+  const handleIgnoreAll = error => {
+    props.onIgnoreAll(error);
+  };
+
   const errorListItems = props.errors.map((error, index) => (
     <motion.li
       className="error-list-item"
@@ -50,6 +54,22 @@ function ErrorList(props) {
           }}
         >
           Ignore
+        </MenuItem>
+        <MenuItem
+          onClick={event => {
+            event.stopPropagation();
+            handleIgnoreAll(error);
+          }}
+        >
+          Ignore All
+        </MenuItem>
+        <MenuItem
+          onClick={event => {
+            event.stopPropagation();
+            // handleIgnoreClick(error);
+          }}
+        >
+          Select All
         </MenuItem>
       </ContextMenu>
     </motion.li>
