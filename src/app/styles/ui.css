@@ -1,5 +1,5 @@
 body {
-  font: 12px sans-serif;
+  font: 11px sans-serif;
   font-family: Inter, Roboto, sans-serif;
   margin: 0;
   overflow: hidden;
@@ -97,7 +97,7 @@ button {
   position: absolute;
   top: 6px;
   right: 12px;
-  background: #fe6262;
+  background: #e05534;
   color: #fff;
   height: 16px;
   min-width: 16px;
@@ -112,7 +112,7 @@ button {
   content: "";
   /* top: 12px; */
   right: 20px;
-  background: #fe6262;
+  background: #e05534;
   color: #333333;
   height: 2px;
   min-width: 2px;
@@ -127,11 +127,11 @@ button {
   align-self: flex-end;
   width: 100%;
   margin-left: auto;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   color: #333333;
   height: 38px;
-  border-top: 1px solid #dcddde;
+  border-top: 1px solid #e5e5e5;
 }
 
 .total-error-count .error-count {
@@ -142,10 +142,11 @@ button {
 
 .total-error-header {
   padding-left: 16px;
-  padding-top: 12px;
+  padding-top: 14px;
   line-height: 14px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333333;
 }
 
 .list-flex-row:hover {

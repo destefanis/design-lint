@@ -214,4 +214,4 @@ function ErrorPanel(props) {
   );
 }
 
-export default ErrorPanel;
+export default React.memo(ErrorPanel);

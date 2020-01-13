@@ -3,16 +3,16 @@ import ListItem from "./ListItem";
 
 function NodeList(props) {
   const handleNodeClick = id => {
-    // Pass the plugin the ID of the layer we want to fetch.
-    parent.postMessage(
-      { pluginMessage: { type: "fetch-layer-data", id: id } },
-      "*"
-    );
-
     // Opens the panel if theres an error.
     let activeId = props.errorArray.find(e => e.id === id);
 
     if (activeId.errors.length) {
+      // Pass the plugin the ID of the layer we want to fetch.
+      parent.postMessage(
+        { pluginMessage: { type: "fetch-layer-data", id: id } },
+        "*"
+      );
+
       props.onErrorUpdate(activeId);
 
       if (props.visibility === true) {
@@ -46,4 +46,4 @@ function NodeList(props) {
   }
 }
 
-export default NodeList;
+export default React.memo(NodeList);

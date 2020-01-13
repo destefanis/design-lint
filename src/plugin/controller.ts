@@ -12,6 +12,8 @@ figma.ui.onmessage = msg => {
     layerArray.push(layer);
 
     // Moves the layer into focus and selects so the user can update it.
+    console.log(layer);
+    figma.notify(`Layer ${layer.name} selected`, { timeout: 1500 });
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
 
@@ -60,6 +62,7 @@ figma.ui.onmessage = msg => {
     // Moves the layer into focus and selects so the user can update it.
     figma.currentPage.selection = nodesToBeSelected;
     figma.viewport.scrollAndZoomIntoView(nodesToBeSelected);
+    figma.notify("Multiple layers selected", { timeout: 2000 });
   }
 
   // Traverses the node tree
@@ -314,7 +317,7 @@ figma.ui.onmessage = msg => {
 
   function checkRadius(node, errors) {
     let cornerType = node.cornerRadius;
-    const radiusValues = [0, 4, 8];
+    const radiusValues = [0, 2, 4, 8, 16];
 
     // If the radius isn't even on all sides, check each corner.
     if (typeof cornerType === "symbol") {

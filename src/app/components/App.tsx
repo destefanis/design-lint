@@ -89,7 +89,7 @@ const App = ({}) => {
 
       setTimeout(() => {
         pollForChanges();
-      }, 1000);
+      }, 750);
     }
   }
 

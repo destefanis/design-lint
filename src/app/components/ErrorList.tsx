@@ -54,6 +54,14 @@ function ErrorList(props) {
         <MenuItem
           onClick={event => {
             event.stopPropagation();
+            handleSelectAll(error);
+          }}
+        >
+          Select All
+        </MenuItem>
+        <MenuItem
+          onClick={event => {
+            event.stopPropagation();
             handleIgnoreClick(error);
           }}
         >
@@ -67,14 +75,6 @@ function ErrorList(props) {
         >
           Ignore All
         </MenuItem>
-        <MenuItem
-          onClick={event => {
-            event.stopPropagation();
-            handleSelectAll(error);
-          }}
-        >
-          Select All
-        </MenuItem>
       </ContextMenu>
     </motion.li>
   ));
@@ -86,4 +86,4 @@ function ErrorList(props) {
   );
 }
 
-export default ErrorList;
+export default React.memo(ErrorList);
