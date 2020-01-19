@@ -1,9 +1,13 @@
 import * as React from "react";
+import { useState } from "react";
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
+import SettingsPanel from "./SettingsPanel";
 import "../styles/bottom-controls.css";
 
 function NodeList(props) {
+  const [panelVisible, setPanelVisible] = React.useState(false);
+
   // Reduce the size of our array of errors by removing
   // nodes with no errors on them.
   let filteredErrorArray = props.errorArray.filter(
@@ -58,6 +62,10 @@ function NodeList(props) {
     handleNodeClick(lastItem.id);
   };
 
+  const handlePanelVisible = boolean => {
+    setPanelVisible(boolean);
+  };
+
   if (props.nodeArray.length) {
     let nodes = props.nodeArray;
 
@@ -79,7 +87,7 @@ function NodeList(props) {
         <TotalErrorCount errorArray={filteredErrorArray} />
         <div className="bottom-controls-row">
           <div
-            className="button button--first"
+            className="button button--dark"
             onClick={event => {
               event.stopPropagation();
               handleOpenFirstError();
@@ -87,13 +95,24 @@ function NodeList(props) {
           >
             Jump to next error →
           </div>
-          <span className="settings-button">
+          <span
+            className="settings-button"
+            onClick={event => {
+              event.stopPropagation();
+              handlePanelVisible(true);
+            }}
+          >
             <img
               className="settings-icon"
               src={require("../assets/settings.svg")}
             />
           </span>
         </div>
+        <SettingsPanel
+          panelVisible={panelVisible}
+          onHandlePanelVisible={handlePanelVisible}
+          ignoredErrorArray={props.ignoredErrorArray}
+        />
       </React.Fragment>
     );
   } else {
@@ -101,17 +120,6 @@ function NodeList(props) {
       <React.Fragment>
         <ul className="list"></ul>
         <TotalErrorCount errorArray={filteredErrorArray} />
-        <div className="bottom-controls-row">
-          <div className="button button--first button--disabled">
-            Jump to next error →
-          </div>
-          <span className="settings-button">
-            <img
-              className="settings-icon"
-              src={require("../assets/settings.svg")}
-            />
-          </span>
-        </div>
       </React.Fragment>
     );
   }

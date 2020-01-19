@@ -33,7 +33,7 @@
   flex-direction: row;
 }
 
-.button--first {
+.button--dark {
   padding: 12px 0;
   width: 100%;
   font-size: 12px;
@@ -43,12 +43,6 @@
   text-align: center;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.button--disabled {
-  color: #e5e5e5;
-  border-color: #e5e5e5;
-  cursor: default;
 }
 
 .settings-button {

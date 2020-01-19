@@ -134,7 +134,7 @@
 
 .success-message {
   border: 1px solid #e5e5e5;
-  border-radius: 4px;
+  border-radius: 6px;
   text-align: center;
   font-size: 13px;
   padding: 40px 0;
@@ -224,4 +224,16 @@
 
 .button:active {
   border-color: #333;
+}
+
+.settings-wrapper {
+  margin-top: -12px;
+  padding: 0 16px 16px;
+}
+
+.settings-label {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #333333;
+  padding-bottom: 12px;
 }

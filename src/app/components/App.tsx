@@ -17,6 +17,7 @@ const App = ({}) => {
   const [nodeArray, setNodeArray] = useState([]);
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
+  const [intialLoad, setInitialLoad] = React.useState(false);
 
   let newWindowFocus = false;
   let counter = 0;
@@ -29,9 +30,13 @@ const App = ({}) => {
 
     setActiveNodeIds(activeNodeIds => {
       if (activeNodeIds.includes(id)) {
-        // The ID is already in the active node list,
-        // so we probably want to remove it
-        return activeNodeIds.filter(activeNodeId => activeNodeId !== id);
+        // Remove this node if it exists in the array already from intial run.
+        // Don't ignore it if there's only one layer total.
+        if (activeNodeIds.length !== 1) {
+          return activeNodeIds.filter(activeNodeId => activeNodeId !== id);
+        } else {
+          return activeNodeIds;
+        }
       }
       // Since the ID is not already in the list, we want to add it
       return activeNodeIds.concat(id);
@@ -109,7 +114,8 @@ const App = ({}) => {
   React.useEffect(() => {
     // Update client storage so the next time we run the app
     // we don't have to ignore our errors again.
-    if (ignoredErrorArray.length) {
+    // if (ignoredErrorArray.length) {
+    if (intialLoad !== false && ignoredErrorArray.length) {
       parent.postMessage(
         {
           pluginMessage: {
@@ -137,6 +143,7 @@ const App = ({}) => {
 
         setNodeArray(nodeObject);
         updateErrorArray(errors);
+        setInitialLoad(true);
 
         // Fetch the first nodes properties and lint them.
         parent.postMessage(
@@ -161,10 +168,15 @@ const App = ({}) => {
         });
       } else if (type === "fetched storage") {
         let clientStorage = JSON.parse(storage);
+
         setIgnoreErrorArray(ignoredErrorArray => [
           ...ignoredErrorArray,
           ...clientStorage
         ]);
+      } else if (type === "reset storage") {
+        let clientStorage = JSON.parse(storage);
+        setIgnoreErrorArray([...clientStorage]);
+        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
         setSelectedNode(selectedNode => JSON.parse(message));
@@ -205,8 +217,11 @@ const App = ({}) => {
                 />
               </div>
               <h3 className="empty-state__title">
-                Select a layer then refocus this window to get started.
+                Select a frame or multiple frames
               </h3>
+            </div>
+            <div className="button button--dark" onClick={onRunApp}>
+              Run Design Lint
             </div>
           </div>
         )}

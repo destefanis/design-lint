@@ -1,5 +1,5 @@
 {
-  "name": "Lint",
+  "name": "Design Lint",
   "id": "00000000",
   "api": "1.0.0",
   "main": "dist/code.js",

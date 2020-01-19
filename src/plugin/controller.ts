@@ -12,7 +12,6 @@ figma.ui.onmessage = msg => {
     layerArray.push(layer);
 
     // Moves the layer into focus and selects so the user can update it.
-    console.log(layer);
     figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
@@ -45,9 +44,23 @@ figma.ui.onmessage = msg => {
     });
   }
 
+  // Updates client storage with a new ignored error.
   if (msg.type === "update-storage") {
     let arrayToBeStored = JSON.stringify(msg.storageArray);
     figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
+  }
+
+  // Clears all ignored errors
+  if (msg.type === "update-storage-from-settings") {
+    let arrayToBeStored = JSON.stringify(msg.storageArray);
+    figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
+
+    figma.ui.postMessage({
+      type: "reset storage",
+      storage: arrayToBeStored
+    });
+
+    figma.notify("Cleared ignored errors", { timeout: 1000 });
   }
 
   if (msg.type === "select-multiple-layers") {
@@ -128,6 +141,7 @@ figma.ui.onmessage = msg => {
   // Initalize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
+      figma.notify("Select a frame or multiple frames", { timeout: 2000 });
       return;
     } else {
       let nodes = traverseNodes(figma.currentPage.selection);

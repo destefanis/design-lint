@@ -17,7 +17,7 @@ function NextButton(props) {
 
   if (NextAvailable(props.filteredErrorArray)) {
     nextButton = (
-      <button onClick={selectNext} className="button button--next">
+      <button onClick={selectNext} className="button button--dark button--next">
         Next →
       </button>
     );
@@ -26,7 +26,7 @@ function NextButton(props) {
       <button
         onClick={selectNext}
         disabled
-        className="button button--disabled button--next"
+        className="button button--dark button--disabled button--next"
       >
         Next →
       </button>
