@@ -85,11 +85,11 @@ function ErrorPanel(props) {
     );
   }
 
-  function autoNavigate() {
-    setTimeout(function() {
-      if (filteredErrorArray.length > 0) handleNextNavigation();
-    }, 1000);
-  }
+  // function autoNavigate() {
+  //   setTimeout(function() {
+  //     if (filteredErrorArray.length > 0) handleNextNavigation();
+  //   }, 1000);
+  // }
 
   // Open and closes the panel.
   function handleChange() {
@@ -156,11 +156,6 @@ function ErrorPanel(props) {
         variants={variants}
       >
         <div className="name-wrapper">
-          {/* <span className="name-icon">
-            <img
-              src={require("../assets/" + node.type.toLowerCase() + ".svg")}
-            />
-          </span> */}
           <h2 className="node-name">{node.name.substring(0, 46)}</h2>
         </div>
 
@@ -176,8 +171,7 @@ function ErrorPanel(props) {
           </React.Fragment>
         ) : (
           <AnimatePresence>
-            {/* {autoNavigate()} */}
-            <motion.h3
+            <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 1, y: -10, scale: 0 }}
@@ -185,12 +179,12 @@ function ErrorPanel(props) {
             >
               <div className="success-shape">
                 <img
-                  className="success-emoji"
-                  src={require("../assets/confetti.svg")}
+                  className="success-icon"
+                  src={require("../assets/smile.svg")}
                 />
               </div>
               All errors fixed!
-            </motion.h3>
+            </motion.div>
           </AnimatePresence>
         )}
         <div className="button-wrapper">

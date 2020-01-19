@@ -5,7 +5,6 @@ import "../styles/ui.css";
 import "../styles/empty-state.css";
 import ErrorPanel from "./ErrorPanel";
 import NodeList from "./NodeList";
-import TotalErrorCount from "./TotalErrorCount";
 
 declare function require(path: string): any;
 
@@ -211,10 +210,6 @@ const App = ({}) => {
             </div>
           </div>
         )}
-        <TotalErrorCount
-          errorArray={errorArray}
-          ignoredErrors={ignoredErrorArray}
-        />
         {Object.keys(activeError).length !== 0 ? (
           <ErrorPanel
             visibility={isVisible}

@@ -1,0 +1,60 @@
+.total-error-count {
+  position: relative;
+  align-self: flex-end;
+  margin-top: auto;
+  width: 100%;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: #333333;
+  height: 41px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.total-error-count .error-count {
+  top: 10px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.total-error-header {
+  padding-top: 14px;
+  padding-left: 16px;
+  line-height: 14px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #333333;
+}
+
+.bottom-controls-row {
+  padding: 16px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: row;
+}
+
+.button--first {
+  padding: 12px 0;
+  width: 100%;
+  font-size: 12px;
+  background: #fff;
+  color: #333;
+  border: 1px solid #333;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button--disabled {
+  color: #e5e5e5;
+  border-color: #e5e5e5;
+  cursor: default;
+}
+
+.settings-button {
+  padding: 13px 14px;
+  margin-left: 16px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  cursor: pointer;
+}

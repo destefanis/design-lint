@@ -16,23 +16,6 @@ button {
   outline: none;
 }
 
-.floating-button-wrapper {
-  padding: 16px;
-  border-top: 1px solid #e5e5e5;
-}
-
-.button--first {
-  padding: 12px 0;
-  width: 100%;
-  font-size: 12px;
-  background: #18a0fb;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  cursor: pointer;
-  /* box-shadow: 0px 4px 11px rgba(0, 0, 0, 0.25); */
-}
-
 #create {
   box-shadow: none;
   background: #18a0fb;
@@ -113,7 +96,7 @@ button {
 .error-count {
   position: absolute;
   top: 6px;
-  right: 12px;
+  right: 16px;
   background: #fe6262;
   color: #fff;
   height: 16px;
@@ -127,8 +110,7 @@ button {
 .child-error-count {
   position: absolute;
   content: "";
-  /* top: 12px; */
-  right: 20px;
+  right: 23px;
   background: #fe6262;
   color: #333333;
   height: 2px;
@@ -137,34 +119,6 @@ button {
   border-radius: 50%;
   line-height: 16px;
   text-align: center;
-}
-
-.total-error-count {
-  position: relative;
-  align-self: flex-end;
-  margin-top: auto;
-  width: 100%;
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 400;
-  color: #333333;
-  height: 41px;
-  border-top: 1px solid #e5e5e5;
-}
-
-.total-error-count .error-count {
-  top: 10px;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-.total-error-header {
-  padding-left: 16px;
-  padding-top: 13px;
-  line-height: 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #333333;
 }
 
 .list-flex-row:hover {
