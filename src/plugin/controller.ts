@@ -37,6 +37,7 @@ figma.ui.onmessage = msg => {
     });
   }
 
+  // Could this be made less expensive?
   if (msg.type === "update-errors") {
     figma.ui.postMessage({
       type: "updated errors",

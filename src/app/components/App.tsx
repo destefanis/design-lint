@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import "../styles/reset.css";
 import "../styles/ui.css";
+import "../styles/empty-state.css";
 import ErrorPanel from "./ErrorPanel";
 import NodeList from "./NodeList";
 import TotalErrorCount from "./TotalErrorCount";
@@ -174,7 +175,7 @@ const App = ({}) => {
   }, []);
 
   return (
-    <div>
+    <div className="wrapper">
       <div className="flex-wrapper">
         {activeNodeIds.length !== 0 ? (
           <NodeList
@@ -188,7 +189,21 @@ const App = ({}) => {
             selectedListItems={selectedListItems}
             activeNodeIds={activeNodeIds}
           />
-        ) : null}
+        ) : (
+          <div className="empty-state-wrapper">
+            <div className="empty-state">
+              <div className="empty-state__image">
+                <img
+                  className="layer-icon"
+                  src={require("../assets/layers.svg")}
+                />
+              </div>
+              <h3 className="empty-state__title">
+                Select a layer to get started.
+              </h3>
+            </div>
+          </div>
+        )}
         <TotalErrorCount
           errorArray={errorArray}
           ignoredErrors={ignoredErrorArray}
