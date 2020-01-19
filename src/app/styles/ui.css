@@ -1,12 +1,12 @@
 body {
   font: 11px sans-serif;
-  font-family: Inter, Roboto, sans-serif;
+  font-family: system-ui;
   margin: 0;
   overflow: hidden;
 }
 
 button {
-  border-radius: 5px;
+  border-radius: 6px;
   background: white;
   color: black;
   border: none;
@@ -16,10 +16,27 @@ button {
   outline: none;
 }
 
+.floating-button-wrapper {
+  padding: 16px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.button--first {
+  padding: 12px 0;
+  width: 100%;
+  font-size: 12px;
+  background: #18a0fb;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  /* box-shadow: 0px 4px 11px rgba(0, 0, 0, 0.25); */
+}
+
 #create {
   box-shadow: none;
   background: #18a0fb;
-  color: white;
+  color: #fff;
 }
 
 .flex-wrapper {
@@ -97,7 +114,7 @@ button {
   position: absolute;
   top: 6px;
   right: 12px;
-  background: #e05534;
+  background: #fe6262;
   color: #fff;
   height: 16px;
   min-width: 16px;
@@ -112,7 +129,7 @@ button {
   content: "";
   /* top: 12px; */
   right: 20px;
-  background: #e05534;
+  background: #fe6262;
   color: #333333;
   height: 2px;
   min-width: 2px;
@@ -131,19 +148,19 @@ button {
   font-size: 13px;
   font-weight: 400;
   color: #333333;
-  height: 38px;
+  height: 41px;
   border-top: 1px solid #e5e5e5;
 }
 
 .total-error-count .error-count {
-  top: 8px;
+  top: 10px;
   padding-left: 4px;
   padding-right: 4px;
 }
 
 .total-error-header {
   padding-left: 16px;
-  padding-top: 14px;
+  padding-top: 13px;
   line-height: 14px;
   font-size: 13px;
   font-weight: 500;

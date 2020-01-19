@@ -7,9 +7,7 @@ function PrevButton(props) {
     props.onHandleNav();
   }
 
-  function PrevAvailable(id, array) {
-    let currentIndex = array.findIndex(item => item.id === id);
-
+  function PrevAvailable(array) {
     if (array.length <= 1) {
       return false;
     } else {
@@ -17,7 +15,7 @@ function PrevButton(props) {
     }
   }
 
-  if (PrevAvailable(props.activeId.id, props.filteredErrorArray)) {
+  if (PrevAvailable(props.filteredErrorArray)) {
     prevButton = (
       <button onClick={selectPrev} className="button button--previous">
         ← Previous

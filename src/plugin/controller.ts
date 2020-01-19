@@ -13,7 +13,7 @@ figma.ui.onmessage = msg => {
 
     // Moves the layer into focus and selects so the user can update it.
     console.log(layer);
-    figma.notify(`Layer ${layer.name} selected`, { timeout: 1500 });
+    figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
 
@@ -63,7 +63,7 @@ figma.ui.onmessage = msg => {
     // Moves the layer into focus and selects so the user can update it.
     figma.currentPage.selection = nodesToBeSelected;
     figma.viewport.scrollAndZoomIntoView(nodesToBeSelected);
-    figma.notify("Multiple layers selected", { timeout: 2000 });
+    figma.notify("Multiple layers selected", { timeout: 1000 });
   }
 
   // Traverses the node tree

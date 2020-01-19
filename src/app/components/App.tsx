@@ -70,6 +70,11 @@ const App = ({}) => {
   const onFocus = () => {
     newWindowFocus = true;
     counter = 0;
+
+    // This doesn't work with ignored errors.
+    // if (activeNodeIds.length === 0) {
+    //   onRunApp();
+    // }
   };
 
   const onBlur = () => {
@@ -178,17 +183,19 @@ const App = ({}) => {
     <div className="wrapper">
       <div className="flex-wrapper">
         {activeNodeIds.length !== 0 ? (
-          <NodeList
-            onErrorUpdate={updateActiveError}
-            onVisibleUpdate={updateVisible}
-            onSelectedListUpdate={updateSelectedList}
-            visibility={isVisible}
-            nodeArray={nodeArray}
-            errorArray={errorArray}
-            ignoredErrorArray={ignoredErrorArray}
-            selectedListItems={selectedListItems}
-            activeNodeIds={activeNodeIds}
-          />
+          <React.Fragment>
+            <NodeList
+              onErrorUpdate={updateActiveError}
+              onVisibleUpdate={updateVisible}
+              onSelectedListUpdate={updateSelectedList}
+              visibility={isVisible}
+              nodeArray={nodeArray}
+              errorArray={errorArray}
+              ignoredErrorArray={ignoredErrorArray}
+              selectedListItems={selectedListItems}
+              activeNodeIds={activeNodeIds}
+            />
+          </React.Fragment>
         ) : (
           <div className="empty-state-wrapper">
             <div className="empty-state">
@@ -199,7 +206,7 @@ const App = ({}) => {
                 />
               </div>
               <h3 className="empty-state__title">
-                Select a layer to get started.
+                Select a layer then refocus this window to get started.
               </h3>
             </div>
           </div>

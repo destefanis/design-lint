@@ -7,9 +7,7 @@ function NextButton(props) {
     props.onHandleNav();
   }
 
-  function NextAvailable(id, array) {
-    let currentIndex = array.findIndex(item => item.id === id);
-
+  function NextAvailable(array) {
     if (array.length <= 1) {
       return false;
     } else {
@@ -17,7 +15,7 @@ function NextButton(props) {
     }
   }
 
-  if (NextAvailable(props.activeId.id, props.filteredErrorArray)) {
+  if (NextAvailable(props.filteredErrorArray)) {
     nextButton = (
       <button onClick={selectNext} className="button button--next">
         Next →
