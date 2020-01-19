@@ -1,5 +1,6 @@
 import * as React from "react";
 import classNames from "classnames";
+import Truncate from "react-truncate";
 
 function ListItem(props) {
   const { onClick } = props;
@@ -81,7 +82,11 @@ function ListItem(props) {
         <span className="list-icon">
           <img src={require("../assets/" + node.type.toLowerCase() + ".svg")} />
         </span>
-        <span className="list-name">{node.name.substring(0, 46)}</span>
+        <span className="list-name">
+          <Truncate lines={1} width={280}>
+            {node.name}
+          </Truncate>
+        </span>
         {childErrorsCount >= 1 && (
           <span className="child-error-count">{/* {childErrorsCount} */}</span>
         )}

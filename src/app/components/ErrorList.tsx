@@ -1,6 +1,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import Truncate from "react-truncate";
 
 function ErrorList(props) {
   const spring = {
@@ -50,7 +51,11 @@ function ErrorList(props) {
         </span>
       </div>
 
-      {error.value ? <div className="current-value">{error.value}</div> : null}
+      {error.value ? (
+        <Truncate line={1} width={248} className="current-value">
+          {error.value}
+        </Truncate>
+      ) : null}
 
       <ContextMenu id={error.node.id + error.value}>
         <MenuItem
