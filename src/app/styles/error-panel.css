@@ -43,7 +43,6 @@
   flex-flow: row;
   align-content: center;
   justify-content: center;
-  margin-bottom: 12px;
   padding: 16px;
 }
 
@@ -66,7 +65,7 @@
 
 .error-label {
   color: #fe6262;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   margin-left: 16px;
   font-size: 13px;
   font-weight: 500;
@@ -139,7 +138,7 @@
   font-size: 13px;
   padding: 40px 0;
   margin: 16px;
-  margin-top: -12px;
+  margin-top: 0;
   color: #333;
 }
 
@@ -227,7 +226,6 @@
 }
 
 .settings-wrapper {
-  margin-top: -12px;
   padding: 0 16px 16px;
 }
 

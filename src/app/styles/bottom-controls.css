@@ -55,16 +55,16 @@
 }
 
 .control-button:hover .tooltip {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   opacity: 1;
 }
 
 .tooltip {
-  transform: translateY(6px);
+  transform: translateY(6px) scale(0.98);
   position: absolute;
   width: 100px;
-  top: -54px;
-  left: -44px;
+  top: -55px;
+  left: -43px;
   z-index: 10;
   opacity: 0;
   display: block;
@@ -77,4 +77,10 @@
   font-size: 11px;
   pointer-events: none;
   transition: all 250ms ease;
+}
+
+.tooltip--settings {
+  width: 50px;
+  top: -40px;
+  left: -18px;
 }

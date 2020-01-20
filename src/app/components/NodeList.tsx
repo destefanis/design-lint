@@ -106,7 +106,7 @@ function NodeList(props) {
               handleRefreshSelection();
             }}
           >
-            <span className="tooltip">Run on a new selection</span>
+            <span className="tooltip">Lint a new set of layers</span>
             <img
               className="control-icon"
               src={require("../assets/refresh.svg")}
@@ -119,7 +119,7 @@ function NodeList(props) {
               handlePanelVisible(true);
             }}
           >
-            <span className="tooltip">Settings</span>
+            <span className="tooltip tooltip--settings">Settings</span>
             <img
               className="control-icon"
               src={require("../assets/settings.svg")}
