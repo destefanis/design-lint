@@ -199,6 +199,7 @@ const App = ({}) => {
               onErrorUpdate={updateActiveError}
               onVisibleUpdate={updateVisible}
               onSelectedListUpdate={updateSelectedList}
+              onRefreshSelection={onRunApp}
               visibility={isVisible}
               nodeArray={nodeArray}
               errorArray={errorArray}

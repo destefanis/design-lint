@@ -66,6 +66,10 @@ function NodeList(props) {
     setPanelVisible(boolean);
   };
 
+  const handleRefreshSelection = () => {
+    props.onRefreshSelection();
+  };
+
   if (props.nodeArray.length) {
     let nodes = props.nodeArray;
 
@@ -96,14 +100,28 @@ function NodeList(props) {
             Jump to next error →
           </div>
           <span
-            className="settings-button"
+            className="control-button"
+            onClick={event => {
+              event.stopPropagation();
+              handleRefreshSelection();
+            }}
+          >
+            <span className="tooltip">Run on a new selection</span>
+            <img
+              className="control-icon"
+              src={require("../assets/refresh.svg")}
+            />
+          </span>
+          <span
+            className="control-button"
             onClick={event => {
               event.stopPropagation();
               handlePanelVisible(true);
             }}
           >
+            <span className="tooltip">Settings</span>
             <img
-              className="settings-icon"
+              className="control-icon"
               src={require("../assets/settings.svg")}
             />
           </span>

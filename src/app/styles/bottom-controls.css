@@ -45,10 +45,36 @@
   cursor: pointer;
 }
 
-.settings-button {
+.control-button {
+  position: relative;
   padding: 13px 14px;
   margin-left: 16px;
   border-radius: 6px;
   border: 1px solid #333;
   cursor: pointer;
+}
+
+.control-button:hover .tooltip {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.tooltip {
+  transform: translateY(6px);
+  position: absolute;
+  width: 100px;
+  top: -54px;
+  left: -44px;
+  z-index: 10;
+  opacity: 0;
+  display: block;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  text-align: center;
+  background-color: #000;
+  line-height: 1.4;
+  font-size: 11px;
+  pointer-events: none;
+  transition: all 250ms ease;
 }

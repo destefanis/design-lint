@@ -168,29 +168,33 @@ figma.ui.onmessage = msg => {
 
   function determineType(node) {
     switch (node.type) {
-      case "INSTANCE": {
-        let errors = [];
-        return errors;
-      }
-      case "ELLIPSE":
-      case "POLYGON":
-      case "STAR":
-      case "LINE":
-      case "BOOLEAN_OPERATION":
-      case "FRAME":
-      case "VECTOR":
+      case "SLICE":
       case "GROUP": {
+        // Groups effects apply their children so
+        // we don't need to lint them.
         let errors = [];
         return errors;
       }
-      case "RECTANGLE": {
+      case "POLYGON":
+      case "VECTOR":
+      case "STAR":
+      case "BOOLEAN_OPERATION":
+      case "ELLIPSE": {
         return lintShapeRules(node);
+      }
+      case "FRAME":
+      case "INSTANCE":
+      case "RECTANGLE": {
+        return lintRectangleRules(node);
+      }
+      case "COMPONENT": {
+        return lintComponentRules(node);
       }
       case "TEXT": {
         return lintTextRules(node);
       }
-      case "COMPONENT": {
-        return lintComponentRules(node);
+      case "LINE": {
+        return lintLineRules(node);
       }
       default: {
         // do nothing
@@ -449,6 +453,20 @@ figma.ui.onmessage = msg => {
       );
     }
 
+    checkFills(node, errors);
+    checkRadius(node, errors);
+    checkEffects(node, errors);
+    checkStrokes(node, errors);
+
+    return errors;
+  }
+
+  function lintLineRules(node) {
+    let errors = [];
+
+    checkStrokes(node, errors);
+    checkEffects(node, errors);
+
     return errors;
   }
 
@@ -463,11 +481,21 @@ figma.ui.onmessage = msg => {
     return errors;
   }
 
-  function lintShapeRules(node) {
+  function lintRectangleRules(node) {
     let errors = [];
 
     checkFills(node, errors);
     checkRadius(node, errors);
+    checkStrokes(node, errors);
+    checkEffects(node, errors);
+
+    return errors;
+  }
+
+  function lintShapeRules(node) {
+    let errors = [];
+
+    checkFills(node, errors);
     checkStrokes(node, errors);
     checkEffects(node, errors);
 
