@@ -9,6 +9,7 @@ import {
 
 figma.showUI(__html__, { width: 360, height: 600 });
 
+let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree = [];
 
 figma.ui.onmessage = msg => {
@@ -53,13 +54,15 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // Updates client storage with a new ignored error.
+  // Updates client storage with a new ignored error
+  // when the user selects "ignore" from the context menu
   if (msg.type === "update-storage") {
     let arrayToBeStored = JSON.stringify(msg.storageArray);
     figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
   }
 
   // Clears all ignored errors
+  // invoked from the settings menu
   if (msg.type === "update-storage-from-settings") {
     let arrayToBeStored = JSON.stringify(msg.storageArray);
     figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
@@ -70,6 +73,46 @@ figma.ui.onmessage = msg => {
     });
 
     figma.notify("Cleared ignored errors", { timeout: 1000 });
+  }
+
+  // For when the user updates the border radius values to lint from the settings menu.
+  if (msg.type === "update-border-radius") {
+    let newString = msg.radiusValues.replace(/\s+/g, "");
+    let newRadiusArray = newString.split(",");
+    newRadiusArray = newRadiusArray
+      .filter(x => x.trim().length && !isNaN(x))
+      .map(Number);
+
+    // Most users won't add 0 to the array of border radius so let's add it in for them.
+    if (newRadiusArray.indexOf(0) === -1) {
+      newRadiusArray.unshift(0);
+    }
+
+    // Update the array we pass into checkRadius for linting.
+    borderRadiusArray = newRadiusArray;
+
+    // Save this value in client storage.
+    let radiusToBeStored = JSON.stringify(borderRadiusArray);
+    figma.clientStorage.setAsync("storedRadiusValues", radiusToBeStored);
+
+    figma.ui.postMessage({
+      type: "fetched border radius",
+      storage: JSON.stringify(borderRadiusArray)
+    });
+
+    figma.notify("Saved new border radius values", { timeout: 1000 });
+  }
+
+  if (msg.type === "reset-border-radius") {
+    borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
+    figma.clientStorage.setAsync("storedRadiusValues", []);
+
+    figma.ui.postMessage({
+      type: "fetched border radius",
+      storage: JSON.stringify(borderRadiusArray)
+    });
+
+    figma.notify("Reset border radius value", { timeout: 1000 });
   }
 
   if (msg.type === "select-multiple-layers") {
@@ -118,27 +161,51 @@ figma.ui.onmessage = msg => {
     return serializedNodes;
   }
 
-  function lint(nodes) {
+  function lint(nodes, lockedParentNode?) {
     let errorArray = [];
     let childArray = [];
 
     nodes.forEach(node => {
+      let isLayerLocked;
+
       // Create a new object.
       let newObject = {};
 
       // Give it the existing node id.
       newObject.id = node.id;
 
-      // Check object for errors.
-      newObject.errors = determineType(node);
+      // Don't lint locked layers or the children/grandchildren of locked layers.
+      if (lockedParentNode === undefined && node.locked === true) {
+        isLayerLocked = true;
+      } else if (lockedParentNode === undefined && node.locked === false) {
+        isLayerLocked = false;
+      } else if (lockedParentNode === false && node.locked === true) {
+        isLayerLocked = true;
+      } else {
+        isLayerLocked = lockedParentNode;
+      }
+
+      if (isLayerLocked === true) {
+        newObject.errors = [];
+      } else {
+        newObject.errors = determineType(node);
+      }
 
       // Recursively run this function to flatten out children and grandchildren nodes
       if (node["children"]) {
         node["children"].forEach(childNode => {
           childArray.push(childNode.id);
         });
+
         newObject.children = childArray;
-        errorArray.push(...lint(node["children"]));
+
+        // If the layer is locked, pass the optional paramater to the recrusive Lint
+        // function to indicate this layer is locked.
+        if (isLayerLocked === true) {
+          errorArray.push(...lint(node["children"], true));
+        } else {
+          errorArray.push(...lint(node["children"], false));
+        }
       }
 
       errorArray.push(newObject);
@@ -150,7 +217,7 @@ figma.ui.onmessage = msg => {
   // Initalize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
-      figma.notify("Select a frame or multiple frames", { timeout: 2000 });
+      figma.notify("Select a frame(s) to get started", { timeout: 2000 });
       return;
     } else {
       let nodes = traverseNodes(figma.currentPage.selection);
@@ -176,6 +243,17 @@ figma.ui.onmessage = msg => {
           storage: result
         });
       });
+
+      figma.clientStorage.getAsync("storedRadiusValues").then(result => {
+        if (result.length) {
+          borderRadiusArray = JSON.parse(result);
+
+          figma.ui.postMessage({
+            type: "fetched border radius",
+            storage: result
+          });
+        }
+      });
     }
   }
 
@@ -194,7 +272,9 @@ figma.ui.onmessage = msg => {
       case "ELLIPSE": {
         return lintShapeRules(node);
       }
-      case "FRAME":
+      case "FRAME": {
+        return lintFrameRules(node);
+      }
       case "INSTANCE":
       case "RECTANGLE": {
         return lintRectangleRules(node);
@@ -224,7 +304,7 @@ figma.ui.onmessage = msg => {
     }
 
     checkFills(node, errors);
-    checkRadius(node, errors);
+    checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
     checkStrokes(node, errors);
 
@@ -235,6 +315,17 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     checkStrokes(node, errors);
+    checkEffects(node, errors);
+
+    return errors;
+  }
+
+  function lintFrameRules(node) {
+    let errors = [];
+
+    checkFills(node, errors);
+    checkStrokes(node, errors);
+    checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
 
     return errors;
@@ -255,7 +346,7 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     checkFills(node, errors);
-    checkRadius(node, errors);
+    checkRadius(node, errors, borderRadiusArray);
     checkStrokes(node, errors);
     checkEffects(node, errors);
 

@@ -35,3 +35,26 @@
   margin: auto;
   padding-bottom: 16px;
 }
+
+.preloader {
+  height: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+.preloader-row {
+  margin: auto;
+}
+
+.preloader-circle {
+  display: inline-block;
+  height: 24px;
+  width: 24px;
+  border-radius: 24px;
+  background: #18a0fb;
+  margin: 8px;
+  transform: scale(0.8);
+  opacity: 0.8;
+  transform-origin: center;
+}

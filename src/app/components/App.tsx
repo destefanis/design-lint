@@ -1,10 +1,13 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
+import ErrorPanel from "./ErrorPanel";
+import NodeList from "./NodeList";
+import Preloader from "./Preloader";
+import EmptyState from "./EmptyState";
 import "../styles/reset.css";
 import "../styles/ui.css";
 import "../styles/empty-state.css";
-import ErrorPanel from "./ErrorPanel";
-import NodeList from "./NodeList";
+import { AnimatePresence } from "../../../node_modules/framer-motion";
 
 declare function require(path: string): any;
 
@@ -17,7 +20,17 @@ const App = ({}) => {
   const [nodeArray, setNodeArray] = useState([]);
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
+  const [borderRadiusValues, setborderRadiusValues] = useState([
+    0,
+    2,
+    4,
+    8,
+    16,
+    24,
+    32
+  ]);
   const [intialLoad, setInitialLoad] = React.useState(false);
+  const [timedLoad, setTimeLoad] = React.useState(false);
 
   let newWindowFocus = false;
   let counter = 0;
@@ -74,11 +87,6 @@ const App = ({}) => {
   const onFocus = () => {
     newWindowFocus = true;
     counter = 0;
-
-    // This doesn't work with ignored errors.
-    // if (activeNodeIds.length === 0) {
-    //   onRunApp();
-    // }
   };
 
   const onBlur = () => {
@@ -110,6 +118,10 @@ const App = ({}) => {
       setIsVisible(true);
     }
   }
+
+  setTimeout(function() {
+    setTimeLoad(true);
+  }, 1000);
 
   React.useEffect(() => {
     // Update client storage so the next time we run the app
@@ -173,6 +185,10 @@ const App = ({}) => {
           ...ignoredErrorArray,
           ...clientStorage
         ]);
+      } else if (type === "fetched border radius") {
+        // Update border radius values from storage
+        let clientStorage = JSON.parse(storage);
+        setborderRadiusValues([...clientStorage]);
       } else if (type === "reset storage") {
         let clientStorage = JSON.parse(storage);
         setIgnoreErrorArray([...clientStorage]);
@@ -193,8 +209,8 @@ const App = ({}) => {
   return (
     <div className="wrapper">
       <div className="flex-wrapper">
-        {activeNodeIds.length !== 0 ? (
-          <React.Fragment>
+        <AnimatePresence>
+          {activeNodeIds.length !== 0 ? (
             <NodeList
               onErrorUpdate={updateActiveError}
               onVisibleUpdate={updateVisible}
@@ -206,26 +222,14 @@ const App = ({}) => {
               ignoredErrorArray={ignoredErrorArray}
               selectedListItems={selectedListItems}
               activeNodeIds={activeNodeIds}
+              borderRadiusValues={borderRadiusValues}
             />
-          </React.Fragment>
-        ) : (
-          <div className="empty-state-wrapper">
-            <div className="empty-state">
-              <div className="empty-state__image">
-                <img
-                  className="layer-icon"
-                  src={require("../assets/layers.svg")}
-                />
-              </div>
-              <h3 className="empty-state__title">
-                Select a frame or multiple frames
-              </h3>
-            </div>
-            <div className="button button--dark" onClick={onRunApp}>
-              Run Design Lint
-            </div>
-          </div>
-        )}
+          ) : timedLoad === false ? (
+            <Preloader />
+          ) : (
+            <EmptyState onHandleRunApp={onRunApp} />
+          )}
+        </AnimatePresence>
         {Object.keys(activeError).length !== 0 ? (
           <ErrorPanel
             visibility={isVisible}

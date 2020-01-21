@@ -51,9 +51,14 @@ export function determineFill(fills) {
 }
 
 // Lint border radius
-export function checkRadius(node, errors) {
+export function checkRadius(node, errors, radiusValues) {
   let cornerType = node.cornerRadius;
-  const radiusValues = [0, 2, 4, 8, 16];
+
+  if (typeof cornerType !== "symbol") {
+    if (cornerType === 0) {
+      return;
+    }
+  }
 
   // If the radius isn't even on all sides, check each corner.
   if (typeof cornerType === "symbol") {
@@ -175,8 +180,12 @@ export function checkEffects(node, errors) {
 }
 
 export function checkFills(node, errors) {
-  if (node.fills.length) {
-    if (node.fillStyleId === "" && node.fills[0].type !== "IMAGE") {
+  if (node.fills.length && node.visible === true) {
+    if (
+      node.fillStyleId === "" &&
+      node.fills[0].type !== "IMAGE" &&
+      node.fills[0].visible === true
+    ) {
       // We may need an array to loop through fill types.
       return errors.push(
         createErrorObject(
@@ -194,7 +203,7 @@ export function checkFills(node, errors) {
 
 export function checkStrokes(node, errors) {
   if (node.strokes.length) {
-    if (node.strokeStyleId === "") {
+    if (node.strokeStyleId === "" && node.visible === true) {
       let strokeObject = {
         strokeWeight: "",
         strokeAlign: "",
@@ -217,7 +226,7 @@ export function checkStrokes(node, errors) {
 }
 
 export function checkType(node, errors) {
-  if (node.textStyleId === "") {
+  if (node.textStyleId === "" && node.visible === true) {
     let textObject = {
       font: "",
       fontStyle: "",

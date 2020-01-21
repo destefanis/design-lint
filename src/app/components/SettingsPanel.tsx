@@ -1,5 +1,6 @@
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import SettingsForm from "./SettingsForm";
 import "../styles/error-panel.css";
 
 function SettingsPanel(props) {
@@ -31,6 +32,7 @@ function SettingsPanel(props) {
     <React.Fragment>
       <motion.div
         className={`error-panel`}
+        initial={{ opacity: 0, x: "100%" }}
         animate={isVisible ? "open" : "closed"}
         transition={{ duration: 0.3, type: "tween" }}
         variants={variants}
@@ -40,25 +42,32 @@ function SettingsPanel(props) {
         </div>
 
         <div className="settings-wrapper">
-          {props.ignoredErrorArray.length > 0 ? (
-            <div className="settings-row">
-              <p className="settings-label">
-                {props.ignoredErrorArray.length} errors are being ignored.
-              </p>
-              <div className="button button--dark" onClick={clearIgnoredErrors}>
-                Clear ignored errors
-              </div>
-            </div>
-          ) : (
-            <div className="settings-row">
-              <p className="settings-label">
-                You haven't ignored any errors yet.
-              </p>
-              <div className="button button--dark button--disabled">
-                Clear ignored errors
-              </div>
-            </div>
-          )}
+          <SettingsForm borderRadiusValues={props.borderRadiusValues} />
+          <div className="settings-row">
+            <h3 className="settings-title">Ignored Errors</h3>
+            {props.ignoredErrorArray.length > 0 ? (
+              <React.Fragment>
+                <p className="settings-label">
+                  {props.ignoredErrorArray.length} errors are being ignored.
+                </p>
+                <div
+                  className="button button--dark"
+                  onClick={clearIgnoredErrors}
+                >
+                  Clear ignored errors
+                </div>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <p className="settings-label">
+                  You haven't ignored any errors yet.
+                </p>
+                <div className="button button--dark button--disabled">
+                  Clear ignored errors
+                </div>
+              </React.Fragment>
+            )}
+          </div>
         </div>
       </motion.div>
 

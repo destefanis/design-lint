@@ -226,12 +226,42 @@
 }
 
 .settings-wrapper {
-  padding: 0 16px 16px;
+  padding: 4px 16px 16px;
+}
+
+.settings-row {
+  margin-bottom: 24px;
+}
+
+.settings-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333333;
+  padding-bottom: 8px;
 }
 
 .settings-label {
-  font-size: 12px;
+  display: block;
+  font-size: 11px;
   line-height: 1.4;
   color: #333333;
   padding-bottom: 12px;
+}
+
+.settings-input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 2px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  box-sizing: border-box;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.01em;
+}
+
+.settings-input:focus {
+  border: 1px solid #18a0fb;
+  border-radius: 2px;
 }

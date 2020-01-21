@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
 import SettingsPanel from "./SettingsPanel";
@@ -86,7 +87,17 @@ function NodeList(props) {
     ));
 
     return (
-      <React.Fragment>
+      <motion.div
+        className="flex-wrapper"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -24 }}
+        transition={{
+          type: "spring",
+          stiffness: 260,
+          damping: 20
+        }}
+      >
         <ul className="list">{listItems}</ul>
         <TotalErrorCount errorArray={filteredErrorArray} />
         <div className="bottom-controls-row">
@@ -130,8 +141,9 @@ function NodeList(props) {
           panelVisible={panelVisible}
           onHandlePanelVisible={handlePanelVisible}
           ignoredErrorArray={props.ignoredErrorArray}
+          borderRadiusValues={props.borderRadiusValues}
         />
-      </React.Fragment>
+      </motion.div>
     );
   } else {
     return (
