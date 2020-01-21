@@ -15,6 +15,10 @@ function TotalErrorCount(props) {
     return count;
   }
 
+  // if (totalErrorCount === 0) {
+  //   console.log('all clear!');
+  // }
+
   return (
     <div className="total-error-count">
       <h5 className="total-error-header">Total Errors:</h5>
