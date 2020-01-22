@@ -126,7 +126,6 @@ const App = ({}) => {
   React.useEffect(() => {
     // Update client storage so the next time we run the app
     // we don't have to ignore our errors again.
-    // if (ignoredErrorArray.length) {
     if (intialLoad !== false && ignoredErrorArray.length) {
       parent.postMessage(
         {
@@ -230,7 +229,7 @@ const App = ({}) => {
             <EmptyState onHandleRunApp={onRunApp} />
           )}
         </AnimatePresence>
-        {Object.keys(activeError).length !== 0 ? (
+        {Object.keys(activeError).length !== 0 && errorArray.length ? (
           <ErrorPanel
             visibility={isVisible}
             node={selectedNode}

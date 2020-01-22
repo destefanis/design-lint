@@ -21,8 +21,6 @@ function SettingsForm(props) {
   };
 
   function handleClear() {
-    console.log("handle clear");
-
     parent.postMessage(
       {
         pluginMessage: {
