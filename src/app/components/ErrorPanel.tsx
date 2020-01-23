@@ -36,7 +36,10 @@ function ErrorPanel(props) {
   });
 
   let activeId = props.errorArray.find(e => e.id === node.id);
-  let errors = activeId.errors;
+  let errors = [];
+  if (activeId !== undefined) {
+    errors = activeId.errors;
+  }
 
   const variants = {
     open: { opacity: 1, x: 0 },
@@ -85,12 +88,6 @@ function ErrorPanel(props) {
     );
   }
 
-  // function autoNavigate() {
-  //   setTimeout(function() {
-  //     if (filteredErrorArray.length > 0) handleNextNavigation();
-  //   }, 1000);
-  // }
-
   // Open and closes the panel.
   function handleChange() {
     props.onClick();
@@ -102,7 +99,6 @@ function ErrorPanel(props) {
   }
 
   function handleSelectAll(error) {
-    // props.onIgnoredUpdate(error);
     let nodesToBeSelected = [];
 
     filteredErrorArray.forEach(node => {
@@ -116,7 +112,6 @@ function ErrorPanel(props) {
     });
 
     if (nodesToBeSelected.length) {
-      // props.onIgnoreAll(nodesToBeSelected);
       parent.postMessage(
         {
           pluginMessage: {
@@ -147,60 +142,73 @@ function ErrorPanel(props) {
     }
   }
 
+  // We need an conditional statement for rendering in case the user deletes the selected layer.
   return (
     <React.Fragment>
-      <motion.div
-        className={`error-panel`}
-        animate={isVisible ? "open" : "closed"}
-        transition={{ duration: 0.3, type: "tween" }}
-        variants={variants}
-      >
-        <div className="name-wrapper">
-          <h2 className="node-name">{node.name.substring(0, 46)}</h2>
-        </div>
+      {activeId !== undefined ? (
+        <motion.div
+          className={`error-panel`}
+          animate={isVisible ? "open" : "closed"}
+          transition={{ duration: 0.3, type: "tween" }}
+          variants={variants}
+        >
+          <div className="name-wrapper">
+            <h2 className="node-name">{node.name.substring(0, 46)}</h2>
+          </div>
 
-        {errors.length ? (
-          <React.Fragment>
-            <h4 className="error-label">Errors — {errors.length}</h4>
-            <ErrorList
-              onIgnoredUpdate={handleIgnoreChange}
-              onIgnoreAll={handleIgnoreAll}
-              onSelectAll={handleSelectAll}
-              errors={errors}
+          {errors.length ? (
+            <React.Fragment>
+              <h4 className="error-label">Errors — {errors.length}</h4>
+              <ErrorList
+                onIgnoredUpdate={handleIgnoreChange}
+                onIgnoreAll={handleIgnoreAll}
+                onSelectAll={handleSelectAll}
+                errors={errors}
+              />
+            </React.Fragment>
+          ) : (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 1, y: -10, scale: 0 }}
+                className="success-message"
+              >
+                <div className="success-shape">
+                  <img
+                    className="success-icon"
+                    src={require("../assets/smile.svg")}
+                  />
+                </div>
+                All errors fixed!
+              </motion.div>
+            </AnimatePresence>
+          )}
+          <div className="button-wrapper">
+            <PrevButton
+              filteredErrorArray={filteredErrorArray}
+              onHandleNav={handlePrevNavigation}
+              activeId={activeId}
             />
-          </React.Fragment>
-        ) : (
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 1, y: -10, scale: 0 }}
-              className="success-message"
-            >
-              <div className="success-shape">
-                <img
-                  className="success-icon"
-                  src={require("../assets/smile.svg")}
-                />
-              </div>
-              All errors fixed!
-            </motion.div>
-          </AnimatePresence>
-        )}
-        <div className="button-wrapper">
-          <PrevButton
-            filteredErrorArray={filteredErrorArray}
-            onHandleNav={handlePrevNavigation}
-            activeId={activeId}
-          />
-          <NextButton
-            filteredErrorArray={filteredErrorArray}
-            onHandleNav={handleNextNavigation}
-            activeId={activeId}
-          />
-        </div>
-      </motion.div>
-
+            <NextButton
+              filteredErrorArray={filteredErrorArray}
+              onHandleNav={handleNextNavigation}
+              activeId={activeId}
+            />
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          className={`error-panel`}
+          animate={isVisible ? "open" : "closed"}
+          transition={{ duration: 0.3, type: "tween" }}
+          variants={variants}
+        >
+          <div className="name-wrapper">
+            <h2 className="node-name">Node is missing or has been deleted</h2>
+          </div>
+        </motion.div>
+      )}
       {isVisible ? (
         <div className="overlay" onClick={handleChange}></div>
       ) : null}
