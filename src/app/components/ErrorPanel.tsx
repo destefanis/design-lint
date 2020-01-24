@@ -2,8 +2,9 @@ import * as React from "react";
 import ErrorList from "./ErrorList";
 import NextButton from "./NextButton";
 import PrevButton from "./PrevButton";
+import PanelHeader from "./PanelHeader";
 import { motion, AnimatePresence } from "framer-motion";
-import "../styles/error-panel.css";
+import "../styles/panel.css";
 
 function ErrorPanel(props) {
   const isVisible = props.visibility;
@@ -147,14 +148,15 @@ function ErrorPanel(props) {
     <React.Fragment>
       {activeId !== undefined ? (
         <motion.div
-          className={`error-panel`}
+          className={`panel`}
           animate={isVisible ? "open" : "closed"}
           transition={{ duration: 0.3, type: "tween" }}
           variants={variants}
         >
-          <div className="name-wrapper">
-            <h2 className="node-name">{node.name.substring(0, 46)}</h2>
-          </div>
+          <PanelHeader
+            title={node.name}
+            handleHide={handleChange}
+          ></PanelHeader>
 
           {errors.length ? (
             <React.Fragment>
@@ -199,7 +201,7 @@ function ErrorPanel(props) {
         </motion.div>
       ) : (
         <motion.div
-          className={`error-panel`}
+          className={`panel`}
           animate={isVisible ? "open" : "closed"}
           transition={{ duration: 0.3, type: "tween" }}
           variants={variants}

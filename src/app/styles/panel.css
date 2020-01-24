@@ -1,4 +1,4 @@
-.error-panel {
+.panel {
   height: 100%;
   width: 320px;
   position: absolute;
@@ -10,6 +10,28 @@
   display: flex;
   flex-flow: column;
   box-shadow: 8px 0 16px rgba(0, 0, 0, 0.16);
+}
+
+.panel__header {
+  display: flex;
+  align-content: center;
+  padding: 8px 12px 8px 8px;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+
+.panel__action {
+  margin-right: 8px;
+}
+
+.panel__title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
 }
 
 .is-visible {
@@ -36,31 +58,6 @@
   100% {
     opacity: 0.5;
   }
-}
-
-.name-wrapper {
-  display: flex;
-  flex-flow: row;
-  align-content: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.name-icon {
-  margin: auto;
-}
-
-.name-icon img {
-  height: 14px;
-  width: 14px;
-}
-
-.node-name {
-  flex: auto;
-  margin-bottom: auto;
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
 }
 
 .error-label {

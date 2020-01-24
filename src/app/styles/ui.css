@@ -16,6 +16,10 @@ button {
   outline: none;
 }
 
+button:hover {
+  background: #eee;
+}
+
 #create {
   box-shadow: none;
   background: #18a0fb;
@@ -26,7 +30,7 @@ button {
   display: flex;
   flex-flow: column nowrap;
   width: 100%;
-  height: 600px;
+  height: 100vh;
 }
 
 .list {
@@ -129,10 +133,6 @@ button {
   opacity: 1;
 }
 
-.list-flex-row:hover .list-icon {
-  /* opacity: 1; */
-}
-
 .list-icon {
   text-align: center;
   width: 16px;
@@ -154,10 +154,6 @@ button {
   margin: 0;
   -webkit-padding-start: 0;
   padding: 0 0 0 24px;
-}
-
-.sub-list .list-flex-row {
-  /* padding: 0 24px; */
 }
 
 .frame {

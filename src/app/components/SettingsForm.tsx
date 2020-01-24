@@ -47,7 +47,7 @@ function SettingsForm(props) {
           onChange={e => setRadiusValue(e.target.value)}
         />
       </form>
-      <div className="button button--dark" onClick={handleClear}>
+      <div className="button button--primary" onClick={handleClear}>
         Reset border radius
       </div>
     </div>

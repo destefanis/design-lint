@@ -7,7 +7,7 @@ import {
   checkType
 } from "./lintingFunctions";
 
-figma.showUI(__html__, { width: 360, height: 600 });
+figma.showUI(__html__, { width: 360, height: 520 });
 
 let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree = [];
@@ -150,7 +150,7 @@ figma.ui.onmessage = msg => {
   }
 
   // Serialize nodes to pass back to the UI.
-  function seralizeNodes(nodes) {
+  function serializeNodes(nodes) {
     let serializedNodes = JSON.stringify(nodes, [
       "name",
       "type",
@@ -172,7 +172,7 @@ figma.ui.onmessage = msg => {
       let newObject = {};
 
       // Give it the existing node id.
-      newObject.id = node.id;
+      newObject["id"] = node.id;
 
       // Don't lint locked layers or the children/grandchildren of locked layers.
       if (lockedParentNode === undefined && node.locked === true) {
@@ -186,9 +186,9 @@ figma.ui.onmessage = msg => {
       }
 
       if (isLayerLocked === true) {
-        newObject.errors = [];
+        newObject["errors"] = [];
       } else {
-        newObject.errors = determineType(node);
+        newObject["errors"] = determineType(node);
       }
 
       // Recursively run this function to flatten out children and grandchildren nodes
@@ -197,9 +197,9 @@ figma.ui.onmessage = msg => {
           childArray.push(childNode.id);
         });
 
-        newObject.children = childArray;
+        newObject["children"] = childArray;
 
-        // If the layer is locked, pass the optional paramater to the recrusive Lint
+        // If the layer is locked, pass the optional parameter to the recursive Lint
         // function to indicate this layer is locked.
         if (isLayerLocked === true) {
           errorArray.push(...lint(node["children"], true));
@@ -214,7 +214,7 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
-  // Initalize the app
+  // Initialize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
       figma.notify("Select a frame(s) to get started", { timeout: 2000 });
@@ -229,7 +229,7 @@ figma.ui.onmessage = msg => {
       // Pass the array back to the UI to be displayed.
       figma.ui.postMessage({
         type: "complete",
-        message: seralizeNodes(nodes),
+        message: serializeNodes(nodes),
         errors: lint(nodes)
       });
 

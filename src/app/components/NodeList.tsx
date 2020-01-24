@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
@@ -102,7 +101,7 @@ function NodeList(props) {
         <TotalErrorCount errorArray={filteredErrorArray} />
         <div className="bottom-controls-row">
           <div
-            className="button button--dark"
+            className="button button--primary"
             onClick={event => {
               event.stopPropagation();
               handleOpenFirstError();
@@ -111,7 +110,7 @@ function NodeList(props) {
             Jump to next error →
           </div>
           <span
-            className="control-button"
+            className="button--control"
             onClick={event => {
               event.stopPropagation();
               handleRefreshSelection();
@@ -124,7 +123,7 @@ function NodeList(props) {
             />
           </span>
           <span
-            className="control-button"
+            className="button--control"
             onClick={event => {
               event.stopPropagation();
               handlePanelVisible(true);
