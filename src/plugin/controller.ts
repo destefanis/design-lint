@@ -297,11 +297,12 @@ figma.ui.onmessage = msg => {
   function lintComponentRules(node) {
     let errors = [];
 
-    if (node.remote === false) {
-      errors.push(
-        createErrorObject(node, "component", "Component isn't from library")
-      );
-    }
+    // Example of how we can make a custom rule specifically for components
+    // if (node.remote === false) {
+    //   errors.push(
+    //     createErrorObject(node, "component", "Component isn't from library")
+    //   );
+    // }
 
     checkFills(node, errors);
     checkRadius(node, errors, borderRadiusArray);
