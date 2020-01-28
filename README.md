@@ -1,6 +1,6 @@
 # Design Lint
 
-[Design Lint Gif Example](https://github.com/destefanis/design-lint/blob/master/assets/lint-example.gif)
+![Design Lint Gif Example](https://github.com/destefanis/design-lint/blob/master/assets/lint-example.gif)
 
 
 Find and fix errors in your designs with Design Lint, a plugin for Figma.
@@ -19,9 +19,9 @@ While it's running, Design Lint will update automatically as you fix errors. Cli
 * Need to skip layers like illustrations? Locked layers in Figma will be skipped from linting.
 * Custom border radius values can be set within settings and are stored in Client Storage.
 
-[Design Lint Ignore Example](https://github.com/destefanis/design-lint/blob/master/assets/ignore-example.gif)
+![Design Lint Ignore Example](https://github.com/destefanis/design-lint/blob/master/assets/ignore-example.gif)
 
-[Design Lint Selection Example](https://github.com/destefanis/design-lint/blob/master/assets/new-selection.gif)
+![Design Lint Selection Example](https://github.com/destefanis/design-lint/blob/master/assets/new-selection.gif)
 
 Because Design Lint doesn't try and manage your library, there's no logging in, accounts, or syncing. This open source plugin is designed to make fixing errors easy and let you get back to designing. Want to write specific rules for your own organization? Feel free to fork this repo and edit to your liking!
 
