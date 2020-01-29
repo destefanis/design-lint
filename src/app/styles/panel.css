@@ -16,9 +16,7 @@
   display: flex;
   align-content: center;
   padding: 8px 12px 8px 8px;
-  border-bottom: 1px solid #eaeaea;
   margin-bottom: 8px;
-  background: #fafafa;
 }
 
 .panel__action {
@@ -28,7 +26,7 @@
 .panel__title {
   flex: 1;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
   display: flex;
   align-items: center;
@@ -205,12 +203,14 @@
   font-size: 12px;
 }
 
-.button--next {
-  margin-left: 16px;
+.button--next,
+.button--right {
+  margin-left: 8px;
 }
 
-.button--prev {
-  margin-right: 6px;
+.button--previous,
+.button--left {
+  margin-right: 8px;
 }
 
 .button--disabled {
@@ -224,6 +224,16 @@
 
 .settings-wrapper {
   padding: 4px 16px 16px;
+}
+
+.form-button-group {
+  padding-top: 8px;
+  display: flex;
+  flex-flow: row;
+}
+
+.form-button-group .button {
+  flex: 1 1 50%;
 }
 
 .settings-row {

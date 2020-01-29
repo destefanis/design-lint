@@ -23,7 +23,7 @@
 }
 
 .button--primary {
-  padding: 8px 0;
+  padding: 12px 0;
   width: 100%;
   font-size: 12px;
   background: #fff;
@@ -40,11 +40,18 @@
 
 .button--control {
   position: relative;
-  padding: 8px 14px;
+  padding: 12px 14px;
   margin-left: 16px;
   border-radius: 6px;
   border: 1px solid #888;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.button--confirm {
+  margin-bottom: 8px;
 }
 
 .button--control:hover .tooltip {

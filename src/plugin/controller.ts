@@ -7,7 +7,7 @@ import {
   checkType
 } from "./lintingFunctions";
 
-figma.showUI(__html__, { width: 360, height: 520 });
+figma.showUI(__html__, { width: 360, height: 580 });
 
 let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree = [];

@@ -67,6 +67,13 @@ function SettingsPanel(props) {
               </React.Fragment>
             )}
           </div>
+          <div className="settings-row">
+            <h3 className="settings-title">How To Skip Layers</h3>
+            <p className="settings-label">
+              If you have an illustration or set of layers you want the linter
+              to ignore, lock them in the Figma layer list.
+            </p>
+          </div>
         </div>
       </motion.div>
 
