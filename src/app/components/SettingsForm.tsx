@@ -47,7 +47,7 @@ function SettingsForm(props) {
           <input
             type="input"
             className="input-icon__input"
-            value={radiusValue}
+            defaultValue={props.borderRadiusValues}
             onChange={e => setRadiusValue(e.target.value)}
             placeholder="2, 4, 6, 8"
           />
