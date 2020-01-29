@@ -26,7 +26,7 @@ function EmptyState(props) {
           Select a frame or multiple frames
         </h3>
       </div>
-      <div className="button button--dark" onClick={onRunApp}>
+      <div className="button button--primary" onClick={onRunApp}>
         Run Design Lint
       </div>
     </motion.div>

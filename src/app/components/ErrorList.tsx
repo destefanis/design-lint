@@ -4,12 +4,6 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import Truncate from "react-truncate";
 
 function ErrorList(props) {
-  const spring = {
-    type: "spring",
-    damping: 20,
-    stiffness: 200
-  };
-
   // Pass the error we want to ignore back to our parent.
   const handleIgnoreClick = error => {
     props.onIgnoredUpdate(error);

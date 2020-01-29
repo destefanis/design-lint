@@ -13,7 +13,10 @@
         "interface-name": false,
         "quotemark": false,
         "curly": false,
-        "member-access": [true, "no-public"],
+        "member-access": [
+            true,
+            "no-public"
+        ],
         "semicolon": false,
         "no-trailing-whitespace": false,
         "no-console": false,

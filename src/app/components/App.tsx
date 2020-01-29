@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import ErrorPanel from "./ErrorPanel";
 import NodeList from "./NodeList";
 import Preloader from "./Preloader";
@@ -8,8 +8,6 @@ import "../styles/reset.css";
 import "../styles/ui.css";
 import "../styles/empty-state.css";
 import { AnimatePresence } from "../../../node_modules/framer-motion";
-
-declare function require(path: string): any;
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
@@ -29,7 +27,7 @@ const App = ({}) => {
     24,
     32
   ]);
-  const [intialLoad, setInitialLoad] = React.useState(false);
+  const [initialLoad, setInitialLoad] = React.useState(false);
   const [timedLoad, setTimeLoad] = React.useState(false);
 
   let newWindowFocus = false;
@@ -126,7 +124,7 @@ const App = ({}) => {
   React.useEffect(() => {
     // Update client storage so the next time we run the app
     // we don't have to ignore our errors again.
-    if (intialLoad !== false && ignoredErrorArray.length) {
+    if (initialLoad !== false && ignoredErrorArray.length) {
       parent.postMessage(
         {
           pluginMessage: {
@@ -194,7 +192,7 @@ const App = ({}) => {
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
-        setSelectedNode(selectedNode => JSON.parse(message));
+        setSelectedNode(() => JSON.parse(message));
 
         // Ask the controller to lint the layers for errors.
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");

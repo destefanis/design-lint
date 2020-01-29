@@ -1,3 +1,57 @@
+.button--icon {
+  height: 32px;
+  width: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: unset;
+  cursor: pointer;
+  font-size: 18px;
+  background: transparent;
+}
+
+.button--icon:hover {
+  background: #eee;
+}
+
+.button--icon:active {
+  transform: scale3d(0.94, 0.94, 1);
+}
+
+.button--primary {
+  padding: 8px 0;
+  width: 100%;
+  font-size: 12px;
+  background: #fff;
+  color: #333;
+  border: 1px solid #888;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button--primary:hover {
+  background: #eee;
+}
+
+.button--control {
+  position: relative;
+  padding: 8px 14px;
+  margin-left: 16px;
+  border-radius: 6px;
+  border: 1px solid #888;
+  cursor: pointer;
+}
+
+.button--control:hover .tooltip {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
 .total-error-count {
   position: relative;
   align-self: flex-end;
@@ -40,32 +94,6 @@
   border-top: 1px solid #e5e5e5;
   display: flex;
   flex-direction: row;
-}
-
-.button--dark {
-  padding: 12px 0;
-  width: 100%;
-  font-size: 12px;
-  background: #fff;
-  color: #333;
-  border: 1px solid #333;
-  text-align: center;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.control-button {
-  position: relative;
-  padding: 13px 14px;
-  margin-left: 16px;
-  border-radius: 6px;
-  border: 1px solid #333;
-  cursor: pointer;
-}
-
-.control-button:hover .tooltip {
-  transform: translateY(0) scale(1);
-  opacity: 1;
 }
 
 .tooltip {

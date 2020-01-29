@@ -27,7 +27,7 @@ export function determineFill(fills) {
   fills.forEach(fill => {
     if (fill.type === "SOLID") {
       let rgbObj = convertColor(fill.color);
-      fillValues.push(RGBToHex(rgbObj.r, rgbObj.g, rgbObj.b));
+      fillValues.push(RGBToHex(rgbObj["r"], rgbObj["g"], rgbObj["b"]));
     } else if (fill.type === "IMAGE") {
       fillValues.push("Image - " + fill.imageHash);
     } else {
@@ -36,9 +36,9 @@ export function determineFill(fills) {
         let gradientColorObject = convertColor(gradientStops.color);
         gradientValues.push(
           RGBToHex(
-            gradientColorObject.r,
-            gradientColorObject.g,
-            gradientColorObject.b
+            gradientColorObject["r"],
+            gradientColorObject["g"],
+            gradientColorObject["b"]
           )
         );
       });
@@ -149,9 +149,9 @@ export function checkEffects(node, errors) {
         if (effect.color) {
           let effectsFill = convertColor(effect.color);
           effectsObject.fill = RGBToHex(
-            effectsFill.r,
-            effectsFill.g,
-            effectsFill.b
+            effectsFill["r"],
+            effectsFill["g"],
+            effectsFill["b"]
           );
           effectsObject.offsetX = effect.offset.x;
           effectsObject.offsetY = effect.offset.y;
@@ -258,7 +258,7 @@ const convertColor = color => {
     const [key, value] = cf;
 
     if (["r", "g", "b"].includes(key)) {
-      figmaColor[key] = (value * 255).toFixed(0);
+      figmaColor[key] = (255 * (value as number)).toFixed(0);
     }
     if (key === "a") {
       figmaColor[key] = value;
@@ -277,18 +277,4 @@ function RGBToHex(r, g, b) {
   if (b.length == 1) b = "0" + b;
 
   return "#" + r + g + b;
-}
-
-function RGBAToHexA(r, g, b, a) {
-  r = Number(r).toString(16);
-  g = Number(g).toString(16);
-  b = Number(b).toString(16);
-  a = Math.round(a * 255).toString(16);
-
-  if (r.length == 1) r = "0" + r;
-  if (g.length == 1) g = "0" + g;
-  if (b.length == 1) b = "0" + b;
-  if (a.length == 1) a = "0" + a;
-
-  return "#" + r + g + b + a;
 }
