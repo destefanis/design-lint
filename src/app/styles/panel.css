@@ -12,24 +12,41 @@
   box-shadow: 8px 0 16px rgba(0, 0, 0, 0.16);
 }
 
-.panel__header {
+.panel-header {
   display: flex;
   align-content: center;
   padding: 8px 12px 8px 8px;
   margin-bottom: 8px;
+  border-bottom: 1px solid #e5e5e5;
 }
 
-.panel__action {
+.panel-header__action {
   margin-right: 8px;
 }
 
-.panel__title {
+.panel-header__title {
   flex: 1;
   font-weight: 600;
   font-size: 14px;
   color: #333;
   display: flex;
   align-items: center;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.panel-footer {
+  border-top: 1px solid #e5e5e5;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.panel-footer .button {
+  margin: 0 6px;
 }
 
 .is-visible {
@@ -60,10 +77,12 @@
 
 .error-label {
   color: #fe6262;
-  margin-bottom: 12px;
-  margin-left: 16px;
-  font-size: 13px;
+  height: 32px;
+  padding: 0 16px;
   font-weight: 500;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .errors-list {
@@ -177,51 +196,6 @@
   border-radius: 4px;
 }
 
-.button-wrapper {
-  align-self: flex-end;
-  justify-self: flex-end;
-  margin-top: auto;
-  width: calc(100% - 32px);
-  display: flex;
-  flex-flow: row;
-  padding: 16px;
-}
-
-.button {
-  box-shadow: none;
-  border: none;
-  background-color: #fff;
-  padding: 12px 16px;
-  margin: 0;
-  border-radius: 6px;
-  color: #333;
-  font-size: 14px;
-  width: 100%;
-  cursor: pointer;
-  border: 1px solid #e5e5e5;
-  transition: border-color 150ms ease;
-  font-size: 12px;
-}
-
-.button--next,
-.button--right {
-  margin-left: 8px;
-}
-
-.button--previous,
-.button--left {
-  margin-right: 8px;
-}
-
-.button--disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.button:active {
-  border-color: #333;
-}
-
 .settings-wrapper {
   padding: 4px 16px 16px;
 }
@@ -230,10 +204,6 @@
   padding-top: 8px;
   display: flex;
   flex-flow: row;
-}
-
-.form-button-group .button {
-  flex: 1 1 50%;
 }
 
 .settings-row {
@@ -245,6 +215,7 @@
   font-weight: 500;
   color: #333333;
   padding-bottom: 8px;
+  margin: 0;
 }
 
 .settings-label {

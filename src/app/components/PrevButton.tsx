@@ -19,7 +19,7 @@ function PrevButton(props) {
     prevButton = (
       <button
         onClick={selectPrev}
-        className="button button--primary button--previous"
+        className="button button--primary button--previous button--flex"
       >
         ← Previous
       </button>
@@ -29,7 +29,7 @@ function PrevButton(props) {
       <button
         onClick={selectPrev}
         disabled
-        className="button button--primary button--disabled button--next"
+        className="button button--primary button--disabled button--next button--flex"
       >
         ← Previous
       </button>

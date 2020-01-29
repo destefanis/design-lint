@@ -1,7 +1,6 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import Truncate from "react-truncate";
 
 function ErrorList(props) {
   // Pass the error we want to ignore back to our parent.
@@ -45,11 +44,7 @@ function ErrorList(props) {
         </span>
       </div>
 
-      {error.value ? (
-        <Truncate line={1} width={248} className="current-value">
-          {error.value}
-        </Truncate>
-      ) : null}
+      {error.value ? <div className="current-value">{error.value}</div> : null}
 
       <ContextMenu id={error.node.id + error.value}>
         <MenuItem

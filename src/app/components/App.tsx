@@ -1,13 +1,15 @@
 import * as React from "react";
 import { useState } from "react";
-import ErrorPanel from "./ErrorPanel";
+import { AnimatePresence } from "../../../node_modules/framer-motion";
+
 import NodeList from "./NodeList";
 import Preloader from "./Preloader";
 import EmptyState from "./EmptyState";
-import "../styles/reset.css";
+import Panel from "./Panel";
+
+import "../styles/figma.ds.css";
 import "../styles/ui.css";
 import "../styles/empty-state.css";
-import { AnimatePresence } from "../../../node_modules/framer-motion";
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
@@ -204,42 +206,40 @@ const App = ({}) => {
   }, []);
 
   return (
-    <div className="wrapper">
-      <div className="flex-wrapper">
-        <AnimatePresence>
-          {activeNodeIds.length !== 0 ? (
-            <NodeList
-              onErrorUpdate={updateActiveError}
-              onVisibleUpdate={updateVisible}
-              onSelectedListUpdate={updateSelectedList}
-              onRefreshSelection={onRunApp}
-              visibility={isVisible}
-              nodeArray={nodeArray}
-              errorArray={errorArray}
-              ignoredErrorArray={ignoredErrorArray}
-              selectedListItems={selectedListItems}
-              activeNodeIds={activeNodeIds}
-              borderRadiusValues={borderRadiusValues}
-            />
-          ) : timedLoad === false ? (
-            <Preloader />
-          ) : (
-            <EmptyState onHandleRunApp={onRunApp} />
-          )}
-        </AnimatePresence>
-        {Object.keys(activeError).length !== 0 && errorArray.length ? (
-          <ErrorPanel
-            visibility={isVisible}
-            node={selectedNode}
-            errorArray={errorArray}
-            onIgnoredUpdate={updateIgnoredErrors}
-            onIgnoreAll={ignoreAll}
-            ignoredErrors={ignoredErrorArray}
-            onClick={updateVisibility}
+    <div className="container">
+      <AnimatePresence>
+        {activeNodeIds.length !== 0 ? (
+          <NodeList
+            onErrorUpdate={updateActiveError}
+            onVisibleUpdate={updateVisible}
             onSelectedListUpdate={updateSelectedList}
+            onRefreshSelection={onRunApp}
+            visibility={isVisible}
+            nodeArray={nodeArray}
+            errorArray={errorArray}
+            ignoredErrorArray={ignoredErrorArray}
+            selectedListItems={selectedListItems}
+            activeNodeIds={activeNodeIds}
+            borderRadiusValues={borderRadiusValues}
           />
-        ) : null}
-      </div>
+        ) : timedLoad === false ? (
+          <Preloader />
+        ) : (
+          <EmptyState onHandleRunApp={onRunApp} />
+        )}
+      </AnimatePresence>
+      {Object.keys(activeError).length !== 0 && errorArray.length ? (
+        <Panel
+          visibility={isVisible}
+          node={selectedNode}
+          errorArray={errorArray}
+          onIgnoredUpdate={updateIgnoredErrors}
+          onIgnoreAll={ignoreAll}
+          ignoredErrors={ignoredErrorArray}
+          onClick={updateVisibility}
+          onSelectedListUpdate={updateSelectedList}
+        />
+      ) : null}
     </div>
   );
 };

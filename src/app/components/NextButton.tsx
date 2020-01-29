@@ -19,7 +19,7 @@ function NextButton(props) {
     nextButton = (
       <button
         onClick={selectNext}
-        className="button button--primary button--next"
+        className="button button--primary button--next button--flex"
       >
         Next →
       </button>
@@ -29,7 +29,7 @@ function NextButton(props) {
       <button
         onClick={selectNext}
         disabled
-        className="button button--primary button--disabled button--next"
+        className="button button--primary button--disabled button--next button--flex"
       >
         Next →
       </button>
