@@ -143,18 +143,18 @@ body {
   justify-content: center;
 }
 
+.badge.badge-em {
+  padding: 2px 4px;
+}
+
 .dot {
   position: absolute;
-  content: "";
-  right: 23px;
+  right: 21px;
   background: #fe6262;
-  color: #333333;
-  height: 2px;
-  min-width: 2px;
-  padding: 2px;
+  height: 6px;
+  width: 6px;
   border-radius: 50%;
-  line-height: 16px;
-  text-align: center;
+  display: block;
 }
 
 .list-flex-row:hover {
@@ -229,4 +229,50 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.actions-row button {
+  margin-right: 12px;
+}
+
+.actions-row button:last-child {
+  margin-right: 0;
+}
+
+/* Context menu */
+
+.menu {
+  position: relative;
+}
+
+.menu-trigger {
+  display: block;
+  position: relative;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-trigger:hover {
+  background: #eee;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.menu-trigger img {
+  height: 20px;
+  width: 20px;
+}
+
+.menu-items {
+  position: absolute;
+  right: 0;
+  top: 32px;
+  width: 132px;
+}
+
+.menu-items .select-menu__list-item {
+  padding-left: 12px;
 }

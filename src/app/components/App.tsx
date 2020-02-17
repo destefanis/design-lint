@@ -20,7 +20,7 @@ const App = ({}) => {
   const [nodeArray, setNodeArray] = useState([]);
   const [selectedListItems, setSelectedListItem] = React.useState([]);
   const [activeNodeIds, setActiveNodeIds] = React.useState([]);
-  const [borderRadiusValues, setborderRadiusValues] = useState([
+  const [borderRadiusValues, setBorderRadiusValues] = useState([
     0,
     2,
     4,
@@ -187,7 +187,7 @@ const App = ({}) => {
       } else if (type === "fetched border radius") {
         // Update border radius values from storage
         let clientStorage = JSON.parse(storage);
-        setborderRadiusValues([...clientStorage]);
+        setBorderRadiusValues([...clientStorage]);
       } else if (type === "reset storage") {
         let clientStorage = JSON.parse(storage);
         setIgnoreErrorArray([...clientStorage]);

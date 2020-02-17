@@ -2,8 +2,6 @@ import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import ErrorList from "./ErrorList";
-import NextButton from "./NextButton";
-import PrevButton from "./PrevButton";
 import PanelHeader from "./PanelHeader";
 
 import "../styles/panel.css";
@@ -192,16 +190,21 @@ function Panel(props) {
           </div>
 
           <div className="panel-footer">
-            <PrevButton
-              filteredErrorArray={filteredErrorArray}
-              onHandleNav={handlePrevNavigation}
-              activeId={activeId}
-            />
-            <NextButton
-              filteredErrorArray={filteredErrorArray}
-              onHandleNav={handleNextNavigation}
-              activeId={activeId}
-            />
+            <button
+              onClick={handlePrevNavigation}
+              disabled={filteredErrorArray.length <= 1}
+              className="button button--secondary button--flex"
+            >
+              ← Previous
+            </button>
+
+            <button
+              onClick={handleNextNavigation}
+              disabled={filteredErrorArray.length <= 1}
+              className="button button--secondary button--flex"
+            >
+              Next →
+            </button>
           </div>
         </motion.div>
       ) : (

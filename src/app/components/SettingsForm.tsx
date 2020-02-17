@@ -47,20 +47,19 @@ function SettingsForm(props) {
           <input
             type="input"
             className="input-icon__input"
-            defaultValue={props.borderRadiusValues}
+            value={radiusValue}
             onChange={e => setRadiusValue(e.target.value)}
-            placeholder="2, 4, 6, 8"
+            placeholder={props.borderRadiusValues}
           />
         </div>
       </div>
       <div className="form-button-group">
-        <div className="button button--primary" onClick={handleSubmit}>
+        <button className="button button--primary" onClick={handleSubmit}>
           Save
-        </div>
-        <div className="w12"></div>
-        <div className="button button--secondary" onClick={handleClear}>
+        </button>
+        <button className="button button--secondary" onClick={handleClear}>
           Reset
-        </div>
+        </button>
       </div>
     </div>
   );

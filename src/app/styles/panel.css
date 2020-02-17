@@ -31,6 +31,10 @@
   color: #333;
   display: flex;
   align-items: center;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel-body {
@@ -174,28 +178,6 @@
   height: 32px;
   width: 32px;
 }
-
-.react-contextmenu {
-  background: #2c2c2c;
-  border-radius: 4px;
-  box-shadow: 0 6px 11px rgba(0, 0, 0, 0.11);
-  font-size: 12px;
-  font-weight: 300;
-}
-
-.react-contextmenu-item {
-  padding: 8px 32px;
-  cursor: pointer;
-  background-color: transparent;
-  color: #fff;
-  transition: 150ms ease;
-}
-
-.react-contextmenu-item:hover {
-  background-color: #18a0fb;
-  border-radius: 4px;
-}
-
 .settings-wrapper {
   padding: 4px 16px 16px;
 }
@@ -204,6 +186,10 @@
   padding-top: 8px;
   display: flex;
   flex-flow: row;
+}
+
+.form-button-group button {
+  margin-right: 12px;
 }
 
 .settings-row {

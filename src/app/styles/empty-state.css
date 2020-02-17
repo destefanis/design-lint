@@ -15,8 +15,8 @@
 }
 
 .empty-state__image {
-  height: 56px;
-  width: 56px;
+  height: 64px;
+  width: 64px;
   background-color: #18a0fb;
   border-radius: 100px;
   margin-bottom: 24px;
@@ -52,7 +52,7 @@
   width: 16px;
   border-radius: 16px;
   background: #18a0fb;
-  margin: 6px;
+  margin: 8px;
   transform: scale(0.8);
   opacity: 0.8;
   transform-origin: center;

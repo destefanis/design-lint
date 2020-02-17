@@ -20,7 +20,7 @@ function TotalErrorCount(props) {
       {totalErrorCount > 0 ? (
         <div className="totals-row">
           <div className="section-title">Total Errors:</div>
-          <span className="error-count">{totalErrorCount}</span>
+          <span className="error-count badge badge-em">{totalErrorCount}</span>
         </div>
       ) : (
         <div className="totals-row totals-row--success">

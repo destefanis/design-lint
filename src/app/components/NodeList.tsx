@@ -108,7 +108,6 @@ function NodeList(props) {
                 handlePanelVisible(true);
               }}
             ></button>
-            <div className="w12"></div>
             <button
               className="button button--secondary"
               onClick={event => {
@@ -118,7 +117,6 @@ function NodeList(props) {
             >
               Re-run
             </button>
-            <div className="w12"></div>
             <button
               className="button button--primary button--flex"
               onClick={event => {
