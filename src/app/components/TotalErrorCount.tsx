@@ -26,7 +26,7 @@ function TotalErrorCount(props) {
         <div className="totals-row totals-row--success">
           <div className="section-title">
             {" "}
-            🥳 Yay! No errors in the selection.
+            🎉 Yay! No errors in the selection.
           </div>
           <span className="error-count success">
             <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
