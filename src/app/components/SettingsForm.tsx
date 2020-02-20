@@ -33,33 +33,33 @@ function SettingsForm(props) {
 
   return (
     <div className="settings-row">
-      <form className="settings-form" onSubmit={handleSubmit}>
-        <h3 className="settings-title">Border Radius</h3>
-        <label className="settings-label">
+      <div className="settings-form" onSubmit={handleSubmit}>
+        <h3 className="settings-title">Border radius</h3>
+        <div className="settings-label">
           Set your preferred border radius values separated by commas (ex: "2,
           4, 6, 8").
-        </label>
-        <input
-          type="text"
-          placeholder={props.borderRadiusValues}
-          className="settings-input"
-          value={radiusValue}
-          onChange={e => setRadiusValue(e.target.value)}
-        />
-      </form>
+        </div>
+
+        <div className="input-icon">
+          <div className="input-icon__icon">
+            <div className="icon icon--corner-radius icon--black-3"></div>
+          </div>
+          <input
+            type="input"
+            className="input-icon__input"
+            value={radiusValue}
+            onChange={e => setRadiusValue(e.target.value)}
+            placeholder={props.borderRadiusValues}
+          />
+        </div>
+      </div>
       <div className="form-button-group">
-        <div
-          className="button button--primary button--left"
-          onClick={handleSubmit}
-        >
+        <button className="button button--primary" onClick={handleSubmit}>
           Save
-        </div>
-        <div
-          className="button button--primary button--right"
-          onClick={handleClear}
-        >
+        </button>
+        <button className="button button--secondary" onClick={handleClear}>
           Reset
-        </div>
+        </button>
       </div>
     </div>
   );

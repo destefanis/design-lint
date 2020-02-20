@@ -43,36 +43,34 @@ function SettingsPanel(props) {
         <div className="settings-wrapper">
           <SettingsForm borderRadiusValues={props.borderRadiusValues} />
           <div className="settings-row">
-            <h3 className="settings-title">Ignored Errors</h3>
+            <h3 className="settings-title">Ignored errors</h3>
             {props.ignoredErrorArray.length > 0 ? (
               <React.Fragment>
-                <p className="settings-label">
-                  {props.ignoredErrorArray.length} errors are being ignored.
-                </p>
-                <div
+                <div className="settings-label">
+                  {props.ignoredErrorArray.length} errors are being ignored in
+                  selection.
+                </div>
+                <button
                   className="button button--primary"
                   onClick={clearIgnoredErrors}
                 >
-                  Clear ignored errors
-                </div>
+                  Reset ignored errors
+                </button>
               </React.Fragment>
             ) : (
               <React.Fragment>
-                <p className="settings-label">
+                <div className="settings-label">
                   You haven't ignored any errors yet.
-                </p>
-                <div className="button button--primary button--disabled">
-                  Clear ignored errors
                 </div>
               </React.Fragment>
             )}
           </div>
           <div className="settings-row">
-            <h3 className="settings-title">How To Skip Layers</h3>
-            <p className="settings-label">
+            <h3 className="settings-title">How to skip layers?</h3>
+            <div className="settings-label">
               If you have an illustration or set of layers you want the linter
               to ignore, lock them in the Figma layer list.
-            </p>
+            </div>
           </div>
         </div>
       </motion.div>

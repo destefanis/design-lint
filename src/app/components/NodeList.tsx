@@ -1,9 +1,9 @@
 import * as React from "react";
 import { motion } from "framer-motion";
+
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
 import SettingsPanel from "./SettingsPanel";
-import "../styles/bottom-controls.css";
 
 function NodeList(props) {
   const [panelVisible, setPanelVisible] = React.useState(false);
@@ -87,7 +87,7 @@ function NodeList(props) {
 
     return (
       <motion.div
-        className="flex-wrapper"
+        className="page"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -24 }}
@@ -98,50 +98,42 @@ function NodeList(props) {
         }}
       >
         <ul className="list">{listItems}</ul>
-        <TotalErrorCount errorArray={filteredErrorArray} />
-        <div className="bottom-controls-row">
-          <div
-            className="button button--primary"
-            onClick={event => {
-              event.stopPropagation();
-              handleOpenFirstError();
-            }}
-          >
-            Jump to next error →
+        <div className="footer">
+          <TotalErrorCount errorArray={filteredErrorArray} />
+          <div className="actions-row">
+            <button
+              className="icon icon--adjust icon--button"
+              onClick={event => {
+                event.stopPropagation();
+                handlePanelVisible(true);
+              }}
+            ></button>
+            <button
+              className="button button--secondary"
+              onClick={event => {
+                event.stopPropagation();
+                handleRefreshSelection();
+              }}
+            >
+              Re-run
+            </button>
+            <button
+              className="button button--primary button--flex"
+              onClick={event => {
+                event.stopPropagation();
+                handleOpenFirstError();
+              }}
+            >
+              Jump to next error →
+            </button>
           </div>
-          <span
-            className="button--control"
-            onClick={event => {
-              event.stopPropagation();
-              handleRefreshSelection();
-            }}
-          >
-            <span className="tooltip">Lint a new set of layers</span>
-            <img
-              className="control-icon"
-              src={require("../assets/refresh.svg")}
-            />
-          </span>
-          <span
-            className="button--control"
-            onClick={event => {
-              event.stopPropagation();
-              handlePanelVisible(true);
-            }}
-          >
-            <span className="tooltip tooltip--settings">Settings</span>
-            <img
-              className="control-icon"
-              src={require("../assets/settings.svg")}
-            />
-          </span>
+          <SettingsPanel
+            panelVisible={panelVisible}
+            onHandlePanelVisible={handlePanelVisible}
+            ignoredErrorArray={props.ignoredErrorArray}
+            borderRadiusValues={props.borderRadiusValues}
+          />
         </div>
-        <SettingsPanel
-          panelVisible={panelVisible}
-          onHandlePanelVisible={handlePanelVisible}
-          ignoredErrorArray={props.ignoredErrorArray}
-          borderRadiusValues={props.borderRadiusValues}
-        />
       </motion.div>
     );
   } else {

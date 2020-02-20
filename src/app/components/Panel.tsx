@@ -1,12 +1,12 @@
 import * as React from "react";
-import ErrorList from "./ErrorList";
-import NextButton from "./NextButton";
-import PrevButton from "./PrevButton";
-import PanelHeader from "./PanelHeader";
 import { motion, AnimatePresence } from "framer-motion";
+
+import ErrorList from "./ErrorList";
+import PanelHeader from "./PanelHeader";
+
 import "../styles/panel.css";
 
-function ErrorPanel(props) {
+function Panel(props) {
   const isVisible = props.visibility;
   const node = props.node;
 
@@ -158,45 +158,53 @@ function ErrorPanel(props) {
             handleHide={handleChange}
           ></PanelHeader>
 
-          {errors.length ? (
-            <React.Fragment>
-              <h4 className="error-label">Errors — {errors.length}</h4>
-              <ErrorList
-                onIgnoredUpdate={handleIgnoreChange}
-                onIgnoreAll={handleIgnoreAll}
-                onSelectAll={handleSelectAll}
-                errors={errors}
-              />
-            </React.Fragment>
-          ) : (
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 1, y: -10, scale: 0 }}
-                className="success-message"
-              >
-                <div className="success-shape">
-                  <img
-                    className="success-icon"
-                    src={require("../assets/smile.svg")}
-                  />
-                </div>
-                All errors fixed!
-              </motion.div>
-            </AnimatePresence>
-          )}
-          <div className="button-wrapper">
-            <PrevButton
-              filteredErrorArray={filteredErrorArray}
-              onHandleNav={handlePrevNavigation}
-              activeId={activeId}
-            />
-            <NextButton
-              filteredErrorArray={filteredErrorArray}
-              onHandleNav={handleNextNavigation}
-              activeId={activeId}
-            />
+          <div className="panel-body">
+            {errors.length ? (
+              <React.Fragment>
+                <div className="error-label">Errors — {errors.length}</div>
+                <ErrorList
+                  onIgnoredUpdate={handleIgnoreChange}
+                  onIgnoreAll={handleIgnoreAll}
+                  onSelectAll={handleSelectAll}
+                  errors={errors}
+                />
+              </React.Fragment>
+            ) : (
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 1, y: -10, scale: 0 }}
+                  className="success-message"
+                >
+                  <div className="success-shape">
+                    <img
+                      className="success-icon"
+                      src={require("../assets/smile.svg")}
+                    />
+                  </div>
+                  All errors fixed in the selection
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </div>
+
+          <div className="panel-footer">
+            <button
+              onClick={handlePrevNavigation}
+              disabled={filteredErrorArray.length <= 1}
+              className="button button--secondary button--flex"
+            >
+              ← Previous
+            </button>
+
+            <button
+              onClick={handleNextNavigation}
+              disabled={filteredErrorArray.length <= 1}
+              className="button button--secondary button--flex"
+            >
+              Next →
+            </button>
           </div>
         </motion.div>
       ) : (
@@ -218,4 +226,4 @@ function ErrorPanel(props) {
   );
 }
 
-export default React.memo(ErrorPanel);
+export default React.memo(Panel);

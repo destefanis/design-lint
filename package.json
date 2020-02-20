@@ -10,12 +10,9 @@
 	},
 	"dependencies": {
 		"classnames": "^2.2.6",
-		"clipboard-copy": "^3.1.0",
 		"framer-motion": "^1.6.17",
 		"react": "^16.8.6",
-		"react-contextmenu": "^2.13.0",
-		"react-dom": "^16.8.6",
-		"react-truncate": "^2.4.0"
+		"react-dom": "^16.8.6"
 	},
 	"devDependencies": {
 		"@types/react": "^16.8.24",

@@ -1,10 +1,8 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import Truncate from "react-truncate";
+import Menu from "./Menu";
 
 function ErrorList(props) {
-  // Pass the error we want to ignore back to our parent.
   const handleIgnoreClick = error => {
     props.onIgnoredUpdate(error);
   };
@@ -36,47 +34,27 @@ function ErrorList(props) {
           <div className="error-description__message">{error.message}</div>
         </span>
         <span className="context-icon">
-          <ContextMenuTrigger
-            holdToDisplay={0}
-            id={error.node.id + error.value}
-          >
-            <img src={require("../assets/context.svg")} />
-          </ContextMenuTrigger>
+          <Menu
+            error={error}
+            menuItems={[
+              {
+                label: "Select All",
+                event: handleSelectAll
+              },
+              {
+                label: "Ignore",
+                event: handleIgnoreClick
+              },
+              {
+                label: "Ignore All",
+                event: handleIgnoreAll
+              }
+            ]}
+          />
         </span>
       </div>
 
-      {error.value ? (
-        <Truncate line={1} width={248} className="current-value">
-          {error.value}
-        </Truncate>
-      ) : null}
-
-      <ContextMenu id={error.node.id + error.value}>
-        <MenuItem
-          onClick={event => {
-            event.stopPropagation();
-            handleSelectAll(error);
-          }}
-        >
-          Select All
-        </MenuItem>
-        <MenuItem
-          onClick={event => {
-            event.stopPropagation();
-            handleIgnoreClick(error);
-          }}
-        >
-          Ignore
-        </MenuItem>
-        <MenuItem
-          onClick={event => {
-            event.stopPropagation();
-            handleIgnoreAll(error);
-          }}
-        >
-          Ignore All
-        </MenuItem>
-      </ContextMenu>
+      {error.value ? <div className="current-value">{error.value}</div> : null}
     </motion.li>
   ));
 

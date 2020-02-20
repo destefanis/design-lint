@@ -22,13 +22,16 @@ function EmptyState(props) {
         <div className="empty-state__image">
           <img className="layer-icon" src={require("../assets/layers.svg")} />
         </div>
-        <h3 className="empty-state__title">
+        <div className="empty-state__title">
           Select a frame or multiple frames
-        </h3>
+        </div>
       </div>
-      <div className="button button--primary" onClick={onRunApp}>
+      <button
+        className="button button--primary button--full"
+        onClick={onRunApp}
+      >
         Run Design Lint
-      </div>
+      </button>
     </motion.div>
   );
 }

@@ -1,5 +1,4 @@
 import {
-  createErrorObject,
   checkRadius,
   checkEffects,
   checkFills,
