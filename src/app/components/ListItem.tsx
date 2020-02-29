@@ -16,7 +16,7 @@ function ListItem(props) {
   }
 
   // The component calls itself if there are children
-  if (node.children) {
+  if (node.children && node.children.length) {
     // Find errors in this node's children.
     childErrorsCount = findNestedErrors(node);
 
