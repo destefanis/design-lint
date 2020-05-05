@@ -119,6 +119,7 @@ function NodeList(props) {
             </button>
             <button
               className="button button--primary button--flex"
+              disabled={filteredErrorArray.length === 0}
               onClick={event => {
                 event.stopPropagation();
                 handleOpenFirstError();
