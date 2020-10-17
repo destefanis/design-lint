@@ -29,11 +29,11 @@ Because Design Lint doesn't try and manage your library, there's no logging in, 
 Although this plugin is open source, for most users you'll want to install from the Figma plugin community page.
 [View Plugin Page](https://www.figma.com/c/plugin/801195587640428208)
 
-## To Run Locally
+## To Run Locally use following commands
 * Run `yarn` to install dependencies.
 * Run `yarn build:watch` to start webpack in watch mode.
 
-### To Edit
+### To Edit it
 The react code, components, and UI can be found here [App.tsx](./src/app/components/App.tsx).  
 The Figma API, Storage, and Linting happens in [controller.ts](./src/plugin/controller.ts).
 Linting functions and rules can be found in [lintingFunctions.ts](./src/plugin/lintingFunctions.ts).
@@ -102,7 +102,7 @@ So for instance, this function runs the linting rules for typography, fills, eff
 If you plan on using this app as a private plugin you'll likely want to change the default border radius values which are `[0, 2, 4, 8, 16, 24, 32]`. This can be acheived by changing these values in [App.tsx](/.src/app/components/App.tsx#L23) and in [controller.ts](./src/plugin/controller.ts#L12). 
 
 ### Tooling
-This repo is using:
+This repo is using following:
 * [Figma Plugin React Template](https://github.com/nirsky/figma-plugin-react-template)
 * React + Webpack
 * TypeScript
