@@ -50,11 +50,11 @@ function determineType(node) {
         let errors = [];
         return errors;
       }
-      case "POLYGON":
+      case "CIRCLE":
       case "VECTOR":
       case "STAR":
       case "BOOLEAN_OPERATION":
-      case "ELLIPSE": {
+      case "SQUARE": {
         return lintShapeRules(node);
       }
       case "FRAME": {
