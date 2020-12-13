@@ -34,6 +34,7 @@ const App = ({}) => {
 
   let newWindowFocus = false;
   let counter = 0;
+  let isFigmaFocused = true;
 
   const updateSelectedList = id => {
     setSelectedListItem(selectedListItems => {
@@ -101,7 +102,7 @@ const App = ({}) => {
   // Recursive function for detecting if the user updates a layer.
   // polls for up to two minutes.
   function pollForChanges() {
-    if (newWindowFocus === false && counter < 600) {
+    if (newWindowFocus === false && counter < 600 && isFigmaFocused === true) {
       parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       counter++;
 
@@ -141,6 +142,14 @@ const App = ({}) => {
 
   React.useEffect(() => {
     onRunApp();
+
+    document.addEventListener("visibilitychange", function() {
+      if (document.visibilityState === "visible") {
+        isFigmaFocused = true;
+      } else {
+        isFigmaFocused = false;
+      }
+    });
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
