@@ -102,7 +102,7 @@ function NodeList(props) {
           <TotalErrorCount errorArray={filteredErrorArray} />
           <div className="actions-row">
             <button
-              className="icon icon--adjust icon--button"
+              className="icon icon--adjust icon--button settings-button"
               onClick={event => {
                 event.stopPropagation();
                 handlePanelVisible(true);

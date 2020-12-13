@@ -95,7 +95,7 @@
 }
 
 .error-list-item {
-  padding: 16px;
+  padding: 12px 16px 16px;
   border: 1px solid #e5e5e5;
   color: #333333;
   margin-bottom: 8px;
@@ -122,7 +122,7 @@
 }
 
 .current-value {
-  margin-top: 6px;
+  margin-top: 4px;
   width: 100%;
   color: #333;
   font-size: 11px;

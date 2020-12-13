@@ -167,6 +167,7 @@ function Panel(props) {
                   onIgnoreAll={handleIgnoreAll}
                   onSelectAll={handleSelectAll}
                   errors={errors}
+                  allErrors={filteredErrorArray}
                 />
               </React.Fragment>
             ) : (

@@ -15,6 +15,23 @@ function ErrorList(props) {
     props.onSelectAll(error);
   };
 
+  // Finds how many other nodes have this exact error.
+  function countInstancesOfThisError(error) {
+    let nodesToBeSelected = [];
+
+    props.allErrors.forEach(node => {
+      node.errors.forEach(item => {
+        if (item.value === error.value) {
+          if (item.type === error.type) {
+            nodesToBeSelected.push(item.node.id);
+          }
+        }
+      });
+    });
+
+    return nodesToBeSelected.length;
+  }
+
   const errorListItems = props.errors.map((error, index) => (
     <motion.li
       positionTransition
@@ -34,23 +51,39 @@ function ErrorList(props) {
           <div className="error-description__message">{error.message}</div>
         </span>
         <span className="context-icon">
-          <Menu
-            error={error}
-            menuItems={[
-              {
-                label: "Select All",
-                event: handleSelectAll
-              },
-              {
-                label: "Ignore",
-                event: handleIgnoreClick
-              },
-              {
-                label: "Ignore All",
-                event: handleIgnoreAll
-              }
-            ]}
-          />
+          {countInstancesOfThisError(error) > 1 ? (
+            <Menu
+              error={error}
+              menuItems={[
+                {
+                  label: `Select All (${countInstancesOfThisError(error)})`,
+                  event: handleSelectAll
+                },
+                {
+                  label: "Ignore",
+                  event: handleIgnoreClick
+                },
+                {
+                  label: "Ignore All",
+                  event: handleIgnoreAll
+                }
+              ]}
+            />
+          ) : (
+            <Menu
+              error={error}
+              menuItems={[
+                {
+                  label: "Ignore",
+                  event: handleIgnoreClick
+                },
+                {
+                  label: "Ignore All",
+                  event: handleIgnoreAll
+                }
+              ]}
+            />
+          )}
         </span>
       </div>
 
