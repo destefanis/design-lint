@@ -39,6 +39,12 @@ button:focus {
   transform: scale3d(0.94, 0.94, 1);
 }
 
+.settings-button {
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+}
+
 .w12 {
   width: 12px;
 }

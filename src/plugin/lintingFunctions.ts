@@ -237,7 +237,13 @@ export function checkType(node, errors) {
     textObject.font = node.fontName.family;
     textObject.fontStyle = node.fontName.style;
     textObject.fontSize = node.fontSize;
-    textObject.lineHeight = node.lineHeight.value;
+
+    // Line height can be "auto" or a pixel value
+    if (node.lineHeight.value !== undefined) {
+      textObject.lineHeight = node.lineHeight.value;
+    } else {
+      textObject.lineHeight = "Auto";
+    }
 
     let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
 

@@ -281,6 +281,13 @@ figma.ui.onmessage = msg => {
       case "COMPONENT": {
         return lintComponentRules(node);
       }
+      case "COMPONENT_SET": {
+        // Component Set is the frame that wraps a set of variants
+        // the variants within the set are still linted as components (lintComponentRules)
+        // this type is generally only present where the variant is defined so it
+        // doesn't need as many linting requirements.
+        return lintVariantWrapperRules(node);
+      }
       case "TEXT": {
         return lintTextRules(node);
       }
@@ -307,6 +314,14 @@ figma.ui.onmessage = msg => {
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
     checkStrokes(node, errors);
+
+    return errors;
+  }
+
+  function lintVariantWrapperRules(node) {
+    let errors = [];
+
+    checkFills(node, errors);
 
     return errors;
   }
