@@ -71,6 +71,25 @@ body {
   height: 100vh;
 }
 
+.nav {
+  padding: 16px;
+  display: flex;
+  align-content: center;
+  justify-content: flex-start;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.nav-item {
+  padding-right: 16px;
+  font-weight: 500;
+  font-size: 11px;
+  color: #b3b3b3;
+}
+
+.nav-item.active {
+  color: #333333;
+}
+
 .list {
   flex: 1;
   margin: 0;
