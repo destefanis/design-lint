@@ -68,7 +68,7 @@ body {
   display: flex;
   flex-flow: column nowrap;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 46px);
 }
 
 .nav {
@@ -84,10 +84,21 @@ body {
   font-weight: 500;
   font-size: 11px;
   color: #b3b3b3;
+  cursor: pointer;
 }
 
 .nav-item.active {
   color: #333333;
+}
+
+.bulk-errors-list {
+  height: calc(100vh - 46px);
+  flex: 1;
+  margin: 0;
+  padding: 16px 0 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 
 .list {

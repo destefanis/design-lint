@@ -241,6 +241,11 @@ const App = ({}) => {
               <BulkErrorList
                 errorArray={errorArray}
                 ignoredErrorArray={ignoredErrorArray}
+                onIgnoredUpdate={updateIgnoredErrors}
+                onIgnoreAll={ignoreAll}
+                ignoredErrors={ignoredErrorArray}
+                onClick={updateVisibility}
+                onSelectedListUpdate={updateSelectedList}
               />
             )}
           </div>
