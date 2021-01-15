@@ -25,7 +25,7 @@ function Navigation(props) {
           className={`nav-item ${activePage === "bulk" ? "active" : ""}`}
           onClick={bulkListClick}
         >
-          Errors by Type
+          Errors by Count
         </div>
       </nav>
     </div>

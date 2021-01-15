@@ -66,8 +66,18 @@ function NodeList(props) {
     setPanelVisible(boolean);
   };
 
+  const handleLintRulesChange = boolean => {
+    props.updateLintRules(boolean);
+  };
+
   const handleRefreshSelection = () => {
     props.onRefreshSelection();
+  };
+
+  const pageVariants = {
+    initial: { opacity: 0, y: 24 },
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -24 }
   };
 
   if (props.nodeArray.length) {
@@ -88,9 +98,10 @@ function NodeList(props) {
     return (
       <motion.div
         className="page"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -24 }}
+        variants={pageVariants}
+        exit="exit"
+        initial="initial"
+        animate="enter"
         transition={{
           type: "spring",
           stiffness: 260,
@@ -133,6 +144,8 @@ function NodeList(props) {
             onHandlePanelVisible={handlePanelVisible}
             ignoredErrorArray={props.ignoredErrorArray}
             borderRadiusValues={props.borderRadiusValues}
+            updateLintRules={handleLintRulesChange}
+            lintVectors={props.lintVectors}
           />
         </div>
       </motion.div>

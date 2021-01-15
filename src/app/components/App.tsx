@@ -32,6 +32,7 @@ const App = ({}) => {
     24,
     32
   ]);
+  const [lintVectors, setLintVectors] = useState(false);
   const [initialLoad, setInitialLoad] = React.useState(false);
   const [timedLoad, setTimeLoad] = React.useState(false);
 
@@ -91,6 +92,20 @@ const App = ({}) => {
     setIsVisible(val);
   };
 
+  const updateLintRules = boolean => {
+    setLintVectors(boolean);
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-lint-rules-from-settings",
+          boolean: boolean
+        }
+      },
+      "*"
+    );
+  };
+
   const onFocus = () => {
     newWindowFocus = true;
     counter = 0;
@@ -102,7 +117,10 @@ const App = ({}) => {
   };
 
   const onRunApp = React.useCallback(() => {
-    parent.postMessage({ pluginMessage: { type: "run-app" } }, "*");
+    parent.postMessage(
+      { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
+      "*"
+    );
   }, []);
 
   // Recursive function for detecting if the user updates a layer.
@@ -236,6 +254,8 @@ const App = ({}) => {
                 selectedListItems={selectedListItems}
                 activeNodeIds={activeNodeIds}
                 borderRadiusValues={borderRadiusValues}
+                lintVectors={lintVectors}
+                updateLintRules={updateLintRules}
               />
             ) : (
               <BulkErrorList

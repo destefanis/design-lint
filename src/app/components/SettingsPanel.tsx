@@ -16,6 +16,14 @@ function SettingsPanel(props) {
     props.onHandlePanelVisible(false);
   }
 
+  function handleCheckbox() {
+    if (props.lintVectors === false) {
+      props.updateLintRules(true);
+    } else if (props.lintVectors === true) {
+      props.updateLintRules(false);
+    }
+  }
+
   function clearIgnoredErrors() {
     parent.postMessage(
       {
@@ -42,6 +50,22 @@ function SettingsPanel(props) {
 
         <div className="settings-wrapper">
           <SettingsForm borderRadiusValues={props.borderRadiusValues} />
+          <div className="settings-row">
+            <h3 className="settings-title">Lint Vectors (Default Off)</h3>
+            <div className="settings-label">
+              Illustrations, vectors, and boolean shapes often throw a lot of
+              errors as they rarely use styles for fills. If you'd like to lint
+              them as well, check the box below.
+              <div className="settings-checkbox-group" onClick={handleCheckbox}>
+                <input
+                  name="vectorsCheckbox"
+                  type="checkbox"
+                  checked={props.lintVectors}
+                />
+                <label>Lint Vectors and Boolean Shapes</label>
+              </div>
+            </div>
+          </div>
           <div className="settings-row">
             <h3 className="settings-title">Ignored errors</h3>
             {props.ignoredErrorArray.length > 0 ? (

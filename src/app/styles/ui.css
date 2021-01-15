@@ -39,6 +39,15 @@ button:focus {
   transform: scale3d(0.94, 0.94, 1);
 }
 
+.settings-checkbox-group {
+  display: flex;
+  padding-top: 8px;
+}
+
+.settings-checkbox-group input {
+  margin: 2px 8px 0 0;
+}
+
 .settings-button {
   border-radius: 8px;
   background-color: transparent;
