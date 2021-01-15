@@ -42,6 +42,10 @@
   overflow-y: auto;
 }
 
+.panel-body-errors {
+  height: 100%;
+}
+
 .panel-footer {
   border-top: 1px solid #e5e5e5;
   padding: 16px;

@@ -32,14 +32,21 @@ function ErrorList(props) {
     return nodesToBeSelected.length;
   }
 
+  const variants = {
+    initial: { opacity: 1, y: 10, scale: 1 },
+    enter: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -10, scale: 0.8 }
+  };
+
   const errorListItems = props.errors.map((error, index) => (
     <motion.li
       positionTransition
       className="error-list-item"
       key={error.node.id + index}
-      initial={{ opacity: 1, y: 0, scale: 1 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 1, y: -10, scale: 0 }}
+      variants={variants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
     >
       <div className="flex-row">
         <span className="error-type">

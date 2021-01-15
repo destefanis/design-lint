@@ -10,6 +10,7 @@ figma.showUI(__html__, { width: 360, height: 580 });
 
 let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree = [];
+let lintVectors = false;
 
 figma.ui.onmessage = msg => {
   // Fetch a specific node by ID.
@@ -72,6 +73,11 @@ figma.ui.onmessage = msg => {
     });
 
     figma.notify("Cleared ignored errors", { timeout: 1000 });
+  }
+
+  // Changes the linting rules, invoked from the settings menu
+  if (msg.type === "update-lint-rules-from-settings") {
+    lintVectors = msg.boolean;
   }
 
   // For when the user updates the border radius values to lint from the settings menu.
@@ -264,10 +270,12 @@ figma.ui.onmessage = msg => {
         let errors = [];
         return errors;
       }
-      case "POLYGON":
-      case "VECTOR":
-      case "STAR":
       case "BOOLEAN_OPERATION":
+      case "VECTOR": {
+        return lintVectorRules(node);
+      }
+      case "POLYGON":
+      case "STAR":
       case "ELLIPSE": {
         return lintShapeRules(node);
       }
@@ -364,6 +372,19 @@ figma.ui.onmessage = msg => {
     checkRadius(node, errors, borderRadiusArray);
     checkStrokes(node, errors);
     checkEffects(node, errors);
+
+    return errors;
+  }
+
+  function lintVectorRules(node) {
+    let errors = [];
+
+    // This can be enabled by the user in settings.
+    if (lintVectors === true) {
+      checkFills(node, errors);
+      checkStrokes(node, errors);
+      checkEffects(node, errors);
+    }
 
     return errors;
   }
