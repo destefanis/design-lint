@@ -117,6 +117,58 @@ export function checkRadius(node, errors, radiusValues) {
   }
 }
 
+// Custom Lint rule that isn't being used yet!
+// that ensures our text fills aren't design tokens/styles meant for backgrounds.
+export function customCheckTextFills(node, errors) {
+  // Here we create an array of style keys (https://www.figma.com/plugin-docs/api/PaintStyle/#key)
+  // that we want to make sure our text layers aren't using.
+
+  const fillsToCheck = [
+    "4b93d40f61be15e255e87948a715521c3ae957e6"
+    // To collect style keys, use a plugin like Inspector, or use console commands like figma.getLocalPaintStyles();
+    // in your design system file.
+  ];
+
+  let nodeFillStyle = node.fillStyleId;
+
+  // If there are multiple text styles on a single text layer, we can't lint it
+  // we can return an error instead.
+  if (typeof nodeFillStyle === "symbol") {
+    return errors.push(
+      createErrorObject(
+        node, // Node object we use to reference the error (id, layer name, etc)
+        "fill", // Type of error (fill, text, effect, etc)
+        "Mixing two styles together", // Message we show to the user
+        "Multiple Styles" // Normally we return a hex value here
+      )
+    );
+  }
+
+  // We strip the additional style key characters so we can check
+  // to see if the fill is being used incorrectly.
+  nodeFillStyle = nodeFillStyle.replace("S:", "");
+  nodeFillStyle = nodeFillStyle.split(",")[0];
+
+  // If the node (layer) has a fill style, then check to see if there's an error.
+  if (nodeFillStyle !== "") {
+    // If we find the layer has a fillStyle that matches in the array create an error.
+    if (fillsToCheck.includes(nodeFillStyle)) {
+      return errors.push(
+        createErrorObject(
+          node, // Node object we use to reference the error (id, layer name, etc)
+          "fill", // Type of error (fill, text, effect, etc)
+          "Incorrect text color use", // Message we show to the user
+          "Using a background color on a text layer" // Determines the fill, so we can show a hex value.
+        )
+      );
+    }
+    // If there is no fillStyle on this layer,
+    // check to see why with our default linting function for fills.
+  } else {
+    checkFills(node, errors);
+  }
+}
+
 // Check for effects like shadows, blurs etc.
 export function checkEffects(node, errors) {
   if (node.effects.length) {

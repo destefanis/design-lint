@@ -3,7 +3,9 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType
+  checkType,
+  customCheckTextFills
+  // customCheckTextFills,
 } from "./lintingFunctions";
 
 figma.showUI(__html__, { width: 360, height: 580 });
@@ -359,6 +361,10 @@ figma.ui.onmessage = msg => {
 
     checkType(node, errors);
     checkFills(node, errors);
+
+    // We could also comment out checkFills and use a custom function instead
+    // Take a look at line 122 in lintingFunction.ts for an example.
+    // customCheckTextFills(node, errors);
     checkEffects(node, errors);
     checkStrokes(node, errors);
 
