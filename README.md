@@ -105,7 +105,7 @@ That being said, Design Lint is ready for you to write custom rules for your tea
 
 ### Error Array
 
-Design Lint references one array of all the errors returned by the lint rules. Each error in the array is an object. A given layer in Figma can have multiple errors, say it's missing both a text style and using an incorrect fill color, so we use that layers unique ID (set by Figma) to indentify which errors belong to it.
+Design Lint references one array of all the errors returned by the lint rules. Each error in the array is an object. A given layer in Figma can have multiple errors, let's say it's missing both a text style and using an incorrect fill color, so we use that layers unique ID (set by Figma) to identify which errors belong to it.
 
 ### Error Object
 
