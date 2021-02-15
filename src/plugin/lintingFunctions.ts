@@ -118,11 +118,10 @@ export function checkRadius(node, errors, radiusValues) {
 }
 
 // Custom Lint rule that isn't being used yet!
-// that ensures our text fills aren't design tokens/styles meant for backgrounds.
+// that ensures our text fills aren't using styles (design tokens) meant for backgrounds.
 export function customCheckTextFills(node, errors) {
   // Here we create an array of style keys (https://www.figma.com/plugin-docs/api/PaintStyle/#key)
   // that we want to make sure our text layers aren't using.
-
   const fillsToCheck = [
     "4b93d40f61be15e255e87948a715521c3ae957e6"
     // To collect style keys, use a plugin like Inspector, or use console commands like figma.getLocalPaintStyles();
