@@ -130,6 +130,8 @@ body {
 
 .list-arrow-icon {
   opacity: 0;
+  width: 8px;
+  margin: auto;
   transition: opacity 50ms ease;
   transform: rotate(-90deg);
 }

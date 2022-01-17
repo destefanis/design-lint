@@ -3,9 +3,9 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType,
-  customCheckTextFills
+  checkType
   // customCheckTextFills,
+  // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
 
 figma.showUI(__html__, { width: 360, height: 580 });
@@ -24,7 +24,7 @@ figma.ui.onmessage = msg => {
     layerArray.push(layer);
 
     // Moves the layer into focus and selects so the user can update it.
-    figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
+    // figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
 
@@ -138,24 +138,6 @@ figma.ui.onmessage = msg => {
     figma.notify("Multiple layers selected", { timeout: 1000 });
   }
 
-  // Traverses the node tree
-  function traverse(node) {
-    if ("children" in node) {
-      if (node.type !== "INSTANCE") {
-        for (const child of node.children) {
-          traverse(child);
-        }
-      }
-    }
-    return node;
-  }
-
-  function traverseNodes(selection) {
-    let traversedNodes = traverse(selection);
-
-    return traversedNodes;
-  }
-
   // Serialize nodes to pass back to the UI.
   function serializeNodes(nodes) {
     let serializedNodes = JSON.stringify(nodes, [
@@ -227,7 +209,7 @@ figma.ui.onmessage = msg => {
       figma.notify("Select a frame(s) to get started", { timeout: 2000 });
       return;
     } else {
-      let nodes = traverseNodes(figma.currentPage.selection);
+      let nodes = figma.currentPage.selection;
 
       // Maintain the original tree structure so we can enable
       // refreshing the tree and live updating errors.

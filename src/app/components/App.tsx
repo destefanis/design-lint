@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { AnimatePresence } from "../../../node_modules/framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 import Navigation from "./Navigation";
 import NodeList from "./NodeList";
@@ -144,9 +144,10 @@ const App = ({}) => {
     }
   }
 
+  // If no layer is selected after 3 seconds, show the empty state.
   setTimeout(function() {
     setTimeLoad(true);
-  }, 1000);
+  }, 3000);
 
   React.useEffect(() => {
     // Update client storage so the next time we run the app
@@ -179,29 +180,31 @@ const App = ({}) => {
 
         setNodeArray(nodeObject);
         updateErrorArray(errors);
-        setInitialLoad(true);
 
-        // Fetch the first nodes properties and lint them.
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: "fetch-layer-data",
-              id: nodeObject[0].id,
-              nodeArray: nodeObject
-            }
-          },
-          "*"
-        );
+        setTimeout(() => {
+          // Fetch the first nodes properties and lint them.
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "fetch-layer-data",
+                id: nodeObject[0].id,
+                nodeArray: nodeObject
+              }
+            },
+            "*"
+          );
 
-        // Set this node as selected in the side menu
-        setSelectedListItem(selectedListItems => {
-          selectedListItems.splice(0, selectedListItems.length);
-          return selectedListItems.concat(nodeObject[0].id);
-        });
+          // Set this node as selected in the side menu
+          setSelectedListItem(selectedListItems => {
+            selectedListItems.splice(0, selectedListItems.length);
+            return selectedListItems.concat(nodeObject[0].id);
+          });
 
-        setActiveNodeIds(activeNodeIds => {
-          return activeNodeIds.concat(nodeObject[0].id);
-        });
+          setActiveNodeIds(activeNodeIds => {
+            return activeNodeIds.concat(nodeObject[0].id);
+          });
+          setInitialLoad(true);
+        }, 1500);
       } else if (type === "fetched storage") {
         let clientStorage = JSON.parse(storage);
 
@@ -229,8 +232,6 @@ const App = ({}) => {
       }
     };
   }, []);
-
-  let body;
 
   return (
     <div className="container">
