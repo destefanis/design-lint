@@ -189,7 +189,7 @@ Let's say we've written a custom rule for text layers, make sure to [change what
 
 #### Changing the border radius default
 
-If you plan on using this app as a private plugin you'll likely want to change the default border radius values which are `[0, 2, 4, 8, 16, 24, 32]`. This can be acheived by changing these values in [App.tsx](/.src/app/components/App.tsx#L23) and in [controller.ts](./src/plugin/controller.ts#L12). 
+If you plan on using this app as a private plugin you'll likely want to change the default border radius values which are `[0, 2, 4, 8, 16, 24, 32]`. This can be acheived by changing these values in [App.tsx](./src/app/components/App.tsx#L23) and in [controller.ts](./src/plugin/controller.ts#L12). 
 
 ### Tooling
 This repo is using following:
