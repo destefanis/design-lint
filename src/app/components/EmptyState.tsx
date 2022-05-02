@@ -18,20 +18,24 @@ function EmptyState(props) {
         damping: 20
       }}
     >
+      <div className="background-wrapper">
+        <img
+          className="empty-state-background"
+          src={require("../assets/mesh-background.png")}
+        />
+      </div>
       <div className="empty-state">
         <div className="empty-state__image">
-          <img className="layer-icon" src={require("../assets/layers.svg")} />
+          <img className="layer-icon" src={require("../assets/new-logo.svg")} />
         </div>
-        <div className="empty-state__title">
-          Select a frame or multiple frames
-        </div>
+        <div className="empty-state__title">Select a layer to get started.</div>
+        <button
+          className="button button--primary button--full"
+          onClick={onRunApp}
+        >
+          Run Design Lint
+        </button>
       </div>
-      <button
-        className="button button--primary button--full"
-        onClick={onRunApp}
-      >
-        Run Design Lint
-      </button>
     </motion.div>
   );
 }

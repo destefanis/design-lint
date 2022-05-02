@@ -26,8 +26,8 @@
 
 .panel-header__title {
   flex: 1;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 400;
+  font-size: 13px;
   color: #333;
   display: flex;
   align-items: center;
@@ -37,12 +37,17 @@
   text-overflow: ellipsis;
 }
 
+.panel-collapse-icon {
+  width: 16px;
+}
+
 .panel-body {
   flex: 1;
   overflow-y: auto;
 }
 
 .panel-body-errors {
+  padding-top: 16px;
   height: 100%;
 }
 
@@ -53,8 +58,12 @@
   align-items: center;
 }
 
-.panel-footer .button {
-  margin: 0 6px;
+.panel-footer .previous {
+  margin: 0 8px 0 0;
+}
+
+.panel-footer .next {
+  margin: 0 0 0 8px;
 }
 
 .is-visible {
@@ -71,6 +80,7 @@
   animation: fadeIn 250ms;
   animation-fill-mode: forwards;
   cursor: pointer;
+  z-index: 5;
 }
 
 @keyframes fadeIn {
@@ -99,17 +109,25 @@
 }
 
 .error-list-item {
-  padding: 12px 16px 16px;
+  position: relative;
+  padding: 12px 16px 12px 12px;
   border: 1px solid #e5e5e5;
   color: #333333;
-  margin-bottom: 8px;
-  border-radius: 4px;
+  margin-bottom: 12px;
+  border-radius: 12px;
   display: flex;
   flex-flow: row wrap;
   align-content: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 11px;
+  line-height: 13px;
+  font-weight: 600;
+  transition: border-color 100ms ease;
+}
+
+.error-list-item:hover {
+  border-color: #18a0fb;
+  cursor: pointer;
 }
 
 .flex-row {
@@ -125,30 +143,44 @@
   margin: 8px 0 2px;
 }
 
+/* The content of the error, could be #fff, a font name, etc. */
 .current-value {
   margin-top: 4px;
   width: 100%;
-  color: #333;
+  color: #666;
   font-size: 11px;
+  line-height: 14px;
   font-weight: 400;
-}
-
-.error-type {
-  margin-right: 12px;
-  align-self: center;
 }
 
 .error-description {
   align-self: center;
+  margin-left: 12px;
+}
+
+.error-type {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  height: 30px;
+  width: 30px;
+  flex-basis: 30px;
+  background: #f6f6f6;
+  align-self: center;
+  border-radius: 64px;
 }
 
 .error-type img {
-  height: 13px;
-  width: 13px;
+  display: inline-block;
+  margin: auto;
+  height: 12px;
+  width: 12px;
 }
 
 .context-icon {
   align-self: flex-end;
+  margin-top: auto;
+  margin-bottom: auto;
   margin-left: auto;
   cursor: pointer;
 }
@@ -160,7 +192,7 @@
   font-size: 13px;
   padding: 40px 0;
   margin: 16px;
-  margin-top: 0;
+  margin-top: 8px;
   color: #333;
 }
 

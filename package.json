@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"classnames": "^2.2.6",
-		"framer-motion": "^1.6.17",
+		"framer-motion": "1.6.17",
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6"
 	},

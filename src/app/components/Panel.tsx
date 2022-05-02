@@ -194,7 +194,7 @@ function Panel(props) {
             <button
               onClick={handlePrevNavigation}
               disabled={filteredErrorArray.length <= 1}
-              className="button button--secondary button--flex"
+              className="button previous button--secondary button--flex"
             >
               ← Previous
             </button>
@@ -202,7 +202,7 @@ function Panel(props) {
             <button
               onClick={handleNextNavigation}
               disabled={filteredErrorArray.length <= 1}
-              className="button button--secondary button--flex"
+              className="button next button--secondary button--flex"
             >
               Next →
             </button>

@@ -1,13 +1,8 @@
 import * as React from "react";
-import { motion } from "framer-motion";
-
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
-import SettingsPanel from "./SettingsPanel";
 
 function NodeList(props) {
-  const [panelVisible, setPanelVisible] = React.useState(false);
-
   // Reduce the size of our array of errors by removing
   // nodes with no errors on them.
   let filteredErrorArray = props.errorArray.filter(
@@ -62,24 +57,6 @@ function NodeList(props) {
     handleNodeClick(lastItem.id);
   };
 
-  const handlePanelVisible = boolean => {
-    setPanelVisible(boolean);
-  };
-
-  const handleLintRulesChange = boolean => {
-    props.updateLintRules(boolean);
-  };
-
-  const handleRefreshSelection = () => {
-    props.onRefreshSelection();
-  };
-
-  const pageVariants = {
-    initial: { opacity: 0, y: 24 },
-    enter: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -24 }
-  };
-
   if (props.nodeArray.length) {
     let nodes = props.nodeArray;
 
@@ -96,38 +73,11 @@ function NodeList(props) {
     ));
 
     return (
-      <motion.div
-        className="page"
-        variants={pageVariants}
-        exit="exit"
-        initial="initial"
-        animate="enter"
-        transition={{
-          type: "spring",
-          stiffness: 260,
-          damping: 20
-        }}
-      >
+      <div className="page">
         <ul className="list">{listItems}</ul>
         <div className="footer">
           <TotalErrorCount errorArray={filteredErrorArray} />
           <div className="actions-row">
-            <button
-              className="icon icon--adjust icon--button settings-button"
-              onClick={event => {
-                event.stopPropagation();
-                handlePanelVisible(true);
-              }}
-            ></button>
-            <button
-              className="button button--secondary"
-              onClick={event => {
-                event.stopPropagation();
-                handleRefreshSelection();
-              }}
-            >
-              Re-run
-            </button>
             <button
               className="button button--primary button--flex"
               disabled={filteredErrorArray.length === 0}
@@ -139,16 +89,8 @@ function NodeList(props) {
               Jump to next error →
             </button>
           </div>
-          <SettingsPanel
-            panelVisible={panelVisible}
-            onHandlePanelVisible={handlePanelVisible}
-            ignoredErrorArray={props.ignoredErrorArray}
-            borderRadiusValues={props.borderRadiusValues}
-            updateLintRules={handleLintRulesChange}
-            lintVectors={props.lintVectors}
-          />
         </div>
-      </motion.div>
+      </div>
     );
   } else {
     return (

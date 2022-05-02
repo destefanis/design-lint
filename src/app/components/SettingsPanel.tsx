@@ -45,10 +45,18 @@ function SettingsPanel(props) {
         animate={isVisible ? "open" : "closed"}
         transition={{ duration: 0.3, type: "tween" }}
         variants={variants}
+        key="settings-panel"
       >
         <PanelHeader title={"Settings"} handleHide={handleHide}></PanelHeader>
 
         <div className="settings-wrapper">
+          <div className="settings-row">
+            <h3 className="settings-title">Skipping Layers</h3>
+            <div className="settings-label">
+              If you have an illustration or set of layers you want the linter
+              to ignore, lock them in the Figma layer list.
+            </div>
+          </div>
           <SettingsForm borderRadiusValues={props.borderRadiusValues} />
           <div className="settings-row">
             <h3 className="settings-title">Lint Vectors (Default Off)</h3>
@@ -61,6 +69,7 @@ function SettingsPanel(props) {
                   name="vectorsCheckbox"
                   type="checkbox"
                   checked={props.lintVectors}
+                  onChange={handleCheckbox}
                 />
                 <label>Lint Vectors and Boolean Shapes</label>
               </div>
@@ -88,13 +97,6 @@ function SettingsPanel(props) {
                 </div>
               </React.Fragment>
             )}
-          </div>
-          <div className="settings-row">
-            <h3 className="settings-title">How to skip layers?</h3>
-            <div className="settings-label">
-              If you have an illustration or set of layers you want the linter
-              to ignore, lock them in the Figma layer list.
-            </div>
           </div>
         </div>
       </motion.div>

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
 
 import Navigation from "./Navigation";
 import NodeList from "./NodeList";
@@ -15,7 +14,7 @@ import "../styles/empty-state.css";
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
-  const [activePage, setActivePage] = useState("layers");
+  const [activePage, setActivePage] = useState("page");
   const [ignoredErrorArray, setIgnoreErrorArray] = useState([]);
   const [activeError, setActiveError] = React.useState({});
   const [selectedNode, setSelectedNode] = React.useState({});
@@ -38,6 +37,13 @@ const App = ({}) => {
 
   let newWindowFocus = false;
   let counter = 0;
+
+  window.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      // Close plugin when pressing Escape
+      window.parent.postMessage({ pluginMessage: { type: "close" } }, "*");
+    }
+  });
 
   const updateSelectedList = id => {
     setSelectedListItem(selectedListItems => {
@@ -62,6 +68,16 @@ const App = ({}) => {
 
   const updateNavigation = page => {
     setActivePage(page);
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-active-page-in-settings",
+          page: page
+        }
+      },
+      "*"
+    );
   };
 
   const updateActiveError = error => {
@@ -212,6 +228,9 @@ const App = ({}) => {
           ...ignoredErrorArray,
           ...clientStorage
         ]);
+      } else if (type === "fetched active page") {
+        let clientStorage = JSON.parse(storage);
+        setActivePage(clientStorage);
       } else if (type === "fetched border radius") {
         // Update border radius values from storage
         let clientStorage = JSON.parse(storage);
@@ -235,47 +254,46 @@ const App = ({}) => {
 
   return (
     <div className="container">
-      <AnimatePresence>
-        <Navigation
-          onPageSelection={updateNavigation}
-          activePage={activePage}
-        />
-        {activeNodeIds.length !== 0 ? (
-          <div>
-            {activePage === "layers" ? (
-              <NodeList
-                onErrorUpdate={updateActiveError}
-                onVisibleUpdate={updateVisible}
-                onSelectedListUpdate={updateSelectedList}
-                onRefreshSelection={onRunApp}
-                visibility={isVisible}
-                nodeArray={nodeArray}
-                errorArray={errorArray}
-                ignoredErrorArray={ignoredErrorArray}
-                selectedListItems={selectedListItems}
-                activeNodeIds={activeNodeIds}
-                borderRadiusValues={borderRadiusValues}
-                lintVectors={lintVectors}
-                updateLintRules={updateLintRules}
-              />
-            ) : (
-              <BulkErrorList
-                errorArray={errorArray}
-                ignoredErrorArray={ignoredErrorArray}
-                onIgnoredUpdate={updateIgnoredErrors}
-                onIgnoreAll={ignoreAll}
-                ignoredErrors={ignoredErrorArray}
-                onClick={updateVisibility}
-                onSelectedListUpdate={updateSelectedList}
-              />
-            )}
-          </div>
-        ) : timedLoad === false ? (
-          <Preloader />
-        ) : (
-          <EmptyState onHandleRunApp={onRunApp} />
-        )}
-      </AnimatePresence>
+      <Navigation
+        onPageSelection={updateNavigation}
+        activePage={activePage}
+        updateLintRules={updateLintRules}
+        ignoredErrorArray={ignoredErrorArray}
+        borderRadiusValues={borderRadiusValues}
+        lintVectors={lintVectors}
+        onRefreshSelection={onRunApp}
+      />
+      {activeNodeIds.length !== 0 ? (
+        <div>
+          {activePage === "layers" ? (
+            <NodeList
+              onErrorUpdate={updateActiveError}
+              onVisibleUpdate={updateVisible}
+              onSelectedListUpdate={updateSelectedList}
+              visibility={isVisible}
+              nodeArray={nodeArray}
+              errorArray={errorArray}
+              ignoredErrorArray={ignoredErrorArray}
+              selectedListItems={selectedListItems}
+              activeNodeIds={activeNodeIds}
+            />
+          ) : (
+            <BulkErrorList
+              errorArray={errorArray}
+              ignoredErrorArray={ignoredErrorArray}
+              onIgnoredUpdate={updateIgnoredErrors}
+              onIgnoreAll={ignoreAll}
+              ignoredErrors={ignoredErrorArray}
+              onClick={updateVisibility}
+              onSelectedListUpdate={updateSelectedList}
+            />
+          )}
+        </div>
+      ) : timedLoad === false ? (
+        <Preloader />
+      ) : (
+        <EmptyState onHandleRunApp={onRunApp} />
+      )}
 
       {Object.keys(activeError).length !== 0 && errorArray.length ? (
         <Panel

@@ -15,6 +15,10 @@ let originalNodeTree = [];
 let lintVectors = false;
 
 figma.ui.onmessage = msg => {
+  if (msg.type === "close") {
+    figma.closePlugin();
+  }
+
   // Fetch a specific node by ID.
   if (msg.type === "fetch-layer-data") {
     let layer = figma.getNodeById(msg.id);
@@ -75,6 +79,13 @@ figma.ui.onmessage = msg => {
     });
 
     figma.notify("Cleared ignored errors", { timeout: 1000 });
+  }
+
+  // Remembers the last tab selected in the UI and sets it
+  // to be active (layers vs error by category view)
+  if (msg.type === "update-active-page-in-settings") {
+    let pageToBeStored = JSON.stringify(msg.page);
+    figma.clientStorage.setAsync("storedActivePage", pageToBeStored);
   }
 
   // Changes the linting rules, invoked from the settings menu
@@ -229,6 +240,13 @@ figma.ui.onmessage = msg => {
       figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {
         figma.ui.postMessage({
           type: "fetched storage",
+          storage: result
+        });
+      });
+
+      figma.clientStorage.getAsync("storedActivePage").then(result => {
+        figma.ui.postMessage({
+          type: "fetched active page",
           storage: result
         });
       });

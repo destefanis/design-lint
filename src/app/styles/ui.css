@@ -81,7 +81,7 @@ body {
 }
 
 .nav {
-  padding: 16px;
+  padding: 4px 4px 4px 8px;
   display: flex;
   align-content: center;
   justify-content: flex-start;
@@ -89,22 +89,41 @@ body {
 }
 
 .nav-item {
-  padding-right: 16px;
-  font-weight: 500;
+  padding: 8px;
+  font-weight: 600;
   font-size: 11px;
   color: #b3b3b3;
   cursor: pointer;
+  transition: color 100ms ease;
+  align-self: center;
+}
+
+.nav-icon-wrapper {
+  display: flex;
+  align-self: flex-end;
+  margin-left: auto;
+  align-content: center;
+}
+
+/* Figma icon button override */
+.nav .icon--button {
+  border: none;
+  background-position: 0px 0px;
+}
+
+.nav-item:hover {
+  color: rgba(0, 0, 0, 0.8);
 }
 
 .nav-item.active {
-  color: #333333;
+  color: rgba(0, 0, 0, 0.8);
 }
 
 .bulk-errors-list {
   height: calc(100vh - 46px);
   flex: 1;
   margin: 0;
-  padding: 16px 0 0;
+  padding: 0 0 24px;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
@@ -130,7 +149,7 @@ body {
 
 .list-arrow-icon {
   opacity: 0;
-  width: 8px;
+  width: 6px;
   margin: auto;
   transition: opacity 50ms ease;
   transform: rotate(-90deg);
@@ -162,6 +181,10 @@ body {
   transform: rotate(0deg);
 }
 
+.list-item--active .list-icon {
+  opacity: 0.8;
+}
+
 .list-flex-row {
   height: 32px;
   display: flex;
@@ -174,10 +197,14 @@ body {
   position: relative;
 }
 
+.text img {
+  fill: #18a0fb;
+}
+
 .badge {
   position: absolute;
   top: 6px;
-  right: 16px;
+  right: 12px;
   background: #fe6262;
   color: #fff;
   height: 16px;
@@ -196,12 +223,33 @@ body {
 
 .dot {
   position: absolute;
-  right: 21px;
+  right: 17px;
   background: #fe6262;
   height: 6px;
   width: 6px;
   border-radius: 50%;
   display: block;
+}
+
+.error-count {
+  display: block;
+  height: auto;
+  padding: 0 4px;
+  min-width: 20px;
+  line-height: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 32px;
+  background: #fe6262;
+  color: #fff;
+  text-align: center;
+}
+
+.error-count.success {
+  right: 16px;
+  background: #55db9e;
+  padding: 5px 4px;
+  border-radius: 32px;
 }
 
 .list-flex-row:hover {
@@ -213,9 +261,8 @@ body {
 }
 
 .list-icon {
-  text-align: center;
   width: 16px;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 
 .list-icon img {
@@ -256,27 +303,23 @@ body {
   border-top: 1px solid #e5e5e5;
   display: flex;
   align-items: center;
-  padding: 0 16px 0 8px;
+  padding: 2px 16px 2px 8px;
 }
 
 .totals-row .section-title {
   flex: 1;
 }
 
-.error-count {
-  min-width: none;
-  min-height: none;
-}
-
-.error-count.success {
-  right: 16px;
-  background: #55db9e;
-  padding: 5px 4px;
-  border-radius: 32px;
+.sticky-footer {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  position: absolute;
+  background: #fff;
 }
 
 .actions-row {
-  padding: 12px 16px;
+  padding: 16px 16px 14px;
   border-top: 1px solid #e5e5e5;
   display: flex;
   flex-direction: row;
@@ -320,9 +363,10 @@ body {
 
 .menu-items {
   position: absolute;
-  right: 0;
-  top: 32px;
+  right: 12px;
+  top: 44px;
   width: 132px;
+  border-radius: 8px;
 }
 
 .menu-items .select-menu__list-item {

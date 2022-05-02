@@ -170,7 +170,7 @@ export function customCheckTextFills(node, errors) {
 
 // Check for effects like shadows, blurs etc.
 export function checkEffects(node, errors) {
-  if (node.effects.length) {
+  if (node.effects.length && node.visible === true) {
     if (node.effectStyleId === "") {
       const effectsArray = [];
 
@@ -231,7 +231,25 @@ export function checkEffects(node, errors) {
 }
 
 export function checkFills(node, errors) {
-  if (node.fills.length && node.visible === true) {
+  if (
+    (node.fills.length && node.visible === true) ||
+    typeof node.fills === "symbol"
+  ) {
+    let nodeFills = node.fills;
+    let fillStyleId = node.fillStyleId;
+
+    if (typeof nodeFills === "symbol") {
+      return errors.push(
+        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+      );
+    }
+
+    if (typeof fillStyleId === "symbol") {
+      return errors.push(
+        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+      );
+    }
+
     if (
       node.fillStyleId === "" &&
       node.fills[0].type !== "IMAGE" &&
@@ -284,6 +302,31 @@ export function checkType(node, errors) {
       fontSize: "",
       lineHeight: {}
     };
+
+    let fontStyle = node.fontName;
+    let fontSize = node.fontName;
+
+    if (typeof fontSize === "symbol") {
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          "Mixed sizes or families"
+        )
+      );
+    }
+
+    if (typeof fontStyle === "symbol") {
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          "Mixed sizes or families"
+        )
+      );
+    }
 
     textObject.font = node.fontName.family;
     textObject.fontStyle = node.fontName.style;

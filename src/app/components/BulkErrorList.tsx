@@ -1,6 +1,6 @@
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Menu from "./Menu";
+import BulkErrorListItem from "./BulkErrorListItem";
+import TotalErrorCount from "./TotalErrorCount";
 
 function BulkErrorList(props) {
   // Reduce the size of our array of errors by removing nodes with no errors on them.
@@ -60,18 +60,6 @@ function BulkErrorList(props) {
     props.onIgnoredUpdate(error);
   }
 
-  const variants = {
-    initial: { opacity: 1, y: 10, scale: 1 },
-    enter: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: -10, scale: 0.8 }
-  };
-
-  const pageVariants = {
-    initial: { opacity: 0, y: 24 },
-    enter: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -24 }
-  };
-
   function handleSelectAll(error) {
     parent.postMessage(
       {
@@ -115,108 +103,38 @@ function BulkErrorList(props) {
   }
 
   const errorListItems = bulkErrorList.map((error, index) => (
-    <motion.li
-      positionTransition
-      className="error-list-item"
-      key={error.node.id + index}
-      variants={variants}
-      initial="initial"
-      animate="enter"
-      exit="exit"
-    >
-      <div className="flex-row">
-        <span className="error-type">
-          <img
-            src={require("../assets/" + error.type.toLowerCase() + ".svg")}
-          />
-        </span>
-        <span className="error-description">
-          {error.nodes.length > 1 ? (
-            <div className="error-description__message">
-              {error.message} ({error.count})
-            </div>
-          ) : (
-            <div className="error-description__message">{error.message}</div>
-          )}
-        </span>
-        <span className="context-icon">
-          {error.nodes.length > 1 ? (
-            <Menu
-              error={error}
-              menuItems={[
-                {
-                  label: `Select All (${error.count})`,
-                  event: handleSelectAll
-                },
-                {
-                  label: "Ignore",
-                  event: handleIgnoreChange
-                },
-                {
-                  label: "Ignore All",
-                  event: handleIgnoreAll
-                }
-              ]}
-            />
-          ) : (
-            <Menu
-              error={error}
-              menuItems={[
-                {
-                  label: `Select`,
-                  event: handleSelect
-                },
-                {
-                  label: "Ignore",
-                  event: handleIgnoreChange
-                }
-              ]}
-            />
-          )}
-        </span>
-      </div>
-
-      {error.value ? <div className="current-value">{error.value}</div> : null}
-    </motion.li>
+    <BulkErrorListItem
+      error={error}
+      index={index}
+      key={index}
+      handleIgnoreChange={handleIgnoreChange}
+      handleSelectAll={handleSelectAll}
+      handleSelect={handleSelect}
+      handleIgnoreAll={handleIgnoreAll}
+    />
   ));
 
   return (
-    <motion.div
-      className="bulk-errors-list"
-      variants={pageVariants}
-      initial="initial"
-      animate="enter"
-      exit="exit"
-      transition={{
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }}
-    >
-      <AnimatePresence>
-        <div className="panel-body panel-body-errors">
-          {bulkErrorList.length ? (
-            <ul className="errors-list">{errorListItems}</ul>
-          ) : (
-            <motion.div
-              variants={variants}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-              className="success-message"
-            >
-              <div className="success-shape">
-                <img
-                  className="success-icon"
-                  src={require("../assets/smile.svg")}
-                />
-              </div>
-              All errors fixed in the selection
-            </motion.div>
-          )}
-        </div>
-      </AnimatePresence>
-    </motion.div>
+    <div className="bulk-errors-list">
+      <div className="panel-body panel-body-errors">
+        {bulkErrorList.length ? (
+          <ul className="errors-list">{errorListItems}</ul>
+        ) : (
+          <div className="success-message">
+            <div className="success-shape">
+              <img
+                className="success-icon"
+                src={require("../assets/smile.svg")}
+              />
+            </div>
+            All errors fixed in the selection
+          </div>
+        )}
+      </div>
+      <div className="footer sticky-footer">
+        <TotalErrorCount errorArray={filteredErrorArray} />
+      </div>
+    </div>
   );
 }
 
