@@ -94,7 +94,7 @@ body {
   font-size: 11px;
   color: #b3b3b3;
   cursor: pointer;
-  transition: color 100ms ease;
+  transition: color 100ms ease-out;
   align-self: center;
 }
 
@@ -117,6 +117,7 @@ body {
 
 .nav-item.active {
   color: rgba(0, 0, 0, 0.8);
+  font-weight: 600;
 }
 
 .bulk-errors-list {

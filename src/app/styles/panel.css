@@ -74,13 +74,18 @@
   position: absolute;
   top: 0;
   left: 0;
-  background: #000;
+  background: rgba(0, 0, 0, 1);
   height: 100%;
   width: 100%;
-  animation: fadeIn 250ms;
+  animation: fadeIn 150ms;
   animation-fill-mode: forwards;
   cursor: pointer;
   z-index: 5;
+  transition: background 150ms ease;
+}
+
+.overlay:hover {
+  background: rgba(0, 0, 0, 0.9);
 }
 
 @keyframes fadeIn {
