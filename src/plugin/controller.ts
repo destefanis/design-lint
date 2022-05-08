@@ -14,6 +14,8 @@ let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree = [];
 let lintVectors = false;
 
+figma.skipInvisibleInstanceChildren = true;
+
 figma.ui.onmessage = msg => {
   if (msg.type === "close") {
     figma.closePlugin();
@@ -24,10 +26,11 @@ figma.ui.onmessage = msg => {
     let layer = figma.getNodeById(msg.id);
     let layerArray = [];
 
-    // Using selection and viewport requires an array.
+    // Using figma UI selection and scroll to viewport requires an array.
     layerArray.push(layer);
 
     // Moves the layer into focus and selects so the user can update it.
+    // uncomment the line below if you want to notify something has been selected.
     // figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
     figma.currentPage.selection = layerArray;
     figma.viewport.scrollAndZoomIntoView(layerArray);
@@ -174,6 +177,8 @@ figma.ui.onmessage = msg => {
       // Give it the existing node id.
       newObject["id"] = node.id;
 
+      let children = node.children;
+
       // Don't lint locked layers or the children/grandchildren of locked layers.
       if (lockedParentNode === undefined && node.locked === true) {
         isLayerLocked = true;
@@ -191,8 +196,11 @@ figma.ui.onmessage = msg => {
         newObject["errors"] = determineType(node);
       }
 
-      // Recursively run this function to flatten out children and grandchildren nodes
-      if (node["children"]) {
+      if (!children) {
+        errorArray.push(newObject);
+        return;
+      } else if (children) {
+        // Recursively run this function to flatten out children and grandchildren nodes
         node["children"].forEach(childNode => {
           childArray.push(childNode.id);
         });
@@ -214,6 +222,19 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
+  if (msg.type === "lint-all") {
+    // Pass the array back to the UI to be displayed.
+    figma.ui.postMessage({
+      type: "complete",
+      errors: lint(originalNodeTree),
+      message: serializeNodes(msg.nodes)
+    });
+
+    figma.notify(`Design lint is running and will auto refresh for changes`, {
+      timeout: 2000
+    });
+  }
+
   // Initialize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
@@ -221,20 +242,20 @@ figma.ui.onmessage = msg => {
       return;
     } else {
       let nodes = figma.currentPage.selection;
+      let firstNode = [];
+
+      firstNode.push(figma.currentPage.selection[0]);
 
       // Maintain the original tree structure so we can enable
       // refreshing the tree and live updating errors.
       originalNodeTree = nodes;
 
-      // Pass the array back to the UI to be displayed.
+      // We want to immediately render the first selection
+      // to avoid freezing up the UI.
       figma.ui.postMessage({
-        type: "complete",
+        type: "first node",
         message: serializeNodes(nodes),
-        errors: lint(nodes)
-      });
-
-      figma.notify(`Design lint is running and will auto refresh for changes`, {
-        timeout: 2000
+        errors: lint(firstNode)
       });
 
       figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {

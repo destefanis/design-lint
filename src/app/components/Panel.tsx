@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import ErrorList from "./ErrorList";
 import PanelHeader from "./PanelHeader";
+import Preloader from "./Preloader";
 
 import "../styles/panel.css";
 
@@ -216,7 +217,7 @@ function Panel(props) {
           variants={variants}
         >
           <div className="name-wrapper">
-            <h2 className="node-name">Node is missing or has been deleted</h2>
+            <Preloader />
           </div>
         </motion.div>
       )}

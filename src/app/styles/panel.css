@@ -170,6 +170,7 @@
   height: 30px;
   width: 30px;
   flex-basis: 30px;
+  flex-shrink: 0;
   background: #f6f6f6;
   align-self: center;
   border-radius: 64px;
@@ -221,6 +222,7 @@
 }
 .settings-wrapper {
   padding: 4px 16px 16px;
+  overflow: scroll;
 }
 
 .form-button-group {

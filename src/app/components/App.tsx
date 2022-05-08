@@ -143,12 +143,15 @@ const App = ({}) => {
   // polls for up to two minutes.
   function pollForChanges() {
     if (newWindowFocus === false && counter < 600) {
+      // How often we poll for new changes.
+      let timer = 1500;
+
       parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       counter++;
 
       setTimeout(() => {
         pollForChanges();
-      }, 750);
+      }, timer);
     }
   }
 
@@ -190,37 +193,64 @@ const App = ({}) => {
     window.onmessage = event => {
       const { type, message, errors, storage } = event.data.pluginMessage;
 
-      // Plugin code returns this message after finished a loop through the layers.
+      // Plugin code returns this message after we return the first node
+      // for performance, then we lint the remaining layers.
       if (type === "complete") {
+        let nodeObject = JSON.parse(message);
+
+        // setNodeArray(nodeObject);
+        updateErrorArray(errors);
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "fetch-layer-data",
+              id: nodeObject[0].id,
+              nodeArray: nodeObject
+            }
+          },
+          "*"
+        );
+
+        setInitialLoad(true);
+      } else if (type === "first node") {
         let nodeObject = JSON.parse(message);
 
         setNodeArray(nodeObject);
         updateErrorArray(errors);
 
-        setTimeout(() => {
-          // Fetch the first nodes properties and lint them.
-          parent.postMessage(
-            {
-              pluginMessage: {
-                type: "fetch-layer-data",
-                id: nodeObject[0].id,
-                nodeArray: nodeObject
-              }
-            },
-            "*"
-          );
+        // Set this node as selected in the side menu
+        setSelectedListItem(selectedListItems => {
+          selectedListItems.splice(0, selectedListItems.length);
+          return selectedListItems.concat(nodeObject[0].id);
+        });
 
-          // Set this node as selected in the side menu
-          setSelectedListItem(selectedListItems => {
-            selectedListItems.splice(0, selectedListItems.length);
-            return selectedListItems.concat(nodeObject[0].id);
-          });
+        setActiveNodeIds(activeNodeIds => {
+          return activeNodeIds.concat(nodeObject[0].id);
+        });
 
-          setActiveNodeIds(activeNodeIds => {
-            return activeNodeIds.concat(nodeObject[0].id);
-          });
-          setInitialLoad(true);
-        }, 1500);
+        // After we have the first node, we want to
+        // lint the remaining selection.
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "lint-all",
+              nodes: nodeObject
+            }
+          },
+          "*"
+        );
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "fetch-layer-data",
+              id: nodeObject[0].id,
+              nodeArray: nodeObject
+            }
+          },
+          "*"
+        );
       } else if (type === "fetched storage") {
         let clientStorage = JSON.parse(storage);
 
