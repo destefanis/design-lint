@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion/dist/framer-motion";
 
 import ErrorList from "./ErrorList";
 import PanelHeader from "./PanelHeader";
@@ -172,22 +172,20 @@ function Panel(props) {
                 />
               </React.Fragment>
             ) : (
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 1, y: -10, scale: 0 }}
-                  className="success-message"
-                >
-                  <div className="success-shape">
-                    <img
-                      className="success-icon"
-                      src={require("../assets/smile.svg")}
-                    />
-                  </div>
-                  All errors fixed in the selection
-                </motion.div>
-              </AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 1, y: -10, scale: 0 }}
+                className="success-message"
+              >
+                <div className="success-shape">
+                  <img
+                    className="success-icon"
+                    src={require("../assets/smile.svg")}
+                  />
+                </div>
+                All errors fixed in the selection
+              </motion.div>
             )}
           </div>
 

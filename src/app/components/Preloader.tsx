@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion/dist/framer-motion";
 
 function Preloader() {
   const loading = (

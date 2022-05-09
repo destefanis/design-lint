@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion/dist/framer-motion";
 
 // A copy of ErrorListItem with slight differences for showing
 // in the bulk list of errors.
@@ -35,8 +36,24 @@ function BulkErrorListItem(props) {
     props.handleIgnoreAll(error);
   }
 
+  const variants = {
+    initial: { opacity: 1, y: 10, scale: 1 },
+    enter: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -10, scale: 0.8 }
+  };
+
   return (
-    <li className="error-list-item" ref={ref} onClick={showMenu}>
+    <motion.li
+      className="error-list-item"
+      ref={ref}
+      onClick={showMenu}
+      positionTransition
+      key={error.node.id + props.index}
+      variants={variants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+    >
       <div className="flex-row">
         <span className="error-type">
           <img
@@ -127,7 +144,7 @@ function BulkErrorListItem(props) {
           </ul>
         )}
       </div>
-    </li>
+    </motion.li>
   );
 }
 

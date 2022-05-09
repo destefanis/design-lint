@@ -1,6 +1,7 @@
 import * as React from "react";
 import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
+import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 
 function BulkErrorList(props) {
   // Reduce the size of our array of errors by removing nodes with no errors on them.
@@ -118,7 +119,9 @@ function BulkErrorList(props) {
     <div className="bulk-errors-list">
       <div className="panel-body panel-body-errors">
         {bulkErrorList.length ? (
-          <ul className="errors-list">{errorListItems}</ul>
+          <ul className="errors-list">
+            <AnimatePresence>{errorListItems}</AnimatePresence>
+          </ul>
         ) : (
           <div className="success-message">
             <div className="success-shape">

@@ -1,4 +1,6 @@
 import * as React from "react";
+import { motion } from "framer-motion/dist/framer-motion";
+
 import ListItem from "./ListItem";
 import TotalErrorCount from "./TotalErrorCount";
 
@@ -72,8 +74,21 @@ function NodeList(props) {
       />
     ));
 
+    const variants = {
+      initial: { opacity: 1, y: 10, scale: 1 },
+      enter: { opacity: 1, y: 0, scale: 1 },
+      exit: { opacity: 0, y: -10, scale: 0.8 }
+    };
+
     return (
-      <div className="page">
+      <motion.div
+        className="page"
+        key="node-list"
+        variants={variants}
+        initial="initial"
+        animate="enter"
+        exit="exit"
+      >
         <ul className="list">{listItems}</ul>
         <div className="footer">
           <TotalErrorCount errorArray={filteredErrorArray} />
@@ -90,7 +105,7 @@ function NodeList(props) {
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   } else {
     return (
