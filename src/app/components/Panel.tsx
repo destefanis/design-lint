@@ -226,4 +226,4 @@ function Panel(props) {
   );
 }
 
-export default React.memo(Panel);
+export default Panel;

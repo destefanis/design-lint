@@ -106,4 +106,4 @@ function SettingsPanel(props) {
   );
 }
 
-export default React.memo(SettingsPanel);
+export default SettingsPanel;

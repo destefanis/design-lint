@@ -1,8 +1,10 @@
 import * as React from "react";
 import SettingsPanel from "./SettingsPanel";
+import LibraryPanel from "./LibraryPanel";
 
 function Navigation(props) {
   const [panelVisible, setPanelVisible] = React.useState(false);
+  const [libraryPanelVisible, setLibraryPanelVisible] = React.useState(false);
   let activePage = props.activePage;
 
   const layersClick = () => {
@@ -19,6 +21,10 @@ function Navigation(props) {
 
   const handlePanelVisible = boolean => {
     setPanelVisible(boolean);
+  };
+
+  const handleLibraryPanelVisible = boolean => {
+    setLibraryPanelVisible(boolean);
   };
 
   const handleRefreshSelection = () => {
@@ -52,6 +58,13 @@ function Navigation(props) {
               <img src={require("../assets/refresh.svg")} />
             </button>
             <button
+              className="icon icon--library icon--button settings-button"
+              onClick={event => {
+                event.stopPropagation();
+                handleLibraryPanelVisible(true);
+              }}
+            ></button>
+            <button
               className="icon icon--adjust icon--button settings-button"
               onClick={event => {
                 event.stopPropagation();
@@ -68,6 +81,10 @@ function Navigation(props) {
         borderRadiusValues={props.borderRadiusValues}
         updateLintRules={handleLintRulesChange}
         lintVectors={props.lintVectors}
+      />
+      <LibraryPanel
+        panelVisible={libraryPanelVisible}
+        onHandlePanelVisible={handleLibraryPanelVisible}
       />
     </div>
   );
