@@ -30,6 +30,59 @@
   resolved "https://registry.yarnpkg.com/@emotion/memoize/-/memoize-0.7.3.tgz#5b6b1c11d6a6dddf1f2fc996f74cf3b219644d78"
   integrity sha512-2Md9mH6mvo+ygq1trTeVp2uzAKwE2P7In0cRpD/M9Q70aH8L+rxMLbb3JCN2JoSWsV2O+DdFjfbbXoMoLBczow==
 
+"@motionone/animation@^10.12.0":
+  version "10.13.1"
+  resolved "https://registry.yarnpkg.com/@motionone/animation/-/animation-10.13.1.tgz#ebacb50df4b7eb4957cf398c221ae10852f28520"
+  integrity sha512-dxQ+1wWxL6iFHDy1uv6hhcPjIdOg36eDT56jN4LI7Z5HZRyLpq8x1t7JFQclo/IEIb+6Bk4atmyinGFdXVECuA==
+  dependencies:
+    "@motionone/easing" "^10.13.1"
+    "@motionone/types" "^10.13.0"
+    "@motionone/utils" "^10.13.1"
+    tslib "^2.3.1"
+
+"@motionone/dom@10.12.0":
+  version "10.12.0"
+  resolved "https://registry.yarnpkg.com/@motionone/dom/-/dom-10.12.0.tgz#ae30827fd53219efca4e1150a5ff2165c28351ed"
+  integrity sha512-UdPTtLMAktHiqV0atOczNYyDd/d8Cf5fFsd1tua03PqTwwCe/6lwhLSQ8a7TbnQ5SN0gm44N1slBfj+ORIhrqw==
+  dependencies:
+    "@motionone/animation" "^10.12.0"
+    "@motionone/generators" "^10.12.0"
+    "@motionone/types" "^10.12.0"
+    "@motionone/utils" "^10.12.0"
+    hey-listen "^1.0.8"
+    tslib "^2.3.1"
+
+"@motionone/easing@^10.13.1":
+  version "10.13.1"
+  resolved "https://registry.yarnpkg.com/@motionone/easing/-/easing-10.13.1.tgz#7927b7fe96135989e37c2cda957e4101a4b85aa8"
+  integrity sha512-INEsInHHDHVgx0dp5qlXi1lMXBqYicgLMMSn3zfGzaIvcaEbI1Uz8BoyNV4BiclTupG7RYIh+T6BU83ZcEe74g==
+  dependencies:
+    "@motionone/utils" "^10.13.1"
+    tslib "^2.3.1"
+
+"@motionone/generators@^10.12.0":
+  version "10.13.1"
+  resolved "https://registry.yarnpkg.com/@motionone/generators/-/generators-10.13.1.tgz#d4989d887b864e0aefbbec63eed35ce298a73773"
+  integrity sha512-+HK5u2YcNJCckTTqfOLgSVcrWv2z1dVwrSZEMVJuAh0EnWEWGDJRvMBoPc0cFf/osbkA2Rq9bH2+vP0Ex/D8uw==
+  dependencies:
+    "@motionone/types" "^10.13.0"
+    "@motionone/utils" "^10.13.1"
+    tslib "^2.3.1"
+
+"@motionone/types@^10.12.0", "@motionone/types@^10.13.0":
+  version "10.13.0"
+  resolved "https://registry.yarnpkg.com/@motionone/types/-/types-10.13.0.tgz#b22c549931ebd88ed5528158b5d611dc9dbb3756"
+  integrity sha512-qegk4qg8U1N9ZwAJ187BG3TkZz1k9LP/pvNtCSlqdq/PMUDKlCFG4ZnjJ481P0IOH/vIw1OzIbKIuyg0A3rk9g==
+
+"@motionone/utils@^10.12.0", "@motionone/utils@^10.13.1":
+  version "10.13.1"
+  resolved "https://registry.yarnpkg.com/@motionone/utils/-/utils-10.13.1.tgz#14919dfcda36b54b184fff690bc0125d554f60cd"
+  integrity sha512-TjDPTIppaf3ofBXQv4ZzAketJgN0sclALXfZ6mfrkjJkOy83mLls9744F+6S+VKCpBmvbZcBY4PQfrfhAfeMtA==
+  dependencies:
+    "@motionone/types" "^10.13.0"
+    hey-listen "^1.0.8"
+    tslib "^2.3.1"
+
 "@nodelib/fs.scandir@2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.1.tgz#7fa8fed654939e1a39753d286b48b4836d00e0eb"
@@ -564,9 +617,9 @@ browserify-zlib@^0.2.0:
     pako "~1.0.5"
 
 buffer-from@^1.0.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
-  integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.2.tgz#2b146a6fd72e80b4f55d255f35ed59a3a9a41bd5"
+  integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
 
 buffer-xor@^1.0.3:
   version "1.0.3"
@@ -801,9 +854,9 @@ commander@2.17.x:
   integrity sha512-wPMUt6FnH2yzG95SA6mzjQOEKUU3aLaDEmzs1ti+1E9h+CsrZghRlqEM/EJ4KscsQVG8uNN4uVreUeT8+drlgg==
 
 commander@^2.12.1, commander@^2.20.0:
-  version "2.20.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
-  integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
+  version "2.20.3"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
+  integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
 commander@~2.19.0:
   version "2.19.0"
@@ -1523,25 +1576,26 @@ fragment-cache@^0.2.1:
   dependencies:
     map-cache "^0.2.2"
 
-framer-motion@^2.0.0:
-  version "2.9.5"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-2.9.5.tgz#bbb185325d531c57f494cf3f6cf7719fc2c225c7"
-  integrity sha512-epSX4Co1YbDv0mjfHouuY0q361TpHE7WQzCp/xMTilxy4kXd+Z23uJzPVorfzbm1a/9q1Yu8T5bndaw65NI4Tg==
+framer-motion@^6.3.0:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-6.5.1.tgz#802448a16a6eb764124bf36d8cbdfa6dd6b931a7"
+  integrity sha512-o1BGqqposwi7cgDrtg0dNONhkmPsUFDaLcKXigzuTFC5x58mE8iyTazxSudFzmT6MEyJKfjjU8ItoMe3W+3fiw==
   dependencies:
-    framesync "^4.1.0"
+    "@motionone/dom" "10.12.0"
+    framesync "6.0.1"
     hey-listen "^1.0.8"
-    popmotion "9.0.0-rc.20"
-    style-value-types "^3.1.9"
-    tslib "^1.10.0"
+    popmotion "11.0.3"
+    style-value-types "5.0.0"
+    tslib "^2.1.0"
   optionalDependencies:
     "@emotion/is-prop-valid" "^0.8.2"
 
-framesync@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/framesync/-/framesync-4.1.0.tgz#69a8db3ca432dc70d6a76ba882684a1497ef068a"
-  integrity sha512-MmgZ4wCoeVxNbx2xp5hN/zPDCbLSKiDt4BbbslK7j/pM2lg5S0vhTNv1v8BCVb99JPIo6hXBFdwzU7Q4qcAaoQ==
+framesync@6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/framesync/-/framesync-6.0.1.tgz#5e32fc01f1c42b39c654c35b16440e07a25d6f20"
+  integrity sha512-fUY88kXvGiIItgNC7wcTOl0SNRCVXMKSWW2Yzfmn7EKNc+MpCzcz9DhdHcdjbrtN3c6R4H5dTY2jiCpPdysEjA==
   dependencies:
-    hey-listen "^1.0.5"
+    tslib "^2.1.0"
 
 from2@^2.1.0:
   version "2.3.0"
@@ -1797,7 +1851,7 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-hey-listen@^1.0.5, hey-listen@^1.0.8:
+hey-listen@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/hey-listen/-/hey-listen-1.0.8.tgz#8e59561ff724908de1aa924ed6ecc84a56a9aa68"
   integrity sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==
@@ -3154,15 +3208,15 @@ please-upgrade-node@^3.1.1:
   dependencies:
     semver-compare "^1.0.0"
 
-popmotion@9.0.0-rc.20:
-  version "9.0.0-rc.20"
-  resolved "https://registry.yarnpkg.com/popmotion/-/popmotion-9.0.0-rc.20.tgz#f3550042ae31957b5416793ae8723200951ad39d"
-  integrity sha512-f98sny03WuA+c8ckBjNNXotJD4G2utG/I3Q23NU69OEafrXtxxSukAaJBxzbtxwDvz3vtZK69pu9ojdkMoBNTg==
+popmotion@11.0.3:
+  version "11.0.3"
+  resolved "https://registry.yarnpkg.com/popmotion/-/popmotion-11.0.3.tgz#565c5f6590bbcddab7a33a074bb2ba97e24b0cc9"
+  integrity sha512-Y55FLdj3UxkR7Vl3s7Qr4e9m0onSnP8W7d/xQLsoJM40vs6UKHFdygs6SWryasTZYqugMjm3BepCF4CWXDiHgA==
   dependencies:
-    framesync "^4.1.0"
+    framesync "6.0.1"
     hey-listen "^1.0.8"
-    style-value-types "^3.1.9"
-    tslib "^1.10.0"
+    style-value-types "5.0.0"
+    tslib "^2.1.0"
 
 posix-character-classes@^0.1.0:
   version "0.1.1"
@@ -3720,9 +3774,9 @@ source-map-resolve@^0.5.0:
     urix "^0.1.0"
 
 source-map-support@~0.5.12:
-  version "0.5.13"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.13.tgz#31b24a9c2e73c2de85066c0feb7d44767ed52932"
-  integrity sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.21.tgz#04fe7c7f9e1ed2d662233c28cb2b35b9f63f6e4f"
+  integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==
   dependencies:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
@@ -3925,13 +3979,13 @@ style-loader@^0.23.1:
     loader-utils "^1.1.0"
     schema-utils "^1.0.0"
 
-style-value-types@^3.1.9:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/style-value-types/-/style-value-types-3.2.0.tgz#eb89cab1340823fa7876f3e289d29d99c92111bb"
-  integrity sha512-ih0mGsrYYmVvdDi++/66O6BaQPRPRMQHoZevNNdMMcPlP/cH28Rnfsqf1UEba/Bwfuw9T8BmIMwbGdzsPwQKrQ==
+style-value-types@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/style-value-types/-/style-value-types-5.0.0.tgz#76c35f0e579843d523187989da866729411fc8ad"
+  integrity sha512-08yq36Ikn4kx4YU6RD7jWEv27v4V+PUsOGa4n/as8Et3CuODMJQ00ENeAVXAeydX4Z2j1XHZF1K2sX4mGl18fA==
   dependencies:
     hey-listen "^1.0.8"
-    tslib "^1.10.0"
+    tslib "^2.1.0"
 
 supports-color@6.1.0, supports-color@^6.1.0:
   version "6.1.0"
@@ -3991,9 +4045,9 @@ terser-webpack-plugin@^1.4.1:
     worker-farm "^1.7.0"
 
 terser@^4.1.2:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.1.3.tgz#6074fbcf3517561c3272ea885f422c7a8c32d689"
-  integrity sha512-on13d+cnpn5bMouZu+J8tPYQecsdRJCJuxFJ+FVoPBoLJgk5bCBkp+Uen2hWyi0KIUm6eDarnlAlH+KgIx/PuQ==
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.8.1.tgz#a00e5634562de2239fd404c649051bf6fc21144f"
+  integrity sha512-4GnLC0x667eJG0ewJTa6z/yXrbLGv80D9Ru6HIpCQmO+Q4PfEtBFi0ObSckqwL6VyQv/7ENJieXHo2ANmdQwgw==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
@@ -4067,15 +4121,15 @@ ts-loader@^6.0.4:
     micromatch "^4.0.0"
     semver "^6.0.0"
 
-tslib@^1.10.0:
-  version "1.14.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
-  integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
-
 tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
   integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
+
+tslib@^2.1.0, tslib@^2.3.1:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
+  integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
 
 tslint-react@^4.0.0:
   version "4.0.0"
