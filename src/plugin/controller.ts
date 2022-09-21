@@ -10,7 +10,20 @@ import {
 
 figma.showUI(__html__, { width: 360, height: 580 });
 
-let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
+const num1 = 4;
+const num2 = 100;
+const multiples = (num1, num2) => {
+  const res = [];
+  for (let i = num1; i <= num1 * num2; i += num1) {
+    res.push(i);
+  }
+  return res;
+};
+const multipleOfFour = multiples(num1, num2);
+
+console.log(multipleOfFour);
+
+let borderRadiusArray = multipleOfFour;
 let originalNodeTree = [];
 let lintVectors = false;
 
@@ -286,6 +299,15 @@ figma.ui.onmessage = msg => {
   }
 
   function determineType(node) {
+    console.log(
+      node,
+      "NODE",
+      node.type,
+      "NODE Type",
+      node,
+      "NODE Opacity",
+      node.id
+    );
     switch (node.type) {
       case "SLICE":
       case "GROUP": {
@@ -306,6 +328,7 @@ figma.ui.onmessage = msg => {
         return lintFrameRules(node);
       }
       case "INSTANCE":
+        return lintInstanceRules(node);
       case "RECTANGLE": {
         return lintRectangleRules(node);
       }
@@ -378,6 +401,21 @@ figma.ui.onmessage = msg => {
   }
 
   function lintTextRules(node) {
+    let errors = [];
+
+    checkType(node, errors);
+    checkFills(node, errors);
+
+    // We could also comment out checkFills and use a custom function instead
+    // Take a look at line 122 in lintingFunction.ts for an example.
+    // customCheckTextFills(node, errors);
+    checkEffects(node, errors);
+    checkStrokes(node, errors);
+
+    return errors;
+  }
+
+  function lintInstanceRules(node) {
     let errors = [];
 
     checkType(node, errors);

@@ -62,21 +62,21 @@ export function checkRadius(node, errors, radiusValues) {
 
   // If the radius isn't even on all sides, check each corner.
   if (typeof cornerType === "symbol") {
-    if (radiusValues.indexOf(node.topLeftRadius) === -1) {
+    if (radiusValues.indexOf(node.topLeftRadius) != 4) {
       return errors.push(
         createErrorObject(
           node,
           "radius",
-          "Incorrect Top Left Radius",
+          "Incorrect Top Left Radius, should be multiple of 4",
           node.topRightRadius
         )
       );
-    } else if (radiusValues.indexOf(node.topRightRadius) === -1) {
+    } else if (radiusValues.indexOf(node.topRightRadius) != 4) {
       return errors.push(
         createErrorObject(
           node,
           "radius",
-          "Incorrect top right radius",
+          "Incorrect top right radius, should be multiple of 4",
           node.topRightRadius
         )
       );
@@ -85,7 +85,7 @@ export function checkRadius(node, errors, radiusValues) {
         createErrorObject(
           node,
           "radius",
-          "Incorrect bottom left radius",
+          "Incorrect bottom left radius, should be multiple of 4",
           node.bottomLeftRadius
         )
       );
@@ -94,7 +94,7 @@ export function checkRadius(node, errors, radiusValues) {
         createErrorObject(
           node,
           "radius",
-          "Incorrect bottom right radius",
+          "Incorrect bottom right radius, should be multiple of 4",
           node.bottomRightRadius
         )
       );
@@ -107,7 +107,7 @@ export function checkRadius(node, errors, radiusValues) {
         createErrorObject(
           node,
           "radius",
-          "Incorrect border radius",
+          "Incorrect border radius, should be multiple of 4",
           node.cornerRadius
         )
       );
@@ -240,13 +240,23 @@ export function checkFills(node, errors) {
 
     if (typeof nodeFills === "symbol") {
       return errors.push(
-        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+        createErrorObject(
+          node,
+          "fill",
+          "Fill - do not hardcode colors, use color tokens",
+          "Mixed values"
+        )
       );
     }
 
     if (typeof fillStyleId === "symbol") {
       return errors.push(
-        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+        createErrorObject(
+          node,
+          "fill",
+          "Fill - do not hardcode colors, use color tokens",
+          "Mixed values"
+        )
       );
     }
 
@@ -260,7 +270,7 @@ export function checkFills(node, errors) {
         createErrorObject(
           node,
           "fill",
-          "Missing fill style",
+          "Fill - do not hardcode colors, use color tokens",
           determineFill(node.fills)
         )
       );
@@ -286,7 +296,12 @@ export function checkStrokes(node, errors) {
       let currentStyle = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
 
       return errors.push(
-        createErrorObject(node, "stroke", "Missing stroke style", currentStyle)
+        createErrorObject(
+          node,
+          "stroke",
+          "Stroke - do not hardcode colors, use color tokens",
+          currentStyle
+        )
       );
     } else {
       return;
@@ -304,7 +319,16 @@ export function checkType(node, errors) {
     };
 
     let fontStyle = node.fontName;
+    console.log(fontStyle.family);
     let fontSize = node.fontName;
+
+    // If font family is not Segoe UI
+    if (fontStyle.family !== "Segoe UI") {
+      console.log("Yahoo");
+      return errors.push(
+        createErrorObject(node, "text", "Incorrect font family", "Use Segoe UI")
+      );
+    }
 
     if (typeof fontSize === "symbol") {
       return errors.push(
