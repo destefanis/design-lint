@@ -1,7 +1,7 @@
 import * as React from "react";
 import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
-import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
+import { AnimatePresence } from "framer-motion/dist/framer-motion";
 
 function BulkErrorList(props) {
   // Reduce the size of our array of errors by removing nodes with no errors on them.
