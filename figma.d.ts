@@ -6,6 +6,7 @@ declare global {
   const __html__: string;
 
   interface PluginAPI {
+    skipInvisibleInstanceChildren: boolean;
     readonly apiVersion: "1.0.0";
     readonly command: string;
     readonly viewport: ViewportAPI;
