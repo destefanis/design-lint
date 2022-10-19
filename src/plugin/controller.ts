@@ -16,7 +16,7 @@ let lintVectors = false;
 
 figma.skipInvisibleInstanceChildren = true;
 
-figma.on("documentchange", event => {
+figma.on("documentchange", _event => {
   // When a change happens in the document
   // send a message to the plugin to look for changes.
   figma.ui.postMessage({
