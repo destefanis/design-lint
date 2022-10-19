@@ -16,6 +16,14 @@ let lintVectors = false;
 
 figma.skipInvisibleInstanceChildren = true;
 
+figma.on("documentchange", event => {
+  // When a change happens in the document
+  // send a message to the plugin to look for changes.
+  figma.ui.postMessage({
+    type: "change"
+  });
+});
+
 figma.ui.onmessage = msg => {
   if (msg.type === "close") {
     figma.closePlugin();
@@ -55,7 +63,9 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // Could this be made less expensive?
+  // TODO make a custom function to check for changes
+  // on the specific document nodes that have been updated
+  // using documentchange
   if (msg.type === "update-errors") {
     figma.ui.postMessage({
       type: "updated errors",

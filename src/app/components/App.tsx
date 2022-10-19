@@ -35,9 +35,6 @@ const App = ({}) => {
   const [initialLoad, setInitialLoad] = React.useState(false);
   const [timedLoad, setTimeLoad] = React.useState(false);
 
-  let newWindowFocus = false;
-  let counter = 0;
-
   window.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
       // Close plugin when pressing Escape
@@ -122,38 +119,12 @@ const App = ({}) => {
     );
   };
 
-  const onFocus = () => {
-    newWindowFocus = true;
-    counter = 0;
-  };
-
-  const onBlur = () => {
-    newWindowFocus = false;
-    pollForChanges();
-  };
-
   const onRunApp = React.useCallback(() => {
     parent.postMessage(
       { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
       "*"
     );
   }, []);
-
-  // Recursive function for detecting if the user updates a layer.
-  // polls for up to two minutes.
-  function pollForChanges() {
-    if (newWindowFocus === false && counter < 600) {
-      // How often we poll for new changes.
-      let timer = 1500;
-
-      parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
-      counter++;
-
-      setTimeout(() => {
-        pollForChanges();
-      }, timer);
-    }
-  }
 
   function updateVisibility() {
     if (isVisible === true) {
@@ -186,9 +157,6 @@ const App = ({}) => {
 
   React.useEffect(() => {
     onRunApp();
-
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("blur", onBlur);
 
     window.onmessage = event => {
       const { type, message, errors, storage } = event.data.pluginMessage;
@@ -274,6 +242,9 @@ const App = ({}) => {
         setSelectedNode(() => JSON.parse(message));
 
         // Ask the controller to lint the layers for errors.
+        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+      } else if (type === "change") {
+        // Document Changed
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
