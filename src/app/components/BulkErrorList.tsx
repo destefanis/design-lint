@@ -37,9 +37,9 @@ function BulkErrorList(props) {
 
     nodeErrors.forEach(error => {
       // Check to see if another error with this same value exists.
-      if (bulkErrorList.some(e => e.value === error.value)) {
+      if (bulkErrorList.some(e => e.type === error.type && e.message === error.message && e.value === error.value)) {
         // Find the error of this type that already exists.
-        let duplicateError = bulkErrorList.find(e => e.value === error.value);
+        let duplicateError = bulkErrorList.find(e => e.type === error.type && e.message === error.message && e.value === error.value);
         let nodesThatShareErrors = duplicateError.nodes;
         // Add the nodes id that share this error to the object
         // That way we can select them all at once.
