@@ -313,6 +313,9 @@ figma.ui.onmessage = msg => {
       case "FRAME": {
         return lintFrameRules(node);
       }
+      case "SECTION": {
+        return lintSectionRules(node);
+      }
       case "INSTANCE":
       case "RECTANGLE": {
         return lintRectangleRules(node);
@@ -381,6 +384,17 @@ figma.ui.onmessage = msg => {
     checkStrokes(node, errors);
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
+
+    return errors;
+  }
+
+  function lintSectionRules(node) {
+    let errors = [];
+
+    checkFills(node, errors);
+    // For some reason section strokes aren't accessible via the API yet.
+    // checkStrokes(node, errors);
+    checkRadius(node, errors, borderRadiusArray);
 
     return errors;
   }
