@@ -56,7 +56,7 @@ export function checkRadius(node, errors, radiusValues) {
 
   // If node has a key, then recognizes as a symbol and ignores the radius check
   if (node.key) {
-      return;
+    return;
   }
 
   if (typeof cornerType !== "symbol") {
@@ -122,31 +122,34 @@ export function checkRadius(node, errors, radiusValues) {
   }
 }
 
+/**
+ * We strip the additional style key characters so we can check to see if the fill is being used incorrectly
+ */
+function getFillStyleValue(nodeFillStyle = "") {
+  nodeFillStyle = nodeFillStyle.replace("S:", "");
+  nodeFillStyle = nodeFillStyle.split(",")[0];
+  return nodeFillStyle;
+}
+
 // Custom Lint rule that isn't being used yet!
 // that ensures our text fills aren't using styles (design tokens) meant for backgrounds.
 export function customCheckTextFills(node, errors) {
   // Here we create an array of style keys (https://www.figma.com/plugin-docs/api/PaintStyle/#key)
   // that we want to make sure our text layers aren't using.
   const fillsToCheck = [
-
     // Light Theme  Text colors
     //Primary
-    "4ee8eb5a438921bf08fde7a869da362c276e14e4", 
+    "4ee8eb5a438921bf08fde7a869da362c276e14e4",
     //Secondary
     "7d1489ff665e5bf5685e4421aafe8c40232c665a",
     //Destructive
     "7318fda20379fe55fe4f6d2aff16f5bc0ddd862d",
-   
+
     // Light Brand Colors
     //Accent
     "54c06c9ac31536f8df989c6ec50ad9e77ff43bfc",
     //Label
-    "040c3240b8b16be432f802a55346e9afd4e563fa",
-  
-
-  
-    
-
+    "040c3240b8b16be432f802a55346e9afd4e563fa"
     // To collect style keys, use a plugin like Inspector, or use console commands like figma.getLocalPaintStyles();
     // in your design system file.
   ];
@@ -166,15 +169,12 @@ export function customCheckTextFills(node, errors) {
     );
   }
 
-  // We strip the additional style key characters so we can check
-  // to see if the fill is being used incorrectly.
-  nodeFillStyle = nodeFillStyle.replace("S:", "");
-  nodeFillStyle = nodeFillStyle.split(",")[0];
+  const fillStyleValue = getFillStyleValue(nodeFillStyle);
 
   // If the node (layer) has a fill style, then check to see if there's an error.
-  if (nodeFillStyle !== "") {
-    // If we find the layer has a fillStyle that matches in the array create an error.
-    if (!fillsToCheck.includes(nodeFillStyle)) {
+  if (fillStyleValue !== "") {
+    // If we find the layer has a fillStyle that is not in the array create an error.
+    if (!fillsToCheck.includes(fillStyleValue)) {
       return errors.push(
         createErrorObject(
           node, // Node object we use to reference the error (id, layer name, etc)
@@ -188,6 +188,32 @@ export function customCheckTextFills(node, errors) {
     // check to see why with our default linting function for fills.
   } else {
     checkFills(node, errors);
+  }
+}
+
+export function checkBGFills(node, errors) {
+  // Do not run if it's a text node
+  if (node.type === "TEXT") return;
+
+  // TODO: Populate with real colors
+  const fillsToCheck = ["92acfdac868878eada624466b66226f82b28e525"];
+
+  const nodeFillStyle = node.fillStyleId;
+  const fillStyleValue = getFillStyleValue(nodeFillStyle);
+
+  // If the node (layer) has a fill style, then check to see if there's an error.
+  if (fillStyleValue !== "") {
+    // If we find the layer has a fillStyle that is not in the array create an error.
+    if (!fillsToCheck.includes(fillStyleValue)) {
+      return errors.push(
+        createErrorObject(
+          node, // Node object we use to reference the error (id, layer name, etc)
+          "fill", // Type of error (fill, text, effect, etc)
+          "The background color is unexpected", // Message we show to the user
+          "The background color is unexpected" // Determines the fill, so we can show a hex value.
+        )
+      );
+    }
   }
 }
 
@@ -270,6 +296,7 @@ export function checkFills(node, errors) {
         )
       );
     } else {
+      checkBGFills(node, errors);
       return;
     }
   }
@@ -280,29 +307,23 @@ export function checkStrokes(node, errors) {
     //Stroke Style Id to check
     //Light Stystem Lines
     //Lines
-    "3a5ae402993a2d4e4f1a3b31e03b3a4a052b0d23", 
+    "3a5ae402993a2d4e4f1a3b31e03b3a4a052b0d23"
     //Pending Adding Icons
-   
   ];
 
-
   const symbolsToIgnore = [
-  // Component List for stroke
-  // This need a component Key
+    // Component List for stroke
+    // This need a component Key
 
-  //Light
-  //iOS Keyboard Letters
-   "de7d4836a3ceec230051d40dc12fbf023d0700eb",
-  
-  ]; 
+    //Light
+    //iOS Keyboard Letters
+    "de7d4836a3ceec230051d40dc12fbf023d0700eb"
+  ];
 
   // // If it is from an specific symbol we don't return Error
   if (symbolsToIgnore.includes(node.key)) {
-      return;
-    }
-
-
-
+    return;
+  }
 
   if (node.strokes.length) {
     if (node.strokeStyleId === "" && node.visible === true) {
@@ -321,8 +342,8 @@ export function checkStrokes(node, errors) {
       return errors.push(
         createErrorObject(node, "stroke", "Missing stroke style", currentStyle)
       );
-    } else if (node.visible === true && node.strokeStyleId!= "") {
-      let nodeStrokeStyleId = node.strokeStyleId
+    } else if (node.visible === true && node.strokeStyleId != "") {
+      let nodeStrokeStyleId = node.strokeStyleId;
       // We strip the additional style key characters so we can check
       // to see if the stroke is being used incorrectly.
       nodeStrokeStyleId = nodeStrokeStyleId.replace("S:", "");
@@ -334,16 +355,16 @@ export function checkStrokes(node, errors) {
           strokeAlign: "",
           strokeFills: []
         };
-  
+
         strokeObject.strokeWeight = node.strokeWeight;
         strokeObject.strokeAlign = node.strokeAlign;
         strokeObject.strokeFills = determineFill(node.strokes);
-  
+
         let currentStyle = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
-  
-          return errors.push(
-            createErrorObject(node, "stroke", "Wrong stroke style", currentStyle)
-          );
+
+        return errors.push(
+          createErrorObject(node, "stroke", "Wrong stroke style", currentStyle)
+        );
       } else {
         return;
       }
@@ -355,24 +376,20 @@ export function checkStrokes(node, errors) {
   }
 }
 
-
 export function ignoreSymbols(node) {
   const symbolsToIgnore = [
     // Components to exclude (Android and iOS System)
     // example apple pay payment method
-     "433395b8a30f62f0fb35618592b2496e61778a25"
-    ]; 
+    "433395b8a30f62f0fb35618592b2496e61778a25"
+  ];
 
-      // // if it is an specific symbol, we don't return an error
-      if (symbolsToIgnore.includes(node.key)) {
-      return;
-      } else {
-
-      return;
-    } 
+  // // if it is an specific symbol, we don't return an error
+  if (symbolsToIgnore.includes(node.key)) {
+    return;
+  } else {
+    return;
   }
-
-
+}
 
 export function checkType(node, errors) {
   if (node.textStyleId === "" && node.visible === true) {

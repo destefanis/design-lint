@@ -3,8 +3,8 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType, 
-  customCheckTextFills,
+  checkType,
+  customCheckTextFills
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
@@ -381,7 +381,7 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     checkType(node, errors);
-    checkFills(node, errors);
+    // checkFills(node, errors);
 
     // We could also comment out checkFills and use a custom function instead
     // Take a look at line 122 in lintingFunction.ts for an example.
