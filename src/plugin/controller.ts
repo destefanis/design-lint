@@ -3,26 +3,17 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType
+  checkType, 
+  customCheckTextFills,
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
 
 figma.showUI(__html__, { width: 360, height: 580 });
 
-let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
-let originalNodeTree: readonly any[] = [];
+let borderRadiusArray = [0, 8, 12, 16];
+let originalNodeTree = [];
 let lintVectors = false;
-
-figma.skipInvisibleInstanceChildren = true;
-
-figma.on("documentchange", _event => {
-  // When a change happens in the document
-  // send a message to the plugin to look for changes.
-  figma.ui.postMessage({
-    type: "change"
-  });
-});
 
 figma.ui.onmessage = msg => {
   if (msg.type === "close") {
@@ -313,9 +304,6 @@ figma.ui.onmessage = msg => {
       case "FRAME": {
         return lintFrameRules(node);
       }
-      case "SECTION": {
-        return lintSectionRules(node);
-      }
       case "INSTANCE":
       case "RECTANGLE": {
         return lintRectangleRules(node);
@@ -354,6 +342,7 @@ figma.ui.onmessage = msg => {
 
     checkFills(node, errors);
     checkRadius(node, errors, borderRadiusArray);
+
     checkEffects(node, errors);
     checkStrokes(node, errors);
 
@@ -388,17 +377,6 @@ figma.ui.onmessage = msg => {
     return errors;
   }
 
-  function lintSectionRules(node) {
-    let errors = [];
-
-    checkFills(node, errors);
-    // For some reason section strokes aren't accessible via the API yet.
-    // checkStrokes(node, errors);
-    checkRadius(node, errors, borderRadiusArray);
-
-    return errors;
-  }
-
   function lintTextRules(node) {
     let errors = [];
 
@@ -407,7 +385,7 @@ figma.ui.onmessage = msg => {
 
     // We could also comment out checkFills and use a custom function instead
     // Take a look at line 122 in lintingFunction.ts for an example.
-    // customCheckTextFills(node, errors);
+    customCheckTextFills(node, errors);
     checkEffects(node, errors);
     checkStrokes(node, errors);
 
