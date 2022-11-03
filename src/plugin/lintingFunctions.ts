@@ -195,8 +195,17 @@ export function checkBGFills(node, errors) {
   // Do not run if it's a text node
   if (node.type === "TEXT") return;
 
-  // TODO: Populate with real colors
-  const fillsToCheck = ["92acfdac868878eada624466b66226f82b28e525"];
+  // Populate with real Background colors
+  const fillsToCheck = [
+    //Background
+    "92acfdac868878eada624466b66226f82b28e525",
+    //Surface
+    "547bb9893a38846fb746e7c6ab0b0d50ee596460",
+    //Container
+    "b9a9acff5a3fad4bd308e98c482cfe97ca97b99d",
+    // Icon
+    "1e6cc43ca295b794b93f52422513b578e6409c1e"
+  ];
 
   const nodeFillStyle = node.fillStyleId;
   const fillStyleValue = getFillStyleValue(nodeFillStyle);
@@ -209,8 +218,8 @@ export function checkBGFills(node, errors) {
         createErrorObject(
           node, // Node object we use to reference the error (id, layer name, etc)
           "fill", // Type of error (fill, text, effect, etc)
-          "The background color is unexpected", // Message we show to the user
-          "The background color is unexpected" // Determines the fill, so we can show a hex value.
+          "Incorrect background color use", // Message we show to the user
+          "Using incorrect color on a background layer" // Determines the fill, so we can show a hex value.
         )
       );
     }
@@ -308,16 +317,11 @@ export function checkStrokes(node, errors) {
     //Light Stystem Lines
     //Lines
     "3a5ae402993a2d4e4f1a3b31e03b3a4a052b0d23"
-    //Pending Adding Icons
   ];
 
   const symbolsToIgnore = [
     // Component List for stroke
     // This need a component Key
-
-    //Light
-    //iOS Keyboard Letters
-    "de7d4836a3ceec230051d40dc12fbf023d0700eb"
   ];
 
   // // If it is from an specific symbol we don't return Error
@@ -379,8 +383,10 @@ export function checkStrokes(node, errors) {
 export function ignoreSymbols(node) {
   const symbolsToIgnore = [
     // Components to exclude (Android and iOS System)
-    // example apple pay payment method
-    "433395b8a30f62f0fb35618592b2496e61778a25"
+    //Android Bottom Navigation
+    "3b7f1611a36d94c2dfd8d1bdcd016320bad1e1c5",
+    //Button
+    "4c176fb66019af2b55fcd687fa5c358c63251e44"
   ];
 
   // // if it is an specific symbol, we don't return an error
