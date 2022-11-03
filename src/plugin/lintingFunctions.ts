@@ -149,7 +149,18 @@ export function customCheckTextFills(node, errors) {
     //Accent
     "54c06c9ac31536f8df989c6ec50ad9e77ff43bfc",
     //Label
-    "040c3240b8b16be432f802a55346e9afd4e563fa"
+    "040c3240b8b16be432f802a55346e9afd4e563fa",
+
+    //Buttons (White over color)
+    "720c58a05d62983e8ce0eb5db12d68cf3bf917cd",
+    //Button Ghost Pressed Blue 70
+    "6a48e406e78aaf905b8a39e8a937ea43df147b24",
+    //Button Disabled Shade36
+    "92d5dbce4c0e079d4c1641e364f0311f3bec87ab",
+    //Button Destructive Red 50
+    "223fe7038b64a4df95e5a4393e506f1df91568c2",
+    //Button Destructive Ghost Red70
+    "87bad95916a186853f3148df5208026048153267"
     // To collect style keys, use a plugin like Inspector, or use console commands like figma.getLocalPaintStyles();
     // in your design system file.
   ];
@@ -204,7 +215,19 @@ export function checkBGFills(node, errors) {
     //Container
     "b9a9acff5a3fad4bd308e98c482cfe97ca97b99d",
     // Icon
-    "1e6cc43ca295b794b93f52422513b578e6409c1e"
+    "1e6cc43ca295b794b93f52422513b578e6409c1e",
+    //Accent
+    "54c06c9ac31536f8df989c6ec50ad9e77ff43bfc",
+    //Button Pressed
+    "6a48e406e78aaf905b8a39e8a937ea43df147b24",
+    //Button Disabled
+    "7355e95935c0d3297e71d58598ec84aa68f6fc7a",
+    //Button Destructive
+    "223fe7038b64a4df95e5a4393e506f1df91568c2",
+    //Button Destructive Pressed
+    "87bad95916a186853f3148df5208026048153267",
+    //Button Destructive Ghost Pressed
+    "41f161fea8aa53e5aa1798ba285c6a157ee053d7"
   ];
 
   const nodeFillStyle = node.fillStyleId;
@@ -316,7 +339,11 @@ export function checkStrokes(node, errors) {
     //Stroke Style Id to check
     //Light Stystem Lines
     //Lines
-    "3a5ae402993a2d4e4f1a3b31e03b3a4a052b0d23"
+    "3a5ae402993a2d4e4f1a3b31e03b3a4a052b0d23",
+    //Button Outline
+    "9fccc353af25ad501704d19f355946c2deadc6bf",
+    //Button Outline Disabled
+    "088dc6b8a07094e9a8effa90b83539e372393431"
   ];
 
   const symbolsToIgnore = [
@@ -386,7 +413,9 @@ export function ignoreSymbols(node) {
     //Android Bottom Navigation
     "3b7f1611a36d94c2dfd8d1bdcd016320bad1e1c5",
     //Button
-    "4c176fb66019af2b55fcd687fa5c358c63251e44"
+    "4c176fb66019af2b55fcd687fa5c358c63251e44",
+    //Toggles
+    "feb0d1cc3ca428c1b94bf7307a458ca122323fed"
   ];
 
   // // if it is an specific symbol, we don't return an error
