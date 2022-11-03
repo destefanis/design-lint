@@ -3,8 +3,8 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType, 
-  customCheckTextFills,
+  checkType,
+  customCheckTextFills
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
@@ -14,6 +14,14 @@ figma.showUI(__html__, { width: 360, height: 580 });
 let borderRadiusArray = [0, 8, 12, 16];
 let originalNodeTree = [];
 let lintVectors = false;
+
+figma.on("documentchange", _event => {
+  // When a change happens in the document
+  // send a message to the plugin to look for changes.
+  figma.ui.postMessage({
+    type: "change"
+  });
+});
 
 figma.ui.onmessage = msg => {
   if (msg.type === "close") {
@@ -381,7 +389,7 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     checkType(node, errors);
-    checkFills(node, errors);
+    // checkFills(node, errors);
 
     // We could also comment out checkFills and use a custom function instead
     // Take a look at line 122 in lintingFunction.ts for an example.
