@@ -15,6 +15,14 @@ let borderRadiusArray = [0, 8, 12, 16];
 let originalNodeTree = [];
 let lintVectors = false;
 
+figma.on("documentchange", _event => {
+  // When a change happens in the document
+  // send a message to the plugin to look for changes.
+  figma.ui.postMessage({
+    type: "change"
+  });
+});
+
 figma.ui.onmessage = msg => {
   if (msg.type === "close") {
     figma.closePlugin();
