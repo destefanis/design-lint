@@ -9,6 +9,7 @@
     "removeComments": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "types": ["@figma/plugin-typings", "node", "react", "react-dom"]
   }
 }
