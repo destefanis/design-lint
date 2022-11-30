@@ -30,6 +30,8 @@ export function determineFill(fills) {
       fillValues.push(RGBToHex(rgbObj["r"], rgbObj["g"], rgbObj["b"]));
     } else if (fill.type === "IMAGE") {
       fillValues.push("Image - " + fill.imageHash);
+    } else if (fill.type === "VIDEO") {
+      fillValues.push("Video Fill");
     } else {
       const gradientValues = [];
       fill.gradientStops.forEach(gradientStops => {
@@ -253,6 +255,7 @@ export function checkFills(node, errors) {
     if (
       node.fillStyleId === "" &&
       node.fills[0].type !== "IMAGE" &&
+      node.fills[0].type !== "VIDEO" &&
       node.fills[0].visible === true
     ) {
       // We may need an array to loop through fill types.
