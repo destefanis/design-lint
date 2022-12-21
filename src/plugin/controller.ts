@@ -267,17 +267,21 @@ figma.ui.onmessage = msg => {
       });
 
       figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {
-        figma.ui.postMessage({
-          type: "fetched storage",
-          storage: result
-        });
+        if (result.length) {
+          figma.ui.postMessage({
+            type: "fetched storage",
+            storage: result
+          });
+        }
       });
 
       figma.clientStorage.getAsync("storedActivePage").then(result => {
-        figma.ui.postMessage({
-          type: "fetched active page",
-          storage: result
-        });
+        if (result.length) {
+          figma.ui.postMessage({
+            type: "fetched active page",
+            storage: result
+          });
+        }
       });
 
       figma.clientStorage.getAsync("storedRadiusValues").then(result => {
