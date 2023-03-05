@@ -282,6 +282,22 @@ export function checkStrokes(node, errors) {
         strokeFills: []
       };
 
+      // With the update to stroke alignment, sometimes
+      // strokes can be symhols (figma.mixed)
+      let strokeWeight = node.strokeWeight;
+
+      // Check for a mixed stroke weight and return a generic error
+      if (typeof strokeWeight === "symbol") {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            "Mixed sizes or alignment"
+          )
+        );
+      }
+
       strokeObject.strokeWeight = node.strokeWeight;
       strokeObject.strokeAlign = node.strokeAlign;
       strokeObject.strokeFills = determineFill(node.strokes);
