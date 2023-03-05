@@ -65,6 +65,7 @@ figma.ui.onmessage = msg => {
 
   // Could this be made less expensive?
   if (msg.type === "update-errors") {
+    console.log("update");
     figma.ui.postMessage({
       type: "updated errors",
       errors: lint(originalNodeTree)
@@ -230,18 +231,114 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
+  // Updated with a generator function, still missing locked layers
   if (msg.type === "lint-all") {
+    console.log("lint all");
     // Pass the array back to the UI to be displayed.
-    figma.ui.postMessage({
-      type: "complete",
-      errors: lint(originalNodeTree),
-      message: serializeNodes(msg.nodes)
-    });
+    // figma.ui.postMessage({
+    //   type: "complete",
+    //   errors: lint(originalNodeTree),
+    //   message: serializeNodes(msg.nodes)
+    // });
+
+    // Open AI Generator Code
+    const nodes = originalNodeTree;
+
+    const errorArray = []; // declare the array here
+    let childArray = [];
+
+    const nodesGenerator = function*() {
+      let i = 0;
+      while (i < nodes.length) {
+        yield nodes[i];
+        i++;
+      }
+    };
+
+    async function processNodes() {
+      const batchSize = 5;
+      const gen = nodesGenerator();
+
+      for (let i = 0; i < nodes.length; i += batchSize) {
+        const batch = [];
+        let result = gen.next();
+        while (!result.done && batch.length < batchSize) {
+          batch.push(result.value);
+          result = gen.next();
+        }
+        // process the batch of nodes here
+        for (const node of batch) {
+          let isLayerLocked;
+
+          // Create a new object.
+          let newObject = {};
+
+          // Give it the existing node id.
+          newObject["id"] = node.id;
+
+          let children = node.children;
+          newObject["errors"] = determineType(node);
+
+          if (!children) {
+            errorArray.push(newObject);
+            return;
+          } else if (children) {
+            // Recursively run this function to flatten out children and grandchildren nodes
+            node["children"].forEach(childNode => {
+              childArray.push(childNode.id);
+            });
+
+            newObject["children"] = childArray;
+
+            // If the layer is locked, pass the optional parameter to the recursive Lint
+            // function to indicate this layer is locked.
+            if (isLayerLocked === true) {
+              errorArray.push(...lint(node["children"], true));
+            } else {
+              errorArray.push(...lint(node["children"], false));
+            }
+          }
+
+          errorArray.push(newObject);
+        }
+      }
+
+      await figma.ui.postMessage({
+        type: "complete",
+        errors: errorArray,
+        message: serializeNodes(msg.nodes)
+      });
+    }
+
+    processNodes();
 
     figma.notify(`Design lint is running and will auto refresh for changes`, {
       timeout: 2000
     });
   }
+
+  // Open AI example 2
+  // const nodes = figma.currentPage.selection;
+  // async function processNodesFast() {
+  //   const nodesGenerator = function*() {
+  //     let i = 0;
+  //     while (i < nodes.length) {
+  //       yield nodes[i];
+  //       i++;
+  //     }
+  //   };
+
+  //   const gen = nodesGenerator();
+  //   let result = gen.next();
+  //   while (!result.done) {
+  //     const node = result.value;
+  //     // perform complex operations on the node here
+  //     console.log(node.name);
+  //     // await someAsyncFunction(node);
+  //     result = gen.next();
+  //   }
+  // }
+  // await processNodesFast();
 
   // Initialize the app
   if (msg.type === "run-app") {
