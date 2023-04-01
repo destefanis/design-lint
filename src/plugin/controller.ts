@@ -14,6 +14,8 @@ let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree: readonly any[] = [];
 let lintVectors = false;
 
+const batchSize = 5;
+
 figma.skipInvisibleInstanceChildren = true;
 
 figma.on("documentchange", _event => {
@@ -65,10 +67,9 @@ figma.ui.onmessage = msg => {
 
   // Could this be made less expensive?
   if (msg.type === "update-errors") {
-    console.log("update");
     figma.ui.postMessage({
       type: "updated errors",
-      errors: lint(originalNodeTree)
+      errors: lintV3(originalNodeTree, batchSize)
     });
   }
 
@@ -173,56 +174,28 @@ figma.ui.onmessage = msg => {
     return serializedNodes;
   }
 
-  function lint(nodes, lockedParentNode?) {
+  function lint(nodes, lockedParentNode = false) {
     let errorArray = [];
-    let childArray = [];
 
     nodes.forEach(node => {
-      let isLayerLocked;
+      // Determine if the layer or its parent is locked.
+      const isLayerLocked = lockedParentNode || node.locked;
 
       // Create a new object.
-      let newObject = {};
+      const newObject = {
+        id: node.id,
+        errors: isLayerLocked ? [] : determineType(node),
+        children: []
+      };
 
-      // Give it the existing node id.
-      newObject["id"] = node.id;
+      // Check if the node has children.
+      if (node.children) {
+        // Add child node IDs to the newObject's children property.
+        newObject.children = node.children.map(childNode => childNode.id);
 
-      let children = node.children;
-
-      // Don't lint locked layers or the children/grandchildren of locked layers.
-      if (lockedParentNode === undefined && node.locked === true) {
-        isLayerLocked = true;
-      } else if (lockedParentNode === undefined && node.locked === false) {
-        isLayerLocked = false;
-      } else if (lockedParentNode === false && node.locked === true) {
-        isLayerLocked = true;
-      } else {
-        isLayerLocked = lockedParentNode;
-      }
-
-      if (isLayerLocked === true) {
-        newObject["errors"] = [];
-      } else {
-        newObject["errors"] = determineType(node);
-      }
-
-      if (!children) {
-        errorArray.push(newObject);
-        return;
-      } else if (children) {
-        // Recursively run this function to flatten out children and grandchildren nodes
-        node["children"].forEach(childNode => {
-          childArray.push(childNode.id);
-        });
-
-        newObject["children"] = childArray;
-
-        // If the layer is locked, pass the optional parameter to the recursive Lint
-        // function to indicate this layer is locked.
-        if (isLayerLocked === true) {
-          errorArray.push(...lint(node["children"], true));
-        } else {
-          errorArray.push(...lint(node["children"], false));
-        }
+        // Recursively run this function to flatten out children and grandchildren nodes.
+        // Pass the isLayerLocked value to the recursive lint function.
+        errorArray.push(...lint(node.children, isLayerLocked));
       }
 
       errorArray.push(newObject);
@@ -231,95 +204,72 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
-  // Updated with a generator function, still missing locked layers
-  if (msg.type === "lint-all") {
-    console.log("lint all");
-    // Pass the array back to the UI to be displayed.
-    // figma.ui.postMessage({
-    //   type: "complete",
-    //   errors: lint(originalNodeTree),
-    //   message: serializeNodes(msg.nodes)
-    // });
+  // Generator function to iterate over nodes in batches
+  function* iterateNodesInBatches(nodes, batchSize) {
+    for (let i = 0; i < nodes.length; i += batchSize) {
+      yield nodes.slice(i, i + batchSize);
+    }
+  }
 
-    // Open AI Generator Code
-    const nodes = originalNodeTree;
+  function lintBatch(nodes, lockedParentNode = false) {
+    let errorArray = [];
 
-    const errorArray = []; // declare the array here
-    let childArray = [];
+    nodes.forEach(node => {
+      const isLayerLocked = lockedParentNode || node.locked;
+      const newObject = {
+        id: node.id,
+        errors: isLayerLocked ? [] : determineType(node),
+        children: node.children
+          ? node.children.map(childNode => childNode.id)
+          : []
+      };
 
-    const nodesGenerator = function*() {
-      let i = 0;
-      while (i < nodes.length) {
-        yield nodes[i];
-        i++;
-      }
-    };
-
-    async function processNodes() {
-      const batchSize = 5;
-      const gen = nodesGenerator();
-
-      for (let i = 0; i < nodes.length; i += batchSize) {
-        const batch = [];
-        let result = gen.next();
-        while (!result.done && batch.length < batchSize) {
-          batch.push(result.value);
-          result = gen.next();
-        }
-        // process the batch of nodes here
-        for (const node of batch) {
-          let isLayerLocked;
-
-          // Create a new object.
-          let newObject = {};
-
-          // Give it the existing node id.
-          newObject["id"] = node.id;
-
-          let children = node.children;
-          newObject["errors"] = determineType(node);
-
-          if (!children) {
-            errorArray.push(newObject);
-            return;
-          } else if (children) {
-            // Recursively run this function to flatten out children and grandchildren nodes
-            node["children"].forEach(childNode => {
-              childArray.push(childNode.id);
-            });
-
-            newObject["children"] = childArray;
-
-            // If the layer is locked, pass the optional parameter to the recursive Lint
-            // function to indicate this layer is locked.
-            if (isLayerLocked === true) {
-              errorArray.push(...lint(node["children"], true));
-            } else {
-              errorArray.push(...lint(node["children"], false));
-            }
-          }
-
-          errorArray.push(newObject);
-        }
+      if (node.children) {
+        errorArray.push(...lintBatch(node.children, isLayerLocked));
       }
 
-      await figma.ui.postMessage({
-        type: "complete",
-        errors: errorArray,
-        message: serializeNodes(msg.nodes)
-      });
+      errorArray.push(newObject);
+    });
+
+    return errorArray;
+  }
+
+  function lintV3(nodes, batchSize) {
+    const nodeIterator = iterateNodesInBatches(nodes, batchSize);
+    let errorArray = [];
+
+    for (const batch of nodeIterator) {
+      errorArray.push(...lintBatch(batch));
     }
 
-    processNodes();
+    return errorArray;
+  }
+
+  if (msg.type === "lint-all") {
+    console.log("lint all");
+
+    const nodes = originalNodeTree;
+
+    figma.ui.postMessage({
+      type: "complete",
+      errors: lintV3(nodes, batchSize),
+      message: serializeNodes(msg.nodes)
+    });
 
     figma.notify(`Design lint is running and will auto refresh for changes`, {
       timeout: 2000
     });
   }
 
-  // Open AI example 2
-  // const nodes = figma.currentPage.selection;
-  // async function processNodesFast() {
+  // Lint function using a generator instead of a for loop
+  // if (msg.type === "lint-all") {
+  //   console.log("lint all");
+
+  //   const nodes = originalNodeTree;
+
+  //   const errorArray = [];
+  //   let childArray = [];
+
   //   const nodesGenerator = function*() {
   //     let i = 0;
   //     while (i < nodes.length) {
@@ -328,17 +278,91 @@ figma.ui.onmessage = msg => {
   //     }
   //   };
 
-  //   const gen = nodesGenerator();
-  //   let result = gen.next();
-  //   while (!result.done) {
-  //     const node = result.value;
-  //     // perform complex operations on the node here
-  //     console.log(node.name);
-  //     // await someAsyncFunction(node);
-  //     result = gen.next();
+  //   async function lintV2(nodes, lockedParentNode?) {
+  //     const batchSize = 5;
+  //     const gen = nodesGenerator();
+
+  //     for (let i = 0; i < nodes.length; i += batchSize) {
+  //       const batch = [];
+  //       let result = gen.next();
+  //       while (!result.done && batch.length < batchSize) {
+  //         batch.push(result.value);
+  //         result = gen.next();
+  //       }
+  //       // process the batch of nodes here
+  //       for (const node of batch) {
+  //         let isLayerLocked;
+
+  //         // Create a new object.
+  //         let newObject = {};
+
+  //         // Give it the existing node id.
+  //         newObject["id"] = node.id;
+
+  //         let children = node.children;
+
+  //         // Don't lint locked layers or the children/grandchildren of locked layers.
+  //         if (lockedParentNode === undefined && node.locked === true) {
+  //           isLayerLocked = true;
+  //         } else if (lockedParentNode === undefined && node.locked === false) {
+  //           isLayerLocked = false;
+  //         } else if (lockedParentNode === false && node.locked === true) {
+  //           isLayerLocked = true;
+  //         } else {
+  //           isLayerLocked = lockedParentNode;
+  //         }
+
+  //         if (isLayerLocked === true) {
+  //           newObject["errors"] = [];
+  //         } else {
+  //           newObject["errors"] = determineType(node);
+  //         }
+
+  //         if (!children) {
+  //           errorArray.push(newObject);
+  //           return;
+  //         } else if (children) {
+  //           // Recursively run this function to flatten out children and grandchildren nodes
+  //           node["children"].forEach(childNode => {
+  //             childArray.push(childNode.id);
+  //           });
+
+  //           newObject["children"] = childArray;
+
+  //           // If the layer is locked, pass the optional parameter to the recursive Lint
+  //           // function to indicate this layer is locked.
+  //           if (isLayerLocked === true) {
+  //             let lintedChildArray = await lintV2(node["children"], true);
+  //             errorArray.push(lintedChildArray);
+  //           } else {
+  //             let lintedChildArray = await lintV2(node["children"], false);
+  //             errorArray.push(lintedChildArray);
+  //           }
+  //         }
+
+  //         errorArray.push(newObject);
+  //       }
+  //     }
+
+  //     await figma.ui.postMessage({
+  //       type: "complete",
+  //       errors: errorArray,
+  //       message: serializeNodes(msg.nodes)
+  //     });
   //   }
+
+  //   lintV2(nodes);
+  //   // Uncomment for original lint function
+  //   // figma.ui.postMessage({
+  //   //   type: "complete",
+  //   //   errors: lint(originalNodeTree),
+  //   //   message: serializeNodes(msg.nodes)
+  //   // });
+
+  //   figma.notify(`Design lint is running and will auto refresh for changes`, {
+  //     timeout: 2000
+  //   });
   // }
-  // await processNodesFast();
 
   // Initialize the app
   if (msg.type === "run-app") {
@@ -360,7 +384,7 @@ figma.ui.onmessage = msg => {
       figma.ui.postMessage({
         type: "first node",
         message: serializeNodes(nodes),
-        errors: lint(firstNode)
+        errors: lintV3(firstNode, batchSize)
       });
 
       figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {
