@@ -53,6 +53,7 @@ function BulkErrorListItem(props) {
       initial="initial"
       animate="enter"
       exit="exit"
+      type={error.type.toLowerCase()}
     >
       <div className="flex-row">
         <span className="error-type">
