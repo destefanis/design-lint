@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
 import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
+import PreloaderCSS from "./PreloaderCSS";
 
 function BulkErrorList(props) {
   const availableFilters = [
@@ -137,7 +138,6 @@ function BulkErrorList(props) {
     <BulkErrorListItem
       error={error}
       index={index}
-      // key={index}
       key={`${error.node.id}-${error.type}-${index}`}
       handleIgnoreChange={handleIgnoreChange}
       handleSelectAll={handleSelectAll}
@@ -191,7 +191,10 @@ function BulkErrorList(props) {
         ))}
       </div>
       <div className="panel-body panel-body-errors">
-        {bulkErrorList.length ? (
+        {!props.initialLoadComplete ? (
+          // Render the Preloader component when initialLoadComplete is false and there are no errors
+          <PreloaderCSS />
+        ) : bulkErrorList.length ? (
           <AnimatePresence mode="popLayout">
             <motion.ul
               variants={listVariants}
@@ -204,6 +207,7 @@ function BulkErrorList(props) {
             </motion.ul>
           </AnimatePresence>
         ) : (
+          // Render the success message when there are no errors and initialLoadComplete is true
           <div className="success-message">
             <div className="success-shape">
               <img
