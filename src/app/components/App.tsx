@@ -119,13 +119,6 @@ const App = ({}) => {
     );
   };
 
-  const onRunApp = React.useCallback(() => {
-    parent.postMessage(
-      { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
-      "*"
-    );
-  }, []);
-
   function updateVisibility() {
     if (isVisible === true) {
       setIsVisible(false);
@@ -155,32 +148,21 @@ const App = ({}) => {
     }
   }, [ignoredErrorArray]);
 
+  const onRunApp = React.useCallback(() => {
+    parent.postMessage(
+      { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
+      "*"
+    );
+  }, []);
+
   React.useEffect(() => {
     onRunApp();
 
     window.onmessage = event => {
       const { type, message, errors, storage } = event.data.pluginMessage;
 
-      // Plugin code returns this message after we return the first node
-      // for performance, then we lint the remaining layers.
-      if (type === "complete") {
-        let nodeObject = JSON.parse(message);
-
-        updateErrorArray(errors);
-
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: "fetch-layer-data",
-              id: nodeObject[0].id,
-              nodeArray: nodeObject
-            }
-          },
-          "*"
-        );
-
-        setInitialLoad(true);
-      } else if (type === "first node") {
+      if (type === "step-1") {
+        // Lint the very first selected node.
         let nodeObject = JSON.parse(message);
 
         setNodeArray(nodeObject);
@@ -196,28 +178,36 @@ const App = ({}) => {
           return activeNodeIds.concat(nodeObject[0].id);
         });
 
-        // After we have the first node, we want to
-        // lint the remaining selection.
+        // Fetch the properties of the first layers within our selection
+        // And select them in Figma.
         parent.postMessage(
           {
             pluginMessage: {
-              type: "lint-all",
-              nodes: nodeObject
-            }
-          },
-          "*"
-        );
-
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: "fetch-layer-data",
+              type: "step-2",
               id: nodeObject[0].id,
               nodeArray: nodeObject
             }
           },
           "*"
         );
+      } else if (type === "step-2-complete") {
+        // Grabs the properties of the first layer to display in our UI.
+        setSelectedNode(() => JSON.parse(message));
+
+        // After we have the first node, we want to
+        // lint the all the remaining nodes/layers in our original selection.
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "step-3"
+            }
+          },
+          "*"
+        );
+      } else if (type === "step-3-complete") {
+        // Once all layers are linted, we update the error array.
+        updateErrorArray(errors);
+        setInitialLoad(true);
       } else if (type === "fetched storage") {
         let clientStorage = JSON.parse(storage);
 
@@ -237,7 +227,6 @@ const App = ({}) => {
         setIgnoreErrorArray([]);
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "fetched layer") {
-        // Grabs the properties of the first layer.
         setSelectedNode(() => JSON.parse(message));
 
         // Ask the controller to lint the layers for errors.
@@ -286,6 +275,7 @@ const App = ({}) => {
               ignoredErrors={ignoredErrorArray}
               onClick={updateVisibility}
               onSelectedListUpdate={updateSelectedList}
+              initialLoad={initialLoad}
             />
           )}
         </div>

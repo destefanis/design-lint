@@ -45,7 +45,7 @@ const documentUUID = getDocumentUUID();
 
 figma.on("documentchange", _event => {
   // When a change happens in the document
-  // send a message to the plugin to look for changes.
+  // send a message to the plugin to look for changes.'
   figma.ui.postMessage({
     type: "change"
   });
@@ -55,6 +55,54 @@ figma.ui.onmessage = msg => {
   if (msg.type === "close") {
     figma.closePlugin();
   }
+
+  if (msg.type === "step-2") {
+    let layer = figma.getNodeById(msg.id);
+    let layerArray = [];
+
+    // Using figma UI selection and scroll to viewport requires an array.
+    layerArray.push(layer);
+
+    // Moves the layer into focus and selects so the user can update it.
+    // uncomment the line below if you want to notify something has been selected.
+    // figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
+    figma.currentPage.selection = layerArray;
+    figma.viewport.scrollAndZoomIntoView(layerArray);
+
+    let layerData = JSON.stringify(layer, [
+      "id",
+      "name",
+      "description",
+      "fills",
+      "key",
+      "type",
+      "remote",
+      "paints",
+      "fontName",
+      "fontSize",
+      "font"
+    ]);
+
+    figma.ui.postMessage({
+      type: "step-2-complete",
+      message: layerData
+    });
+  }
+
+  // if (msg.type === "step-3") {
+  //   // Pass the array back to the UI to be displayed.
+  //   figma.ui.postMessage({
+  //     type: "step-3-complete",
+  //     errors: lint(originalNodeTree),
+  //     message: serializeNodes(originalNodeTree),
+  //   });
+
+  //   console.log('step 3 complete, legacy lint');
+
+  //   figma.notify(`Design lint is running and will auto refresh for changes`, {
+  //     timeout: 2000
+  //   });
+  // }
 
   // Fetch a specific node by ID.
   if (msg.type === "fetch-layer-data") {
@@ -90,7 +138,8 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // Could this be made less expensive?
+  // Called when an update in the Figma file happens
+  // so we can check what changed.
   if (msg.type === "update-errors") {
     figma.ui.postMessage({
       type: "updated errors",
@@ -206,6 +255,7 @@ figma.ui.onmessage = msg => {
     for (const node of nodes) {
       // Determine if the layer or its parent is locked.
       const isLayerLocked = lockedParentNode || node.locked;
+      const nodeChildren = node.children;
 
       // Create a new object.
       const newObject = {
@@ -215,7 +265,7 @@ figma.ui.onmessage = msg => {
       };
 
       // Check if the node has children.
-      if (node.children) {
+      if (nodeChildren) {
         // Recursively run this function to flatten out children and grandchildren nodes.
         newObject.children = node.children.map(childNode => childNode.id);
         errorArray.push(...lint(node.children, isLayerLocked));
@@ -227,29 +277,17 @@ figma.ui.onmessage = msg => {
     return errorArray;
   }
 
-  // if (msg.type === "lint-all") {
-  //   // Pass the array back to the UI to be displayed.
-  //   figma.ui.postMessage({
-  //     type: "complete",
-  //     errors: lint(originalNodeTree),
-  //     message: serializeNodes(msg.nodes)
-  //   });
-
-  //   figma.notify(`Design lint is running and will auto refresh for changes`, {
-  //     timeout: 2000
-  //   });
-  // }
-
-  // Generator explorations
   function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
   }
 
+  // Counter to keep track of the total number of processed nodes
+  let nodeCounter = 0;
+
   async function* lintAsync(nodes, lockedParentNode = false) {
     let errorArray = [];
 
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
+    for (const node of nodes) {
       // Determine if the layer or its parent is locked.
       const isLayerLocked = lockedParentNode || node.locked;
 
@@ -271,11 +309,16 @@ figma.ui.onmessage = msg => {
 
       errorArray.push(newObject);
 
+      // Increment the node counter
+      nodeCounter++;
+      console.log(nodeCounter);
+
       // Yield the result after processing a certain number of nodes
-      if (i % 100 === 0) {
+      if (nodeCounter % 2000 === 0) {
+        console.log("yield");
         yield errorArray;
         errorArray = [];
-        await delay(40); // Pause for 40ms every 100 items to allow UI to update
+        await delay(0);
       }
     }
 
@@ -285,7 +328,7 @@ figma.ui.onmessage = msg => {
     }
   }
 
-  if (msg.type === "lint-all") {
+  if (msg.type === "step-3") {
     // Use an async function to handle the asynchronous generator
     async function processLint() {
       const finalResult = [];
@@ -295,9 +338,9 @@ figma.ui.onmessage = msg => {
 
       // Pass the final result back to the UI to be displayed.
       figma.ui.postMessage({
-        type: "complete",
+        type: "step-3-complete",
         errors: finalResult,
-        message: serializeNodes(msg.nodes)
+        message: serializeNodes(originalNodeTree)
       });
 
       figma.notify(`Scan Complete`, {
@@ -331,7 +374,7 @@ figma.ui.onmessage = msg => {
       // We want to immediately render the first selection
       // to avoid freezing up the UI.
       figma.ui.postMessage({
-        type: "first node",
+        type: "step-1",
         message: serializeNodes(nodes),
         errors: lint(firstNode)
       });
