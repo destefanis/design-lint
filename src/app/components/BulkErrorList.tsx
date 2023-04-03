@@ -1,59 +1,58 @@
-import * as React from "react";
+import React, { useState } from "react";
 import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
-import { AnimatePresence } from "framer-motion/dist/framer-motion";
+import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
+import PreloaderCSS from "./PreloaderCSS";
 
 function BulkErrorList(props) {
-  // Reduce the size of our array of errors by removing nodes with no errors on them.
-  let filteredErrorArray = props.errorArray.filter(
-    item => item.errors.length >= 1
-  );
+  const availableFilters = [
+    "All",
+    "text",
+    "fill",
+    "stroke",
+    "radius",
+    "effects"
+  ];
 
-  filteredErrorArray.forEach(item => {
-    // Check each layer/node to see if an error that matches it's layer id
-    if (props.ignoredErrorArray.some(x => x.node.id === item.id)) {
-      // When we know a matching error exists loop over all the ignored
-      // errors until we find it.
-      props.ignoredErrorArray.forEach(ignoredError => {
-        if (ignoredError.node.id === item.id) {
-          // Loop over every error this layer/node until we find the
-          // error that should be ignored, then remove it.
-          for (let i = 0; i < item.errors.length; i++) {
-            if (item.errors[i].value === ignoredError.value) {
-              item.errors.splice(i, 1);
-              i--;
-            }
-          }
-        }
-      });
+  const ignoredErrorsMap = {};
+  props.ignoredErrorArray.forEach(ignoredError => {
+    const nodeId = ignoredError.node.id;
+    if (!ignoredErrorsMap[nodeId]) {
+      ignoredErrorsMap[nodeId] = new Set();
     }
+    ignoredErrorsMap[nodeId].add(ignoredError.value);
   });
 
-  let bulkErrorList = [];
+  // Filter out ignored errors and create the bulk error list
+  const bulkErrorMap = {};
+  const filteredErrorArray = props.errorArray.filter(item => {
+    const nodeId = item.id;
+    const ignoredErrorValues = ignoredErrorsMap[nodeId] || new Set();
+    item.errors = item.errors.filter(
+      error => !ignoredErrorValues.has(error.value)
+    );
 
-  // Create the list we'll use to display all the errors in bulk.
-  filteredErrorArray.forEach(item => {
-    let nodeErrors = item.errors;
-
-    nodeErrors.forEach(error => {
-      // Check to see if another error with this same value exists.
-      if (bulkErrorList.some(e => e.type === error.type && e.message === error.message && e.value === error.value)) {
-        // Find the error of this type that already exists.
-        let duplicateError = bulkErrorList.find(e => e.type === error.type && e.message === error.message && e.value === error.value);
-        let nodesThatShareErrors = duplicateError.nodes;
-        // Add the nodes id that share this error to the object
-        // That way we can select them all at once.
-        nodesThatShareErrors.push(error.node.id);
-        duplicateError.nodes = nodesThatShareErrors;
-        duplicateError.count = duplicateError.nodes.length;
+    // Create the bulk error list
+    item.errors.forEach(error => {
+      // Create a unique key based on error properties
+      const errorKey = `${error.type}_${error.message}_${error.value}`;
+      if (bulkErrorMap[errorKey]) {
+        // If the error already exists, update the nodes and count
+        bulkErrorMap[errorKey].nodes.push(error.node.id);
+        bulkErrorMap[errorKey].count++;
       } else {
-        // If this is the first instance of this type of error, add it to the list.
+        // If this is the first instance of this type of error, add it to the map
         error.nodes = [error.node.id];
-        error.count = 0;
-        bulkErrorList.push(error);
+        error.count = 1;
+        bulkErrorMap[errorKey] = error;
       }
     });
+
+    return item.errors.length >= 1;
   });
+
+  // Convert the bulk error map to an array
+  const bulkErrorList = Object.values(bulkErrorMap);
 
   bulkErrorList.sort((a, b) => b.count - a.count);
 
@@ -103,11 +102,43 @@ function BulkErrorList(props) {
     }
   }
 
-  const errorListItems = bulkErrorList.map((error, index) => (
+  const [selectedFilters, setSelectedFilters] = useState(new Set(["All"]));
+
+  const handleFilterClick = filter => {
+    const newSelectedFilters = new Set(selectedFilters);
+    if (filter === "All") {
+      // If "All" is selected, clear other selections
+      newSelectedFilters.clear();
+      newSelectedFilters.add("All");
+    } else {
+      // Toggle the selected filter
+      if (newSelectedFilters.has(filter)) {
+        newSelectedFilters.delete(filter);
+      } else {
+        newSelectedFilters.add(filter);
+      }
+      // If no filters are selected, default to "All"
+      if (newSelectedFilters.size === 0) {
+        newSelectedFilters.add("All");
+      } else {
+        // If specific filters are selected, remove "All"
+        newSelectedFilters.delete("All");
+      }
+    }
+    setSelectedFilters(newSelectedFilters);
+  };
+
+  // Filter the bulkErrorList based on the selected filters
+  const filteredErrorList = bulkErrorList.filter(error => {
+    return selectedFilters.has("All") || selectedFilters.has(error.type);
+  });
+
+  // Map the filtered error list to BulkErrorListItem components
+  const errorListItems = filteredErrorList.map((error, index) => (
     <BulkErrorListItem
       error={error}
       index={index}
-      key={index}
+      key={`${error.node.id}-${error.type}-${index}`}
       handleIgnoreChange={handleIgnoreChange}
       handleSelectAll={handleSelectAll}
       handleSelect={handleSelect}
@@ -115,14 +146,68 @@ function BulkErrorList(props) {
     />
   ));
 
+  // Framer motion variant for the list
+  const listVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const pageVariants = {
+    initial: { opacity: 1, x: 10 },
+    enter: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -10 }
+  };
+
   return (
-    <div className="bulk-errors-list">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+      className="bulk-errors-list"
+      key="bulk-list"
+    >
+      <div className="filter-pills">
+        {availableFilters.map((filter, index) => (
+          <React.Fragment key={filter}>
+            <motion.button
+              key={filter}
+              className={`pill ${
+                selectedFilters.has(filter) ? "selected" : ""
+              }`}
+              onClick={() => handleFilterClick(filter)}
+              whileTap={{ scale: 0.9, opacity: 0.8 }}
+            >
+              {filter}
+            </motion.button>
+            {/* Render the divider after the first filter */}
+            {index === 0 && <span className="pill-divider">|</span>}
+          </React.Fragment>
+        ))}
+      </div>
       <div className="panel-body panel-body-errors">
-        {bulkErrorList.length ? (
-          <ul className="errors-list">
-            <AnimatePresence>{errorListItems}</AnimatePresence>
-          </ul>
+        {!props.initialLoadComplete ? (
+          // Render the Preloader component when initialLoadComplete is false and there are no errors
+          <PreloaderCSS />
+        ) : bulkErrorList.length ? (
+          <AnimatePresence mode="popLayout">
+            <motion.ul
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              className="errors-list"
+              key="wrapper-list"
+            >
+              {errorListItems}
+            </motion.ul>
+          </AnimatePresence>
         ) : (
+          // Render the success message when there are no errors and initialLoadComplete is true
           <div className="success-message">
             <div className="success-shape">
               <img
@@ -137,7 +222,7 @@ function BulkErrorList(props) {
       <div className="footer sticky-footer">
         <TotalErrorCount errorArray={filteredErrorArray} />
       </div>
-    </div>
+    </motion.div>
   );
 }
 

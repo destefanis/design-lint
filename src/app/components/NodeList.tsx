@@ -75,9 +75,9 @@ function NodeList(props) {
     ));
 
     const variants = {
-      initial: { opacity: 1, y: 10, scale: 1 },
-      enter: { opacity: 1, y: 0, scale: 1 },
-      exit: { opacity: 0, y: -10, scale: 0.8 }
+      initial: { opacity: 1, x: -10 },
+      enter: { opacity: 1, x: 0 },
+      exit: { opacity: 0, x: -10 }
     };
 
     return (

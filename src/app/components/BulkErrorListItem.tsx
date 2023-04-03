@@ -36,10 +36,14 @@ function BulkErrorListItem(props) {
     props.handleIgnoreAll(error);
   }
 
+  function truncate(string) {
+    return string.length > 52 ? string.substring(0, 49) + "..." : string;
+  }
+
   const variants = {
-    initial: { opacity: 1, y: 10, scale: 1 },
+    initial: { opacity: 0, y: 12, scale: 1 },
     enter: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: -10, scale: 0.8 }
+    exit: { opacity: 0, y: -12, scale: 0.96 }
   };
 
   return (
@@ -53,6 +57,7 @@ function BulkErrorListItem(props) {
       initial="initial"
       animate="enter"
       exit="exit"
+      type={error.type.toLowerCase()}
     >
       <div className="flex-row">
         <span className="error-type">
@@ -71,7 +76,7 @@ function BulkErrorListItem(props) {
             <div className="error-description__message">{error.message}</div>
           )}
           {error.value ? (
-            <div className="current-value">{error.value}</div>
+            <div className="current-value">{truncate(error.value)}</div>
           ) : null}
         </span>
         <span className="context-icon">

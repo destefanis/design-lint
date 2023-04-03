@@ -16,9 +16,36 @@ let lintVectors = false;
 
 figma.skipInvisibleInstanceChildren = true;
 
+// Function to generate a UUID
+// This way we can store ignored errors per document rather than
+// sharing ignored errors across all documents.
+function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    var r = (Math.random() * 16) | 0,
+      v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getDocumentUUID() {
+  // Try to get the UUID from the document's plugin data
+  let uuid = figma.root.getPluginData("documentUUID");
+
+  // If the UUID does not exist (empty string), generate a new one and store it
+  if (!uuid) {
+    uuid = generateUUID();
+    figma.root.setPluginData("documentUUID", uuid);
+  }
+
+  return uuid;
+}
+
+// Set the unique ID we use for client storage.
+const documentUUID = getDocumentUUID();
+
 figma.on("documentchange", _event => {
   // When a change happens in the document
-  // send a message to the plugin to look for changes.
+  // send a message to the plugin to look for changes.'
   figma.ui.postMessage({
     type: "change"
   });
@@ -28,6 +55,54 @@ figma.ui.onmessage = msg => {
   if (msg.type === "close") {
     figma.closePlugin();
   }
+
+  if (msg.type === "step-2") {
+    let layer = figma.getNodeById(msg.id);
+    let layerArray = [];
+
+    // Using figma UI selection and scroll to viewport requires an array.
+    layerArray.push(layer);
+
+    // Moves the layer into focus and selects so the user can update it.
+    // uncomment the line below if you want to notify something has been selected.
+    // figma.notify(`Layer ${layer.name} selected`, { timeout: 750 });
+    figma.currentPage.selection = layerArray;
+    figma.viewport.scrollAndZoomIntoView(layerArray);
+
+    let layerData = JSON.stringify(layer, [
+      "id",
+      "name",
+      "description",
+      "fills",
+      "key",
+      "type",
+      "remote",
+      "paints",
+      "fontName",
+      "fontSize",
+      "font"
+    ]);
+
+    figma.ui.postMessage({
+      type: "step-2-complete",
+      message: layerData
+    });
+  }
+
+  // if (msg.type === "step-3") {
+  //   // Pass the array back to the UI to be displayed.
+  //   figma.ui.postMessage({
+  //     type: "step-3-complete",
+  //     errors: lint(originalNodeTree),
+  //     message: serializeNodes(originalNodeTree),
+  //   });
+
+  //   console.log('step 3 complete, legacy lint');
+
+  //   figma.notify(`Design lint is running and will auto refresh for changes`, {
+  //     timeout: 2000
+  //   });
+  // }
 
   // Fetch a specific node by ID.
   if (msg.type === "fetch-layer-data") {
@@ -63,7 +138,8 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // Could this be made less expensive?
+  // Called when an update in the Figma file happens
+  // so we can check what changed.
   if (msg.type === "update-errors") {
     figma.ui.postMessage({
       type: "updated errors",
@@ -75,14 +151,14 @@ figma.ui.onmessage = msg => {
   // when the user selects "ignore" from the context menu
   if (msg.type === "update-storage") {
     let arrayToBeStored = JSON.stringify(msg.storageArray);
-    figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
+    figma.clientStorage.setAsync(documentUUID, arrayToBeStored);
   }
 
   // Clears all ignored errors
   // invoked from the settings menu
   if (msg.type === "update-storage-from-settings") {
     let arrayToBeStored = JSON.stringify(msg.storageArray);
-    figma.clientStorage.setAsync("storedErrorsToIgnore", arrayToBeStored);
+    figma.clientStorage.setAsync(documentUUID, arrayToBeStored);
 
     figma.ui.postMessage({
       type: "reset storage",
@@ -172,75 +248,112 @@ figma.ui.onmessage = msg => {
     return serializedNodes;
   }
 
-  function lint(nodes, lockedParentNode?) {
+  function lint(nodes, lockedParentNode = false) {
     let errorArray = [];
-    let childArray = [];
 
-    nodes.forEach(node => {
-      let isLayerLocked;
+    // Use a for loop instead of forEach
+    for (const node of nodes) {
+      // Determine if the layer or its parent is locked.
+      const isLayerLocked = lockedParentNode || node.locked;
+      const nodeChildren = node.children;
 
       // Create a new object.
-      let newObject = {};
+      const newObject = {
+        id: node.id,
+        errors: isLayerLocked ? [] : determineType(node),
+        children: []
+      };
 
-      // Give it the existing node id.
-      newObject["id"] = node.id;
-
-      let children = node.children;
-
-      // Don't lint locked layers or the children/grandchildren of locked layers.
-      if (lockedParentNode === undefined && node.locked === true) {
-        isLayerLocked = true;
-      } else if (lockedParentNode === undefined && node.locked === false) {
-        isLayerLocked = false;
-      } else if (lockedParentNode === false && node.locked === true) {
-        isLayerLocked = true;
-      } else {
-        isLayerLocked = lockedParentNode;
-      }
-
-      if (isLayerLocked === true) {
-        newObject["errors"] = [];
-      } else {
-        newObject["errors"] = determineType(node);
-      }
-
-      if (!children) {
-        errorArray.push(newObject);
-        return;
-      } else if (children) {
-        // Recursively run this function to flatten out children and grandchildren nodes
-        node["children"].forEach(childNode => {
-          childArray.push(childNode.id);
-        });
-
-        newObject["children"] = childArray;
-
-        // If the layer is locked, pass the optional parameter to the recursive Lint
-        // function to indicate this layer is locked.
-        if (isLayerLocked === true) {
-          errorArray.push(...lint(node["children"], true));
-        } else {
-          errorArray.push(...lint(node["children"], false));
-        }
+      // Check if the node has children.
+      if (nodeChildren) {
+        // Recursively run this function to flatten out children and grandchildren nodes.
+        newObject.children = node.children.map(childNode => childNode.id);
+        errorArray.push(...lint(node.children, isLayerLocked));
       }
 
       errorArray.push(newObject);
-    });
+    }
 
     return errorArray;
   }
 
-  if (msg.type === "lint-all") {
-    // Pass the array back to the UI to be displayed.
-    figma.ui.postMessage({
-      type: "complete",
-      errors: lint(originalNodeTree),
-      message: serializeNodes(msg.nodes)
-    });
+  function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+  }
 
-    figma.notify(`Design lint is running and will auto refresh for changes`, {
+  // Counter to keep track of the total number of processed nodes
+  let nodeCounter = 0;
+
+  async function* lintAsync(nodes, lockedParentNode = false) {
+    let errorArray = [];
+
+    for (const node of nodes) {
+      // Determine if the layer or its parent is locked.
+      const isLayerLocked = lockedParentNode || node.locked;
+
+      // Create a new object.
+      const newObject = {
+        id: node.id,
+        errors: isLayerLocked ? [] : determineType(node),
+        children: []
+      };
+
+      // Check if the node has children.
+      if (node.children) {
+        // Recursively run this function to flatten out children and grandchildren nodes.
+        newObject.children = node.children.map(childNode => childNode.id);
+        for await (const result of lintAsync(node.children, isLayerLocked)) {
+          errorArray.push(...result);
+        }
+      }
+
+      errorArray.push(newObject);
+
+      // Increment the node counter
+      nodeCounter++;
+      // console.log(nodeCounter);
+
+      // Yield the result after processing a certain number of nodes
+      if (nodeCounter % 1000 === 0) {
+        // console.log('yield');
+        yield errorArray;
+        errorArray = [];
+        await delay(5);
+      }
+    }
+
+    // Yield any remaining results
+    if (errorArray.length > 0) {
+      yield errorArray;
+    }
+  }
+
+  if (msg.type === "step-3") {
+    // Use an async function to handle the asynchronous generator
+    async function processLint() {
+      const finalResult = [];
+      for await (const result of lintAsync(originalNodeTree)) {
+        finalResult.push(...result);
+      }
+
+      // Pass the final result back to the UI to be displayed.
+      figma.ui.postMessage({
+        type: "step-3-complete",
+        errors: finalResult,
+        message: serializeNodes(originalNodeTree)
+      });
+
+      figma.notify(`Scan Complete`, {
+        timeout: 2000
+      });
+    }
+
+    // Start the lint process
+    figma.notify(`Design Lint is running and will auto refresh for changes`, {
       timeout: 2000
     });
+
+    processLint();
   }
 
   // Initialize the app
@@ -261,12 +374,13 @@ figma.ui.onmessage = msg => {
       // We want to immediately render the first selection
       // to avoid freezing up the UI.
       figma.ui.postMessage({
-        type: "first node",
+        type: "step-1",
         message: serializeNodes(nodes),
         errors: lint(firstNode)
       });
 
-      figma.clientStorage.getAsync("storedErrorsToIgnore").then(result => {
+      // Fetch the ignored errors for this document.
+      figma.clientStorage.getAsync(documentUUID).then(result => {
         figma.ui.postMessage({
           type: "fetched storage",
           storage: result

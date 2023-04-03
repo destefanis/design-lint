@@ -66,6 +66,44 @@
   margin: 0 0 0 8px;
 }
 
+.filter-pills {
+  padding: 12px;
+}
+
+.pill {
+  min-width: 44px;
+  border: 1px solid #dcddde;
+  border-radius: 16px;
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+  color: #333;
+  text-align: center;
+  background: #fff;
+  margin-left: 4px;
+  padding: 4px 8px;
+  text-transform: capitalize;
+}
+
+.pill-divider {
+  display: inline-block;
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+  margin-left: 4px;
+  padding: 4px 4px;
+}
+
+.selected {
+  background: #18a0fb;
+  border-color: #18a0fb;
+  color: #fff;
+}
+
 .is-visible {
   transform: translateX(0);
 }
@@ -109,8 +147,13 @@
 }
 
 .errors-list {
+  margin: -16px 0 0;
+  padding: 0 16px 84px;
+  overflow-y: scroll;
+}
+
+.errors-list-panel {
   margin: 0;
-  padding: 0 16px 16px;
 }
 
 .error-list-item {
@@ -128,6 +171,8 @@
   line-height: 13px;
   font-weight: 600;
   transition: border-color 100ms ease;
+  box-shadow: 0px 2px 2px 0px #0000000a;
+  background: #fff;
 }
 
 .error-list-item:hover {
@@ -271,4 +316,57 @@
 .settings-input:focus {
   border: 1px solid #18a0fb;
   border-radius: 2px;
+}
+
+.css-preloader {
+  height: 90%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+}
+
+/* .bulk-errors-list .css-preloader {
+  height: 90%;
+  margin-bottom: 16px;
+} */
+
+.css-preloader-row {
+  position: relative;
+  margin: auto;
+}
+
+/* CSS Preloader */
+.circle {
+  display: inline-block;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #18a0fb;
+  transform-origin: center;
+  margin: 0 6px;
+  animation: scaleUpDown 0.9s infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.circle:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.circle:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes scaleUpDown {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(0.85);
+    opacity: 1;
+  }
 }
