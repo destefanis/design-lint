@@ -311,14 +311,14 @@ figma.ui.onmessage = msg => {
 
       // Increment the node counter
       nodeCounter++;
-      console.log(nodeCounter);
+      // console.log(nodeCounter);
 
       // Yield the result after processing a certain number of nodes
-      if (nodeCounter % 2000 === 0) {
-        console.log("yield");
+      if (nodeCounter % 1000 === 0) {
+        // console.log('yield');
         yield errorArray;
         errorArray = [];
-        await delay(0);
+        await delay(5);
       }
     }
 
