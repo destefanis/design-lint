@@ -1,5 +1,6 @@
 import * as React from "react";
 import SettingsPanel from "./SettingsPanel";
+import { motion } from "framer-motion/dist/framer-motion";
 
 function Navigation(props) {
   const [panelVisible, setPanelVisible] = React.useState(false);
@@ -29,35 +30,40 @@ function Navigation(props) {
     <div key="nav">
       <div className="navigation-wrapper">
         <nav className="nav">
-          <div
-            className={`nav-item ${activePage === "layers" ? "active" : ""}`}
-            onClick={layersClick}
-          >
-            Layers
-          </div>
-          <div
+          <motion.div
             className={`nav-item ${activePage === "bulk" ? "active" : ""}`}
             onClick={bulkListClick}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
           >
-            Errors by Category
-          </div>
+            Errors List
+          </motion.div>
+          <motion.div
+            className={`nav-item ${activePage === "layers" ? "active" : ""}`}
+            onClick={layersClick}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+          >
+            Layers View
+          </motion.div>
+
           <div className="nav-icon-wrapper">
-            <button
+            <motion.button
               className="icon icon--refresh icon--button settings-button"
               onClick={event => {
                 event.stopPropagation();
                 handleRefreshSelection();
               }}
+              whileTap={{ scale: 0.9, opacity: 0.8 }}
             >
               <img src={require("../assets/refresh.svg")} />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               className="icon icon--adjust icon--button settings-button"
               onClick={event => {
                 event.stopPropagation();
                 handlePanelVisible(true);
               }}
-            ></button>
+              whileTap={{ scale: 0.9, opacity: 0.8 }}
+            ></motion.button>
           </div>
         </nav>
       </div>

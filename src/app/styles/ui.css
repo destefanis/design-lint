@@ -32,12 +32,12 @@ button:focus {
 }
 
 .button--icon:hover {
-  background: #eee;
+  background: #f9f9f9;
 }
 
-.button--icon:active {
-  transform: scale3d(0.94, 0.94, 1);
-}
+/* .button--icon:active {
+  transform: scale3d(0.9, 0.9, 1);
+} */
 
 .settings-checkbox-group {
   display: flex;
@@ -111,6 +111,10 @@ body {
   background-position: 0px 0px;
 }
 
+.icon--button:hover {
+  background-color: #f9f9f9;
+}
+
 .nav-item:hover {
   color: rgba(0, 0, 0, 0.8);
 }
@@ -121,12 +125,12 @@ body {
 }
 
 .bulk-errors-list {
-  height: calc(100vh - 46px);
+  height: calc(100vh - 41px);
   flex: 1;
   margin: 0;
-  padding: 0 0 24px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 0;
+  /* overflow-y: auto; */
+  /* overflow-x: hidden; */
   position: relative;
 }
 

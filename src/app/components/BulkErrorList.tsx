@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
-import { AnimatePresence } from "framer-motion/dist/framer-motion";
+import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
 
 function BulkErrorList(props) {
   const availableFilters = [
     "All",
-    "fill",
     "text",
+    "fill",
     "stroke",
     "radius",
-    "shadow"
+    "effects"
   ];
 
   const ignoredErrorsMap = {};
@@ -127,22 +127,6 @@ function BulkErrorList(props) {
     setSelectedFilters(newSelectedFilters);
   };
 
-  // const errorListItems = bulkErrorList.map((error, index) => (
-  //   <BulkErrorListItem
-  //     error={error}
-  //     index={index}
-  //     key={index}
-  //     handleIgnoreChange={handleIgnoreChange}
-  //     handleSelectAll={handleSelectAll}
-  //     handleSelect={handleSelect}
-  //     handleIgnoreAll={handleIgnoreAll}
-  //   />
-  // ));
-
-  // const filteredErrorList = errorListItems.filter(item => {
-  //   return selectedFilters.has('All') || selectedFilters.has(item.type);
-  // });
-
   // Filter the bulkErrorList based on the selected filters
   const filteredErrorList = bulkErrorList.filter(error => {
     return selectedFilters.has("All") || selectedFilters.has(error.type);
@@ -153,7 +137,8 @@ function BulkErrorList(props) {
     <BulkErrorListItem
       error={error}
       index={index}
-      key={index}
+      // key={index}
+      key={`${error.node.id}-${error.type}-${index}`}
       handleIgnoreChange={handleIgnoreChange}
       handleSelectAll={handleSelectAll}
       handleSelect={handleSelect}
@@ -161,30 +146,63 @@ function BulkErrorList(props) {
     />
   ));
 
+  // Framer motion variant for the list
+  const listVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const pageVariants = {
+    initial: { opacity: 1, x: 10 },
+    enter: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -10 }
+  };
+
   return (
-    <div className="bulk-errors-list">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+      className="bulk-errors-list"
+      key="bulk-list"
+    >
       <div className="filter-pills">
         {availableFilters.map((filter, index) => (
-          <>
-            <button
+          <React.Fragment key={filter}>
+            <motion.button
               key={filter}
               className={`pill ${
                 selectedFilters.has(filter) ? "selected" : ""
               }`}
               onClick={() => handleFilterClick(filter)}
+              whileTap={{ scale: 0.9, opacity: 0.8 }}
             >
               {filter}
-            </button>
+            </motion.button>
             {/* Render the divider after the first filter */}
             {index === 0 && <span className="pill-divider">|</span>}
-          </>
+          </React.Fragment>
         ))}
       </div>
       <div className="panel-body panel-body-errors">
         {bulkErrorList.length ? (
-          <ul className="errors-list">
-            <AnimatePresence>{errorListItems}</AnimatePresence>
-          </ul>
+          <AnimatePresence mode="popLayout">
+            <motion.ul
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              className="errors-list"
+              key="wrapper-list"
+            >
+              {errorListItems}
+            </motion.ul>
+          </AnimatePresence>
         ) : (
           <div className="success-message">
             <div className="success-shape">
@@ -200,7 +218,7 @@ function BulkErrorList(props) {
       <div className="footer sticky-footer">
         <TotalErrorCount errorArray={filteredErrorArray} />
       </div>
-    </div>
+    </motion.div>
   );
 }
 

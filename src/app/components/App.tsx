@@ -134,10 +134,10 @@ const App = ({}) => {
     }
   }
 
-  // If no layer is selected after 3 seconds, show the empty state.
+  // If no layer is selected after 1 seconds, show the empty state.
   setTimeout(function() {
     setTimeLoad(true);
-  }, 3000);
+  }, 1000);
 
   React.useEffect(() => {
     // Update client storage so the next time we run the app
@@ -166,7 +166,6 @@ const App = ({}) => {
       if (type === "complete") {
         let nodeObject = JSON.parse(message);
 
-        // setNodeArray(nodeObject);
         updateErrorArray(errors);
 
         parent.postMessage(
@@ -234,8 +233,8 @@ const App = ({}) => {
         let clientStorage = JSON.parse(storage);
         setBorderRadiusValues([...clientStorage]);
       } else if (type === "reset storage") {
-        let clientStorage = JSON.parse(storage);
-        setIgnoreErrorArray([...clientStorage]);
+        // let clientStorage = JSON.parse(storage);
+        setIgnoreErrorArray([]);
         parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
       } else if (type === "fetched layer") {
         // Grabs the properties of the first layer.
