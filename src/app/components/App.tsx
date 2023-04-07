@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import Navigation from "./Navigation";
 import NodeList from "./NodeList";
-import Preloader from "./Preloader";
+import LibraryPage from "./LibraryPage";
 import PreloaderCSS from "./PreloaderCSS";
 import EmptyState from "./EmptyState";
 import Panel from "./Panel";
@@ -35,6 +35,8 @@ const App = ({}) => {
   const [lintVectors, setLintVectors] = useState(false);
   const [initialLoad, setInitialLoad] = React.useState(false);
   const [timedLoad, setTimeLoad] = React.useState(false);
+  const [libraries, setLibraries] = useState([]);
+  const librariesRef = React.useRef([]);
 
   window.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
@@ -76,6 +78,10 @@ const App = ({}) => {
       },
       "*"
     );
+  };
+
+  const handleUpdateLibraries = updatedLibraries => {
+    setLibraries(updatedLibraries);
   };
 
   const updateActiveError = error => {
@@ -156,6 +162,12 @@ const App = ({}) => {
     );
   }, []);
 
+  // We need to always be able to access this set of arrays
+  // in order to provide it to the linting array for magic fixes.
+  React.useEffect(() => {
+    librariesRef.current = libraries;
+  }, [libraries]);
+
   React.useEffect(() => {
     onRunApp();
 
@@ -194,13 +206,15 @@ const App = ({}) => {
       } else if (type === "step-2-complete") {
         // Grabs the properties of the first layer to display in our UI.
         setSelectedNode(() => JSON.parse(message));
+        console.log("step 2 complete");
 
         // After we have the first node, we want to
         // lint the all the remaining nodes/layers in our original selection.
         parent.postMessage(
           {
             pluginMessage: {
-              type: "step-3"
+              type: "step-3",
+              libraries: librariesRef.current
             }
           },
           "*"
@@ -226,18 +240,46 @@ const App = ({}) => {
       } else if (type === "reset storage") {
         // let clientStorage = JSON.parse(storage);
         setIgnoreErrorArray([]);
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
       } else if (type === "fetched layer") {
         setSelectedNode(() => JSON.parse(message));
 
         // Ask the controller to lint the layers for errors.
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
       } else if (type === "change") {
         // Document Changed
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
         updateErrorArray(errors);
+      } else if (type === "library-imported") {
+        setLibraries(message);
+      } else if (type === "library-imported-from-storage") {
+        setLibraries(message);
       }
     };
   }, []);
@@ -267,8 +309,14 @@ const App = ({}) => {
               selectedListItems={selectedListItems}
               activeNodeIds={activeNodeIds}
             />
+          ) : activePage === "library" ? (
+            <LibraryPage
+              libraries={libraries}
+              onUpdateLibraries={handleUpdateLibraries}
+            />
           ) : (
             <BulkErrorList
+              libraries={libraries}
               errorArray={errorArray}
               ignoredErrorArray={ignoredErrorArray}
               onIgnoredUpdate={updateIgnoredErrors}

@@ -7,6 +7,12 @@ import {
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
+const {
+  getLocalPaintStyles,
+  saveToLocalStorage,
+  getLocalTextStyles,
+  getLocalEffectStyles
+} = require("./styles");
 
 figma.showUI(__html__, { width: 360, height: 580 });
 
@@ -89,21 +95,6 @@ figma.ui.onmessage = msg => {
     });
   }
 
-  // if (msg.type === "step-3") {
-  //   // Pass the array back to the UI to be displayed.
-  //   figma.ui.postMessage({
-  //     type: "step-3-complete",
-  //     errors: lint(originalNodeTree),
-  //     message: serializeNodes(originalNodeTree),
-  //   });
-
-  //   console.log('step 3 complete, legacy lint');
-
-  //   figma.notify(`Design lint is running and will auto refresh for changes`, {
-  //     timeout: 2000
-  //   });
-  // }
-
   // Fetch a specific node by ID.
   if (msg.type === "fetch-layer-data") {
     let layer = figma.getNodeById(msg.id);
@@ -143,7 +134,7 @@ figma.ui.onmessage = msg => {
   if (msg.type === "update-errors") {
     figma.ui.postMessage({
       type: "updated errors",
-      errors: lint(originalNodeTree)
+      errors: lint(originalNodeTree, msg.libraries)
     });
   }
 
@@ -248,7 +239,7 @@ figma.ui.onmessage = msg => {
     return serializedNodes;
   }
 
-  function lint(nodes, lockedParentNode = false) {
+  function lint(nodes, libraries, lockedParentNode = false) {
     let errorArray = [];
 
     // Use a for loop instead of forEach
@@ -260,7 +251,7 @@ figma.ui.onmessage = msg => {
       // Create a new object.
       const newObject = {
         id: node.id,
-        errors: isLayerLocked ? [] : determineType(node),
+        errors: isLayerLocked ? [] : determineType(node, libraries),
         children: []
       };
 
@@ -268,7 +259,7 @@ figma.ui.onmessage = msg => {
       if (nodeChildren) {
         // Recursively run this function to flatten out children and grandchildren nodes.
         newObject.children = node.children.map(childNode => childNode.id);
-        errorArray.push(...lint(node.children, isLayerLocked));
+        errorArray.push(...lint(node.children, libraries, isLayerLocked));
       }
 
       errorArray.push(newObject);
@@ -284,7 +275,7 @@ figma.ui.onmessage = msg => {
   // Counter to keep track of the total number of processed nodes
   let nodeCounter = 0;
 
-  async function* lintAsync(nodes, lockedParentNode = false) {
+  async function* lintAsync(nodes, libraries, lockedParentNode = false) {
     let errorArray = [];
 
     for (const node of nodes) {
@@ -294,7 +285,7 @@ figma.ui.onmessage = msg => {
       // Create a new object.
       const newObject = {
         id: node.id,
-        errors: isLayerLocked ? [] : determineType(node),
+        errors: isLayerLocked ? [] : determineType(node, libraries),
         children: []
       };
 
@@ -302,20 +293,23 @@ figma.ui.onmessage = msg => {
       if (node.children) {
         // Recursively run this function to flatten out children and grandchildren nodes.
         newObject.children = node.children.map(childNode => childNode.id);
-        for await (const result of lintAsync(node.children, isLayerLocked)) {
+        for await (const result of lintAsync(
+          node.children,
+          libraries,
+          isLayerLocked
+        )) {
           errorArray.push(...result);
         }
       }
 
       errorArray.push(newObject);
 
-      // Increment the node counter
+      // Increment the node counter, this is our number of layers total.
       nodeCounter++;
       // console.log(nodeCounter);
 
       // Yield the result after processing a certain number of nodes
       if (nodeCounter % 1000 === 0) {
-        // console.log('yield');
         yield errorArray;
         errorArray = [];
         await delay(5);
@@ -332,7 +326,8 @@ figma.ui.onmessage = msg => {
     // Use an async function to handle the asynchronous generator
     async function processLint() {
       const finalResult = [];
-      for await (const result of lintAsync(originalNodeTree)) {
+      const libraries = msg.libraries;
+      for await (const result of lintAsync(originalNodeTree, msg.libraries)) {
         finalResult.push(...result);
       }
 
@@ -356,6 +351,67 @@ figma.ui.onmessage = msg => {
     processLint();
   }
 
+  // Imports Styles from the currently opened file.
+  if (msg.type === "find-library") {
+    (async function() {
+      const paintStylesData = await getLocalPaintStyles();
+      const textStylesData = await getLocalTextStyles();
+      const effectStylesData = await getLocalEffectStyles();
+      const fileName = figma.root.name;
+      const totalStyles =
+        effectStylesData.length +
+        textStylesData.length +
+        paintStylesData.length;
+      const key = "libraryKey";
+
+      const library = {
+        name: fileName + " " + "Library",
+        effects: effectStylesData,
+        fills: paintStylesData,
+        text: textStylesData,
+        styles: totalStyles
+      };
+
+      // Fetch the stored libraries from client storage
+      const storedLibraries = (await figma.clientStorage.getAsync(key)) || [];
+
+      // Check if a library with the same name already exists in the libraries array
+      const existingLibraryIndex = storedLibraries.findIndex(
+        storedLibrary => storedLibrary.name === library.name
+      );
+
+      if (existingLibraryIndex !== -1) {
+        // If the library exists, update the existing library
+        storedLibraries[existingLibraryIndex] = library;
+      } else {
+        // If the library doesn't exist, add it to the libraries array
+        storedLibraries.push(library);
+      }
+
+      // Save the updated libraries array to client storage
+      await figma.clientStorage.setAsync(key, storedLibraries);
+
+      // Send the updated libraries array to the UI layer
+      figma.ui.postMessage({
+        type: "library-imported",
+        message: storedLibraries
+      });
+    })();
+  }
+
+  // Removes a library from local storage and from state.
+  if (msg.type === "remove-library") {
+    const key = "libraryKey";
+    const storedLibraries = figma.clientStorage.getAsync(key);
+    if (Array.isArray(storedLibraries)) {
+      // Remove the library at the specified index
+      storedLibraries.splice(msg.index, 1);
+
+      // Update client storage with the new libraries array
+      figma.clientStorage.setAsync(key, storedLibraries);
+    }
+  }
+
   // Initialize the app
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
@@ -371,27 +427,70 @@ figma.ui.onmessage = msg => {
       // refreshing the tree and live updating errors.
       originalNodeTree = nodes;
 
+      // Fetch the ignored errors and libraries from client storage
+      const ignoredErrorsPromise = figma.clientStorage.getAsync(documentUUID);
+      const librariesPromise = figma.clientStorage.getAsync("libraryKey");
+
+      Promise.all([ignoredErrorsPromise, librariesPromise]).then(
+        ([ignoredErrors, libraries]) => {
+          if (ignoredErrors && ignoredErrors.length) {
+            figma.ui.postMessage({
+              type: "fetched storage",
+              storage: ignoredErrors
+            });
+          }
+
+          if (libraries && libraries.length) {
+            figma.ui.postMessage({
+              type: "library-imported-from-storage",
+              message: libraries
+            });
+          }
+
+          // Now that libraries are available, call lint with libraries and send the message
+          figma.ui.postMessage({
+            type: "step-1",
+            message: serializeNodes(nodes),
+            errors: lint(firstNode, libraries)
+          });
+        }
+      );
+
       // We want to immediately render the first selection
       // to avoid freezing up the UI.
-      figma.ui.postMessage({
-        type: "step-1",
-        message: serializeNodes(nodes),
-        errors: lint(firstNode)
-      });
+      // figma.ui.postMessage({
+      //   type: "step-1",
+      //   message: serializeNodes(nodes),
+      //   errors: lint(firstNode, [])
+      // });
 
       // Fetch the ignored errors for this document.
-      figma.clientStorage.getAsync(documentUUID).then(result => {
-        figma.ui.postMessage({
-          type: "fetched storage",
-          storage: result
-        });
-      });
+      // figma.clientStorage.getAsync(documentUUID).then(result => {
+      //   if (result.length) {
+      //     figma.ui.postMessage({
+      //       type: "fetched storage",
+      //       storage: result
+      //     });
+      //   }
+      // });
+
+      // Fetch libraries that are stored
+      // figma.clientStorage.getAsync("libraryKey").then(result => {
+      //   if (result.length) {
+      //     figma.ui.postMessage({
+      //       type: "library-imported-from-storage",
+      //       message: result
+      //     });
+      //   }
+      // });
 
       figma.clientStorage.getAsync("storedActivePage").then(result => {
-        figma.ui.postMessage({
-          type: "fetched active page",
-          storage: result
-        });
+        if (result.length) {
+          figma.ui.postMessage({
+            type: "fetched active page",
+            storage: result
+          });
+        }
       });
 
       figma.clientStorage.getAsync("storedRadiusValues").then(result => {
@@ -407,7 +506,7 @@ figma.ui.onmessage = msg => {
     }
   }
 
-  function determineType(node) {
+  function determineType(node, libraries) {
     switch (node.type) {
       case "SLICE":
       case "GROUP": {
@@ -445,7 +544,7 @@ figma.ui.onmessage = msg => {
         return lintVariantWrapperRules(node);
       }
       case "TEXT": {
-        return lintTextRules(node);
+        return lintTextRules(node, libraries);
       }
       case "LINE": {
         return lintLineRules(node);
@@ -513,10 +612,10 @@ figma.ui.onmessage = msg => {
     return errors;
   }
 
-  function lintTextRules(node) {
+  function lintTextRules(node, libraries) {
     let errors = [];
 
-    checkType(node, errors);
+    checkType(node, errors, libraries);
     checkFills(node, errors);
 
     // We could also comment out checkFills and use a custom function instead

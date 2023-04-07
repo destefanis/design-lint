@@ -14,6 +14,10 @@ function Navigation(props) {
     props.onPageSelection("bulk");
   };
 
+  const libraryClick = () => {
+    props.onPageSelection("library");
+  };
+
   const handleLintRulesChange = boolean => {
     props.updateLintRules(boolean);
   };
@@ -43,6 +47,13 @@ function Navigation(props) {
             whileTap={{ scale: 0.98, opacity: 0.8 }}
           >
             Layers View
+          </motion.div>
+          <motion.div
+            className={`nav-item ${activePage === "library" ? "active" : ""}`}
+            onClick={libraryClick}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+          >
+            ✨ Magic Fix
           </motion.div>
 
           <div className="nav-icon-wrapper">

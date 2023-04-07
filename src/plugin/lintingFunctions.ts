@@ -1,12 +1,21 @@
 // Linting functions
 
 // Generic function for creating an error object to pass to the app.
-export function createErrorObject(node, type, message, value?) {
+export function createErrorObject(
+  node,
+  type,
+  message,
+  value?,
+  matches?,
+  suggestions?
+) {
   let error = {
     message: "",
     type: "",
     node: "",
-    value: ""
+    value: "",
+    ...(matches && { matches: matches }),
+    ...(suggestions && { suggestions: suggestions })
   };
 
   error.message = message;
@@ -313,30 +322,26 @@ export function checkStrokes(node, errors) {
   }
 }
 
-export function checkType(node, errors) {
+export function checkType(node, errors, libraries) {
   if (node.textStyleId === "" && node.visible === true) {
     let textObject = {
       font: "",
       fontStyle: "",
       fontSize: "",
-      lineHeight: {}
+      lineHeight: {},
+      letterSpacingValue: "",
+      letterSpacingUnit: "",
+      textAlignHorizontal: "",
+      textAlignVertical: "",
+      paragraphIndent: "",
+      paragraphSpacing: "",
+      textCase: ""
     };
 
     let fontStyle = node.fontName;
     let fontSize = node.fontName;
 
-    if (typeof fontSize === "symbol") {
-      return errors.push(
-        createErrorObject(
-          node,
-          "text",
-          "Missing text style",
-          "Mixed sizes or families"
-        )
-      );
-    }
-
-    if (typeof fontStyle === "symbol") {
+    if (typeof fontStyle === "symbol" || typeof fontSize === "symbol") {
       return errors.push(
         createErrorObject(
           node,
@@ -350,6 +355,13 @@ export function checkType(node, errors) {
     textObject.font = node.fontName.family;
     textObject.fontStyle = node.fontName.style;
     textObject.fontSize = node.fontSize;
+    textObject.letterSpacingValue = node.letterSpacing.value;
+    textObject.letterSpacingUnit = node.letterSpacing.unit;
+    textObject.textAlignHorizontal = node.textAlignHorizontal;
+    textObject.textAlignVertical = node.textAlignVertical;
+    textObject.paragraphIndent = node.paragraphIndent;
+    textObject.paragraphSpacing = node.paragraphSpacing;
+    textObject.textCase = node.textCase;
 
     // Line height can be "auto" or a pixel value
     if (node.lineHeight.value !== undefined) {
@@ -358,11 +370,101 @@ export function checkType(node, errors) {
       textObject.lineHeight = "Auto";
     }
 
+    // Find matching styles in the libraries
+    let matchingStyles = [];
+    let suggestedStyles = [];
+    for (const library of libraries) {
+      for (const textStyle of library.text) {
+        const style = textStyle.style;
+
+        let lineHeightCheck;
+
+        // same check for line height so we dont' compared
+        // an undefined value to a defined one
+        if (node.lineHeight.value !== undefined) {
+          lineHeightCheck = style.lineHeight.value;
+        } else {
+          lineHeightCheck = "Auto";
+        }
+
+        if (
+          style.fontFamily === textObject.font &&
+          style.fontStyle === textObject.fontStyle &&
+          style.fontSize === textObject.fontSize &&
+          lineHeightCheck === textObject.lineHeight &&
+          style.letterSpacing.value === textObject.letterSpacingValue &&
+          style.letterSpacing.unit === textObject.letterSpacingUnit &&
+          style.textCase === textObject.textCase &&
+          style.paragraphSpacing === textObject.paragraphSpacing
+        ) {
+          console.log("match found!");
+          matchingStyles.push({
+            name: textStyle.name,
+            styleId: textStyle.id,
+            value:
+              textStyle.name +
+              " · " +
+              style.fontSize +
+              "/" +
+              style.lineHeight.value,
+            source: library.name
+          });
+        } else if (
+          style.fontFamily === textObject.font &&
+          style.fontStyle === textObject.fontStyle &&
+          style.fontSize === textObject.fontSize &&
+          lineHeightCheck === textObject.lineHeight
+        ) {
+          console.log("suggestion made!");
+          suggestedStyles.push({
+            name: textStyle.name,
+            styleId: textStyle.id,
+            value:
+              textStyle.name +
+              " · " +
+              style.fontSize +
+              "/" +
+              style.lineHeight.value,
+            source: library.name
+          });
+        }
+      }
+    }
+
     let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
 
-    return errors.push(
-      createErrorObject(node, "text", "Missing text style", currentStyle)
-    );
+    // Create error object with fixes if matching styles are found
+    if (matchingStyles.length > 0) {
+      console.log(matchingStyles);
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          currentStyle,
+          matchingStyles
+        )
+      );
+    } else if (suggestedStyles.length > 0) {
+      console.log("else if");
+      // We may not have exact matches, so we'll suggest some that are very close.
+      console.log(suggestedStyles);
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          currentStyle,
+          [],
+          suggestedStyles
+        )
+      );
+    } else {
+      // If nothing is remotely close, just keep the error as is.
+      return errors.push(
+        createErrorObject(node, "text", "Missing text style", currentStyle)
+      );
+    }
   } else {
     return;
   }

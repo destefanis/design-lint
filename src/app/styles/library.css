@@ -1,0 +1,47 @@
+.library-list {
+  list-style: none;
+  margin: 0 8px 0 16px;
+  padding: 0;
+}
+
+.library-list-item {
+  display: flex;
+  flex-flow: row;
+  padding: 16px 0;
+  border-bottom: #dcddde;
+  flex-grow: 1;
+}
+
+.library-icon {
+  padding: 8px;
+  background: #f6f6f6;
+  border-radius: 50%;
+}
+
+.item-content-title {
+  font-size: 11px;
+  margin: 0 0 4px;
+  font-weight: 500;
+  color: #333;
+}
+
+.item-content-styles {
+  color: #666666;
+  font-weight: 400;
+}
+
+.library-list-item-content {
+  padding-left: 12px;
+}
+
+.library-remove {
+  border: none;
+  align-self: flex-end;
+  margin-left: auto;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.library-remove:hover {
+  background-color: #f9f9f9;
+}

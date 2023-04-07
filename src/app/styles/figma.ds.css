@@ -1286,7 +1286,7 @@
   width: 32px;
   height: 32px;
   border: 1px solid transparent;
-  border-radius: 2px;
+  border-radius: 8px;
   outline: none;
   background-position: -1px -1px;
 }

@@ -34,6 +34,7 @@ function BulkErrorList(props) {
 
     // Create the bulk error list
     item.errors.forEach(error => {
+      // console.log(error);
       // Create a unique key based on error properties
       const errorKey = `${error.type}_${error.message}_${error.value}`;
       if (bulkErrorMap[errorKey]) {
