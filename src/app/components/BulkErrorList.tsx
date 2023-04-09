@@ -23,38 +23,50 @@ function BulkErrorList(props) {
     ignoredErrorsMap[nodeId].add(ignoredError.value);
   });
 
-  // Filter out ignored errors and create the bulk error list
-  const bulkErrorMap = {};
+  // Filter out ignored errors
   const filteredErrorArray = props.errorArray.filter(item => {
     const nodeId = item.id;
     const ignoredErrorValues = ignoredErrorsMap[nodeId] || new Set();
     item.errors = item.errors.filter(
       error => !ignoredErrorValues.has(error.value)
     );
-
-    // Create the bulk error list
-    item.errors.forEach(error => {
-      // console.log(error);
-      // Create a unique key based on error properties
-      const errorKey = `${error.type}_${error.message}_${error.value}`;
-      if (bulkErrorMap[errorKey]) {
-        // If the error already exists, update the nodes and count
-        bulkErrorMap[errorKey].nodes.push(error.node.id);
-        bulkErrorMap[errorKey].count++;
-      } else {
-        // If this is the first instance of this type of error, add it to the map
-        error.nodes = [error.node.id];
-        error.count = 1;
-        bulkErrorMap[errorKey] = error;
-      }
-    });
-
     return item.errors.length >= 1;
   });
 
-  // Convert the bulk error map to an array
-  const bulkErrorList = Object.values(bulkErrorMap);
+  const createBulkErrorList = (errorArray, ignoredErrorsMap) => {
+    const bulkErrorMap = {};
+    errorArray.forEach(item => {
+      const nodeId = item.id;
+      const ignoredErrorValues = ignoredErrorsMap[nodeId] || new Set();
+      item.errors = item.errors.filter(
+        error => !ignoredErrorValues.has(error.value)
+      );
 
+      item.errors.forEach(error => {
+        // Check if the error.matches exists and has content
+        const hasMatches = error.matches && error.matches.length > 0;
+        const hasSuggestions = error.matches && error.matches.length > 0;
+
+        // Create a unique key based on error properties and whether it's a match
+        const errorKey = `${error.type}_${error.message}_${error.value}_${hasSuggestions}_${hasMatches}`;
+        if (bulkErrorMap[errorKey]) {
+          bulkErrorMap[errorKey].nodes.push(error.node.id);
+          bulkErrorMap[errorKey].count++;
+        } else {
+          error.nodes = [error.node.id];
+          error.count = 1;
+          bulkErrorMap[errorKey] = error;
+        }
+      });
+    });
+    return Object.values(bulkErrorMap);
+  };
+
+  // Create the bulk error list using the createBulkErrorList function
+  const bulkErrorList = createBulkErrorList(
+    filteredErrorArray,
+    ignoredErrorsMap
+  );
   bulkErrorList.sort((a, b) => b.count - a.count);
 
   function handleIgnoreChange(error) {
@@ -67,6 +79,34 @@ function BulkErrorList(props) {
         pluginMessage: {
           type: "select-multiple-layers",
           nodeArray: error.nodes
+        }
+      },
+      "*"
+    );
+  }
+
+  function handleFixAll(error) {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "apply-styles",
+          error: error,
+          field: "matches",
+          index: 0
+        }
+      },
+      "*"
+    );
+  }
+
+  function handleSuggestion(error) {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "apply-styles",
+          error: error,
+          field: "suggestions",
+          index: 0
         }
       },
       "*"
@@ -144,6 +184,8 @@ function BulkErrorList(props) {
       handleSelectAll={handleSelectAll}
       handleSelect={handleSelect}
       handleIgnoreAll={handleIgnoreAll}
+      handleFixAll={handleFixAll}
+      handleSuggestion={handleSuggestion}
     />
   ));
 

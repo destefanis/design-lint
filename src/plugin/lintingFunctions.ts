@@ -69,6 +69,9 @@ export function checkRadius(node, errors, radiusValues) {
     if (cornerType === 0) {
       return;
     }
+    if (cornerType === node.height) {
+      return;
+    }
   }
 
   // If the radius isn't even on all sides, check each corner.
@@ -373,60 +376,66 @@ export function checkType(node, errors, libraries) {
     // Find matching styles in the libraries
     let matchingStyles = [];
     let suggestedStyles = [];
-    for (const library of libraries) {
-      for (const textStyle of library.text) {
-        const style = textStyle.style;
 
-        let lineHeightCheck;
+    if (libraries && libraries.length > 0) {
+      for (const library of libraries) {
+        if (library.text && library.text.length > 0) {
+          for (const textStyle of library.text) {
+            const style = textStyle.style;
 
-        // same check for line height so we dont' compared
-        // an undefined value to a defined one
-        if (node.lineHeight.value !== undefined) {
-          lineHeightCheck = style.lineHeight.value;
-        } else {
-          lineHeightCheck = "Auto";
-        }
+            let lineHeightCheck;
 
-        if (
-          style.fontFamily === textObject.font &&
-          style.fontStyle === textObject.fontStyle &&
-          style.fontSize === textObject.fontSize &&
-          lineHeightCheck === textObject.lineHeight &&
-          style.letterSpacing.value === textObject.letterSpacingValue &&
-          style.letterSpacing.unit === textObject.letterSpacingUnit &&
-          style.textCase === textObject.textCase &&
-          style.paragraphSpacing === textObject.paragraphSpacing
-        ) {
-          console.log("match found!");
-          matchingStyles.push({
-            name: textStyle.name,
-            styleId: textStyle.id,
-            value:
-              textStyle.name +
-              " · " +
-              style.fontSize +
-              "/" +
-              style.lineHeight.value,
-            source: library.name
-          });
-        } else if (
-          style.fontFamily === textObject.font &&
-          style.fontStyle === textObject.fontStyle &&
-          style.fontSize === textObject.fontSize &&
-          lineHeightCheck === textObject.lineHeight
-        ) {
-          console.log("suggestion made!");
-          suggestedStyles.push({
-            name: textStyle.name,
-            styleId: textStyle.id,
-            value:
-              textStyle.name +
-              " · " +
-              style.fontSize +
-              "/" +
-              style.lineHeight.value,
-            source: library.name
-          });
+            // same check for line height so we dont' compared
+            // an undefined value to a defined one
+            if (node.lineHeight.value !== undefined) {
+              lineHeightCheck = style.lineHeight.value;
+            } else {
+              lineHeightCheck = "Auto";
+            }
+
+            if (
+              style.fontFamily === textObject.font &&
+              style.fontStyle === textObject.fontStyle &&
+              style.fontSize === textObject.fontSize &&
+              lineHeightCheck === textObject.lineHeight &&
+              style.letterSpacing.value === textObject.letterSpacingValue &&
+              style.letterSpacing.unit === textObject.letterSpacingUnit &&
+              style.textCase === textObject.textCase &&
+              style.paragraphSpacing === textObject.paragraphSpacing
+            ) {
+              console.log("match found!");
+              matchingStyles.push({
+                name: textStyle.name,
+                id: textStyle.id,
+                key: textStyle.key,
+                value:
+                  textStyle.name +
+                  " · " +
+                  style.fontSize +
+                  "/" +
+                  style.lineHeight.value,
+                source: library.name
+              });
+            } else if (
+              style.fontFamily === textObject.font &&
+              style.fontStyle === textObject.fontStyle &&
+              style.fontSize === textObject.fontSize &&
+              lineHeightCheck === textObject.lineHeight
+            ) {
+              suggestedStyles.push({
+                name: textStyle.name,
+                id: textStyle.id,
+                key: textStyle.key,
+                value:
+                  textStyle.name +
+                  " · " +
+                  style.fontSize +
+                  "/" +
+                  style.lineHeight.value,
+                source: library.name
+              });
+            }
+          }
         }
       }
     }
@@ -435,7 +444,6 @@ export function checkType(node, errors, libraries) {
 
     // Create error object with fixes if matching styles are found
     if (matchingStyles.length > 0) {
-      console.log(matchingStyles);
       return errors.push(
         createErrorObject(
           node,
@@ -446,16 +454,14 @@ export function checkType(node, errors, libraries) {
         )
       );
     } else if (suggestedStyles.length > 0) {
-      console.log("else if");
       // We may not have exact matches, so we'll suggest some that are very close.
-      console.log(suggestedStyles);
       return errors.push(
         createErrorObject(
           node,
           "text",
           "Missing text style",
           currentStyle,
-          [],
+          null,
           suggestedStyles
         )
       );

@@ -36,6 +36,7 @@ const App = ({}) => {
   const [initialLoad, setInitialLoad] = React.useState(false);
   const [timedLoad, setTimeLoad] = React.useState(false);
   const [libraries, setLibraries] = useState([]);
+  const [localStyles, setLocalStyles] = useState({});
   const librariesRef = React.useRef([]);
 
   window.addEventListener("keydown", function(e) {
@@ -206,7 +207,6 @@ const App = ({}) => {
       } else if (type === "step-2-complete") {
         // Grabs the properties of the first layer to display in our UI.
         setSelectedNode(() => JSON.parse(message));
-        console.log("step 2 complete");
 
         // After we have the first node, we want to
         // lint the all the remaining nodes/layers in our original selection.
@@ -280,6 +280,8 @@ const App = ({}) => {
         setLibraries(message);
       } else if (type === "library-imported-from-storage") {
         setLibraries(message);
+      } else if (type === "local-styles-imported") {
+        setLocalStyles(message);
       }
     };
   }, []);
@@ -313,6 +315,7 @@ const App = ({}) => {
             <LibraryPage
               libraries={libraries}
               onUpdateLibraries={handleUpdateLibraries}
+              localStyles={localStyles}
             />
           ) : (
             <BulkErrorList

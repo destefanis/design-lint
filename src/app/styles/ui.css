@@ -202,6 +202,52 @@ body {
   position: relative;
 }
 
+.auto-fix-content {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  padding: 12px 0 2px;
+  margin-top: 12px;
+}
+
+.auto-fix-style {
+  display: flex;
+  flex-flow: column;
+}
+
+.style-source {
+  font-size: 9px;
+  font-weight: 400;
+  padding-bottom: 4px;
+  color: #666666;
+}
+
+.style-value {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.auto-fix-button {
+  outline: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 11px;
+  background-color: #18a0fb;
+  border: none;
+  color: #fff;
+  padding: 6px 8px;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.auto-fix-button:hover {
+  /* transition: background-color 100ms ease; */
+  /* background-color: #111; */
+  cursor: pointer;
+}
+
 .text img {
   fill: #18a0fb;
 }

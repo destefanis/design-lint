@@ -2,12 +2,11 @@ import * as React from "react";
 import { motion } from "framer-motion/dist/framer-motion";
 import "../styles/library.css";
 
-const LibraryPage = ({ libraries = [], onUpdateLibraries }) => {
+const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
   const hasLibraries = libraries && libraries.length > 0;
-  console.log(libraries);
 
   const onLibraryImport = () => {
-    parent.postMessage({ pluginMessage: { type: "find-library" } }, "*");
+    parent.postMessage({ pluginMessage: { type: "save-library" } }, "*");
   };
 
   const removeLibrary = async index => {
@@ -20,13 +19,35 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries }) => {
 
     // Send a message to the plugin layer to remove the library from client storage
     parent.postMessage(
-      { pluginMessage: { type: "remove-library", index } },
+      {
+        pluginMessage: {
+          type: "remove-library",
+          index: index,
+          storageArray: updatedLibraries
+        }
+      },
       "*"
     );
   };
 
   return (
     <div>
+      <ul className="library-list">
+        <li className="library-list-item" key="local-styles">
+          <div className="library-icon-wrapper">
+            <img
+              className="library-icon"
+              src={require("../assets/library.svg")}
+            />
+          </div>
+          <div className="library-list-item-content">
+            <h3 className="item-content-title">Local Styles</h3>
+            <span className="item-content-styles">
+              {localStyles.styles} styles
+            </span>
+          </div>
+        </li>
+      </ul>
       {hasLibraries ? (
         <ul className="library-list">
           {libraries.map((library, index) => (

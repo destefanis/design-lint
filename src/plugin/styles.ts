@@ -14,6 +14,7 @@ async function getLocalTextStyles() {
   const textStyles = figma.getLocalTextStyles();
   const textStylesData = textStyles.map(style => ({
     id: style.id,
+    key: style.key,
     name: style.name,
     description: style.description,
     style: {

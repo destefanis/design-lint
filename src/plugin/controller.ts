@@ -211,6 +211,81 @@ figma.ui.onmessage = msg => {
     figma.notify("Reset border radius value", { timeout: 1000 });
   }
 
+  // Function to check if a style key exists locally
+  function isStyleKeyLocal(styleKey) {
+    const localStyles = figma.getLocalTextStyles();
+
+    for (const style of localStyles) {
+      if (style.key === styleKey) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // If a style is local, we can apply it
+  function applyLocalStyle(node, styleId) {
+    // const localStyles = figma.getLocalTextStyles();
+    // const style = localStyles.find(style => style.key === styleKey);
+    node.textStyleId = styleId;
+  }
+
+  // Some styles are remote so we need to import them first.
+  async function applyRemoteStyle(node, importedStyle) {
+    try {
+      node.textStyleId = importedStyle.id;
+    } catch (error) {
+      console.error("Error applying remote style:", error);
+    }
+  }
+
+  // Called from BulkErrorList when updating matching styles
+  // or applying suggestion styles.
+  if (msg.type === "apply-styles") {
+    async function applyStylesToNodes(field, index) {
+      const styleKey = msg.error[field][index].key;
+
+      if (isStyleKeyLocal(styleKey)) {
+        for (const nodeId of msg.error.nodes) {
+          const node = figma.getNodeById(nodeId);
+
+          if (node && node.type === "TEXT") {
+            applyLocalStyle(node, msg.error[field][index].id);
+          }
+        }
+      } else {
+        // Import the remote style
+        let importedStyle;
+        try {
+          importedStyle = await figma.importStyleByKeyAsync(styleKey);
+        } catch (error) {
+          if (!error.message.includes("Cannot find style")) {
+            console.error("Error importing style:", error);
+          }
+        }
+
+        // Apply the imported style to all layers
+        if (importedStyle) {
+          const batchSize = 10;
+          for (let i = 0; i < msg.error.nodes.length; i += batchSize) {
+            const batch = msg.error.nodes.slice(i, i + batchSize);
+            for (const nodeId of batch) {
+              const node = figma.getNodeById(nodeId);
+
+              if (node && node.type === "TEXT") {
+                await applyRemoteStyle(node, importedStyle);
+              }
+            }
+            await delay(3);
+          }
+        }
+      }
+    }
+
+    applyStylesToNodes(msg.field, msg.index);
+  }
+
   if (msg.type === "select-multiple-layers") {
     const layerArray = msg.nodeArray;
     let nodesToBeSelected = [];
@@ -326,7 +401,7 @@ figma.ui.onmessage = msg => {
     // Use an async function to handle the asynchronous generator
     async function processLint() {
       const finalResult = [];
-      const libraries = msg.libraries;
+
       for await (const result of lintAsync(originalNodeTree, msg.libraries)) {
         finalResult.push(...result);
       }
@@ -351,8 +426,37 @@ figma.ui.onmessage = msg => {
     processLint();
   }
 
-  // Imports Styles from the currently opened file.
-  if (msg.type === "find-library") {
+  // Import local styles to use as recommendations
+  // This function doesn't save the styles, that's "save-library"
+  if (msg.type === "find-local-styles") {
+    (async function() {
+      const paintStylesData = await getLocalPaintStyles();
+      const textStylesData = await getLocalTextStyles();
+      const effectStylesData = await getLocalEffectStyles();
+      const fileName = figma.root.name;
+      const totalStyles =
+        effectStylesData.length +
+        textStylesData.length +
+        paintStylesData.length;
+
+      const localStyles = {
+        name: fileName,
+        effects: effectStylesData,
+        fills: paintStylesData,
+        text: textStylesData,
+        styles: totalStyles
+      };
+
+      // Send the updated libraries array to the UI layer
+      figma.ui.postMessage({
+        type: "local-styles-imported",
+        message: localStyles
+      });
+    })();
+  }
+
+  // Saves local styles as a library to use in every file.
+  if (msg.type === "save-library") {
     (async function() {
       const paintStylesData = await getLocalPaintStyles();
       const textStylesData = await getLocalTextStyles();
@@ -365,7 +469,7 @@ figma.ui.onmessage = msg => {
       const key = "libraryKey";
 
       const library = {
-        name: fileName + " " + "Library",
+        name: fileName,
         effects: effectStylesData,
         fills: paintStylesData,
         text: textStylesData,
@@ -399,17 +503,8 @@ figma.ui.onmessage = msg => {
     })();
   }
 
-  // Removes a library from local storage and from state.
   if (msg.type === "remove-library") {
-    const key = "libraryKey";
-    const storedLibraries = figma.clientStorage.getAsync(key);
-    if (Array.isArray(storedLibraries)) {
-      // Remove the library at the specified index
-      storedLibraries.splice(msg.index, 1);
-
-      // Update client storage with the new libraries array
-      figma.clientStorage.setAsync(key, storedLibraries);
-    }
+    figma.clientStorage.setAsync("libraryKey", msg.storageArray);
   }
 
   // Initialize the app
@@ -447,6 +542,31 @@ figma.ui.onmessage = msg => {
             });
           }
 
+          (async function() {
+            const paintStylesData = await getLocalPaintStyles();
+            const textStylesData = await getLocalTextStyles();
+            const effectStylesData = await getLocalEffectStyles();
+            const fileName = figma.root.name;
+            const totalStyles =
+              effectStylesData.length +
+              textStylesData.length +
+              paintStylesData.length;
+
+            const localStyles = {
+              name: fileName,
+              effects: effectStylesData,
+              fills: paintStylesData,
+              text: textStylesData,
+              styles: totalStyles
+            };
+
+            // Send the updated libraries array to the UI layer
+            figma.ui.postMessage({
+              type: "local-styles-imported",
+              message: localStyles
+            });
+          })();
+
           // Now that libraries are available, call lint with libraries and send the message
           figma.ui.postMessage({
             type: "step-1",
@@ -455,34 +575,6 @@ figma.ui.onmessage = msg => {
           });
         }
       );
-
-      // We want to immediately render the first selection
-      // to avoid freezing up the UI.
-      // figma.ui.postMessage({
-      //   type: "step-1",
-      //   message: serializeNodes(nodes),
-      //   errors: lint(firstNode, [])
-      // });
-
-      // Fetch the ignored errors for this document.
-      // figma.clientStorage.getAsync(documentUUID).then(result => {
-      //   if (result.length) {
-      //     figma.ui.postMessage({
-      //       type: "fetched storage",
-      //       storage: result
-      //     });
-      //   }
-      // });
-
-      // Fetch libraries that are stored
-      // figma.clientStorage.getAsync("libraryKey").then(result => {
-      //   if (result.length) {
-      //     figma.ui.postMessage({
-      //       type: "library-imported-from-storage",
-      //       message: result
-      //     });
-      //   }
-      // });
 
       figma.clientStorage.getAsync("storedActivePage").then(result => {
         if (result.length) {

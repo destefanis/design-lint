@@ -36,6 +36,15 @@ function BulkErrorListItem(props) {
     props.handleIgnoreAll(error);
   }
 
+  function handleFixAll(error) {
+    console.log("fix all from list item");
+    props.handleFixAll(error);
+  }
+
+  function handleSuggestion(error) {
+    props.handleSuggestion(error);
+  }
+
   function truncate(string) {
     return string.length > 52 ? string.substring(0, 49) + "..." : string;
   }
@@ -49,8 +58,6 @@ function BulkErrorListItem(props) {
   return (
     <motion.li
       className="error-list-item"
-      ref={ref}
-      onClick={showMenu}
       positionTransition
       key={error.node.id + props.index}
       variants={variants}
@@ -59,7 +66,7 @@ function BulkErrorListItem(props) {
       exit="exit"
       type={error.type.toLowerCase()}
     >
-      <div className="flex-row">
+      <div className="flex-row" ref={ref} onClick={showMenu}>
         <span className="error-type">
           <img
             src={require("../assets/error-type/" +
@@ -79,13 +86,16 @@ function BulkErrorListItem(props) {
             <div className="current-value">{truncate(error.value)}</div>
           ) : null}
         </span>
-        <span className="context-icon">
+        <motion.span
+          whileTap={{ scale: 0.98, opacity: 0.8 }}
+          className="context-icon"
+        >
           <div className="menu" ref={ref}>
             <div className="menu-trigger" onClick={showMenu}>
               <img src={require("../assets/context.svg")} />
             </div>
           </div>
-        </span>
+        </motion.span>
 
         {error.nodes.length > 1 ? (
           <ul
@@ -149,6 +159,40 @@ function BulkErrorListItem(props) {
           </ul>
         )}
       </div>
+      {error.matches && (
+        <div className="auto-fix-content">
+          <div className="auto-fix-style">
+            <span className="style-source">Matching Style</span>
+            <span className="style-name">{error.matches[0].value}</span>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+            className="auto-fix-button"
+            onClick={() => {
+              handleFixAll(error);
+            }}
+          >
+            ✨ Fix All
+          </motion.button>
+        </div>
+      )}
+      {error.suggestions && (
+        <div className="auto-fix-content">
+          <div className="auto-fix-style">
+            <span className="style-source">Style Suggestions</span>
+            <span className="style-name">{error.suggestions[0].value}</span>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+            className="auto-fix-button"
+            onClick={() => {
+              handleSuggestion(error);
+            }}
+          >
+            Apply
+          </motion.button>
+        </div>
+      )}
     </motion.li>
   );
 }
