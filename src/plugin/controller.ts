@@ -3,13 +3,13 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
-  checkType
+  checkType,
+  newCheckFills
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
 const {
   getLocalPaintStyles,
-  saveToLocalStorage,
   getLocalTextStyles,
   getLocalEffectStyles
 } = require("./styles");
@@ -19,6 +19,13 @@ figma.showUI(__html__, { width: 360, height: 580 });
 let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree: readonly any[] = [];
 let lintVectors = false;
+let localStylesLibrary = {};
+const usedRemoteStyles = {
+  fills: {},
+  strokes: {},
+  text: {},
+  effects: {}
+};
 
 figma.skipInvisibleInstanceChildren = true;
 
@@ -211,12 +218,25 @@ figma.ui.onmessage = msg => {
     figma.notify("Reset border radius value", { timeout: 1000 });
   }
 
-  // Function to check if a style key exists locally
+  // Function to check if a style key exists locally for text layers.
   function isStyleKeyLocal(styleKey) {
     const localStyles = figma.getLocalTextStyles();
 
     for (const style of localStyles) {
       if (style.key === styleKey) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Function to check if a style key exists locally
+  function isStyleIdLocal(styleId) {
+    const localStyles = figma.getLocalPaintStyles();
+
+    for (const paint of localStyles) {
+      if (paint.id === styleId) {
         return true;
       }
     }
@@ -243,15 +263,28 @@ figma.ui.onmessage = msg => {
   // Called from BulkErrorList when updating matching styles
   // or applying suggestion styles.
   if (msg.type === "apply-styles") {
+    function applyLocalFillStyle(node, styleId) {
+      node.fillStyleId = styleId;
+    }
+
     async function applyStylesToNodes(field, index) {
       const styleKey = msg.error[field][index].key;
+      const styleId = msg.error[field][index].id;
 
-      if (isStyleKeyLocal(styleKey)) {
+      if (msg.error.type === "text" && isStyleKeyLocal(styleKey)) {
         for (const nodeId of msg.error.nodes) {
           const node = figma.getNodeById(nodeId);
 
           if (node && node.type === "TEXT") {
-            applyLocalStyle(node, msg.error[field][index].id);
+            applyLocalStyle(node, styleId);
+          }
+        }
+      } else if (msg.error.type === "fill" && isStyleIdLocal(styleId)) {
+        for (const nodeId of msg.error.nodes) {
+          const node = figma.getNodeById(nodeId);
+
+          if (node) {
+            applyLocalFillStyle(node, styleId);
           }
         }
       } else {
@@ -273,8 +306,10 @@ figma.ui.onmessage = msg => {
             for (const nodeId of batch) {
               const node = figma.getNodeById(nodeId);
 
-              if (node && node.type === "TEXT") {
+              if (node && node.type === "TEXT" && msg.error.type === "text") {
                 await applyRemoteStyle(node, importedStyle);
+              } else if (node && msg.error.type === "fill") {
+                node.fillStyleId = importedStyle.id;
               }
             }
             await delay(3);
@@ -283,6 +318,8 @@ figma.ui.onmessage = msg => {
       }
     }
 
+    // we pass in suggestions or messages as fields
+    // index is which of the multiple styles they chose from in the suggestions array.
     applyStylesToNodes(msg.field, msg.index);
   }
 
@@ -511,6 +548,9 @@ figma.ui.onmessage = msg => {
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
       figma.notify("Select a frame(s) to get started", { timeout: 2000 });
+      figma.ui.postMessage({
+        type: "show-empty-state"
+      });
       return;
     } else {
       let nodes = figma.currentPage.selection;
@@ -522,12 +562,16 @@ figma.ui.onmessage = msg => {
       // refreshing the tree and live updating errors.
       originalNodeTree = nodes;
 
+      figma.ui.postMessage({
+        type: "show-preloader"
+      });
+
       // Fetch the ignored errors and libraries from client storage
       const ignoredErrorsPromise = figma.clientStorage.getAsync(documentUUID);
       const librariesPromise = figma.clientStorage.getAsync("libraryKey");
 
       Promise.all([ignoredErrorsPromise, librariesPromise]).then(
-        ([ignoredErrors, libraries]) => {
+        async ([ignoredErrors, libraries]) => {
           if (ignoredErrors && ignoredErrors.length) {
             figma.ui.postMessage({
               type: "fetched storage",
@@ -542,32 +586,151 @@ figma.ui.onmessage = msg => {
             });
           }
 
-          (async function() {
+          function* findRemoteStylesGen(node, layerCount = { count: 0 }) {
+            if (layerCount.count % 500 === 0) {
+              yield new Promise(resolve => setTimeout(resolve, 3));
+            }
+
+            if (node.fillStyleId) {
+              if (usedRemoteStyles.fills[node.fillStyleId]) {
+                usedRemoteStyles.fills[node.fillStyleId].count += 1;
+              } else {
+                usedRemoteStyles.fills[node.fillStyleId] = {
+                  id: node.fillStyleId,
+                  type: "fill",
+                  count: 1
+                };
+              }
+            }
+
+            if (node.strokeStyleId) {
+              if (usedRemoteStyles.strokes[node.strokeStyleId]) {
+                usedRemoteStyles.strokes[node.strokeStyleId].count += 1;
+              } else {
+                usedRemoteStyles.strokes[node.strokeStyleId] = {
+                  id: node.strokeStyleId,
+                  type: "stroke",
+                  count: 1
+                };
+              }
+            }
+
+            if (node.type === "TEXT" && node.textStyleId) {
+              if (usedRemoteStyles.text[node.textStyleId]) {
+                usedRemoteStyles.text[node.textStyleId].count += 1;
+              } else {
+                usedRemoteStyles.text[node.textStyleId] = {
+                  id: node.textStyleId,
+                  type: "text",
+                  count: 1
+                };
+              }
+            }
+
+            if (node.effectStyleId) {
+              if (usedRemoteStyles.effects[node.effectStyleId]) {
+                usedRemoteStyles.effects[node.effectStyleId].count += 1;
+              } else {
+                usedRemoteStyles.effects[node.effectStyleId] = {
+                  id: node.effectStyleId,
+                  type: "effect",
+                  count: 1
+                };
+              }
+            }
+
+            // Add other style types (stroke, effect, text) here using the same logic as above
+
+            if ("children" in node) {
+              for (const child of node.children) {
+                layerCount.count += 1;
+                yield* findRemoteStylesGen(child, layerCount);
+              }
+            }
+          }
+
+          async function findRemoteStyles() {
+            const currentPage = figma.currentPage;
+
+            const gen = findRemoteStylesGen(currentPage);
+
+            while (true) {
+              const result = gen.next();
+              if (result.done) break;
+              await result.value;
+            }
+
+            for (const type in usedRemoteStyles) {
+              const promises = [];
+              let count = 0;
+
+              for (const styleId in usedRemoteStyles[type]) {
+                if (count % 10 === 0) {
+                  await delay(3);
+                }
+
+                let key = styleId;
+                key = key.replace("S:", "");
+                key = key.split(",")[0];
+
+                promises.push(
+                  figma
+                    .importStyleByKeyAsync(key)
+                    .then(style => {
+                      usedRemoteStyles[type][key] = {
+                        count: usedRemoteStyles[type][styleId],
+                        styleData: style
+                      };
+                    })
+                    .catch(err => {
+                      console.error(
+                        `Error fetching style, make sure the library is enabled under your assets tab: ${key}`,
+                        err
+                      );
+                    })
+                );
+
+                count += 1;
+              }
+              await Promise.all(promises);
+            }
+
+            console.log("Used remote styles:", usedRemoteStyles);
+          }
+
+          await findRemoteStyles();
+
+          const updateLocalStylesLibrary = async () => {
             const paintStylesData = await getLocalPaintStyles();
             const textStylesData = await getLocalTextStyles();
             const effectStylesData = await getLocalEffectStyles();
-            const fileName = figma.root.name;
             const totalStyles =
               effectStylesData.length +
               textStylesData.length +
               paintStylesData.length;
 
             const localStyles = {
-              name: fileName,
+              name: "Local Styles",
               effects: effectStylesData,
               fills: paintStylesData,
               text: textStylesData,
               styles: totalStyles
             };
 
+            // Update the global variable
+            localStylesLibrary = localStyles;
+
             // Send the updated libraries array to the UI layer
             figma.ui.postMessage({
               type: "local-styles-imported",
               message: localStyles
             });
-          })();
+          };
 
-          // Now that libraries are available, call lint with libraries and send the message
+          // Wait for the localStylesLibrary to be updated
+          await updateLocalStylesLibrary();
+
+          // Now that libraries are available, call lint with libraries and localStylesLibrary, then send the message
           figma.ui.postMessage({
             type: "step-1",
             message: serializeNodes(nodes),
@@ -616,7 +779,7 @@ figma.ui.onmessage = msg => {
         return lintShapeRules(node);
       }
       case "FRAME": {
-        return lintFrameRules(node);
+        return lintFrameRules(node, libraries);
       }
       case "SECTION": {
         return lintSectionRules(node);
@@ -626,7 +789,7 @@ figma.ui.onmessage = msg => {
         return lintRectangleRules(node);
       }
       case "COMPONENT": {
-        return lintComponentRules(node);
+        return lintComponentRules(node, libraries);
       }
       case "COMPONENT_SET": {
         // Component Set is the frame that wraps a set of variants
@@ -647,7 +810,7 @@ figma.ui.onmessage = msg => {
     }
   }
 
-  function lintComponentRules(node) {
+  function lintComponentRules(node, libraries) {
     let errors = [];
 
     // Example of how we can make a custom rule specifically for components
@@ -657,7 +820,8 @@ figma.ui.onmessage = msg => {
     //   );
     // }
 
-    checkFills(node, errors);
+    // checkFills(node, errors);
+    newCheckFills(node, errors, libraries, localStylesLibrary);
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
     checkStrokes(node, errors);
@@ -682,10 +846,11 @@ figma.ui.onmessage = msg => {
     return errors;
   }
 
-  function lintFrameRules(node) {
+  function lintFrameRules(node, libraries) {
     let errors = [];
 
-    checkFills(node, errors);
+    // checkFills(node, errors);
+    newCheckFills(node, errors, libraries, localStylesLibrary);
     checkStrokes(node, errors);
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
@@ -707,8 +872,8 @@ figma.ui.onmessage = msg => {
   function lintTextRules(node, libraries) {
     let errors = [];
 
-    checkType(node, errors, libraries);
-    checkFills(node, errors);
+    checkType(node, errors, libraries, localStylesLibrary);
+    newCheckFills(node, errors, libraries, localStylesLibrary);
 
     // We could also comment out checkFills and use a custom function instead
     // Take a look at line 122 in lintingFunction.ts for an example.

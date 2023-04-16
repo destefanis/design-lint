@@ -34,7 +34,7 @@ const App = ({}) => {
   ]);
   const [lintVectors, setLintVectors] = useState(false);
   const [initialLoad, setInitialLoad] = React.useState(false);
-  const [timedLoad, setTimeLoad] = React.useState(false);
+  const [emptyState, setEmptyState] = React.useState(false);
   const [libraries, setLibraries] = useState([]);
   const [localStyles, setLocalStyles] = useState({});
   const librariesRef = React.useRef([]);
@@ -135,11 +135,6 @@ const App = ({}) => {
     }
   }
 
-  // If no layer is selected after 1 seconds, show the empty state.
-  setTimeout(function() {
-    setTimeLoad(true);
-  }, 1000);
-
   React.useEffect(() => {
     // Update client storage so the next time we run the app
     // we don't have to ignore our errors again.
@@ -174,8 +169,11 @@ const App = ({}) => {
 
     window.onmessage = event => {
       const { type, message, errors, storage } = event.data.pluginMessage;
-
-      if (type === "step-1") {
+      if (type === "show-preloader") {
+        setEmptyState(false);
+      } else if (type === "show-empty-state") {
+        setEmptyState(true);
+      } else if (type === "step-1") {
         // Lint the very first selected node.
         let nodeObject = JSON.parse(message);
 
@@ -331,7 +329,7 @@ const App = ({}) => {
             />
           )}
         </div>
-      ) : timedLoad === false ? (
+      ) : emptyState === false ? (
         <PreloaderCSS />
       ) : (
         <EmptyState onHandleRunApp={onRunApp} />

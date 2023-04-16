@@ -37,7 +37,6 @@ function BulkErrorListItem(props) {
   }
 
   function handleFixAll(error) {
-    console.log("fix all from list item");
     props.handleFixAll(error);
   }
 
@@ -163,7 +162,7 @@ function BulkErrorListItem(props) {
         <div className="auto-fix-content">
           <div className="auto-fix-style">
             <span className="style-source">Matching Style</span>
-            <span className="style-name">{error.matches[0].value}</span>
+            <span className="style-name">{error.matches[0].name}</span>
           </div>
           <motion.button
             whileTap={{ scale: 0.98, opacity: 0.8 }}

@@ -244,6 +244,132 @@ export function checkEffects(node, errors) {
   }
 }
 
+// Check library and local styles for matching
+function checkMatchingFills(style, nodeFill) {
+  // Style is really library.style.paint
+  // Node fill is essentially a fill object.
+
+  if (nodeFill.type === "SOLID" && style.type === "SOLID") {
+    return (
+      style.color.r === nodeFill.color.r &&
+      style.color.g === nodeFill.color.g &&
+      style.color.b === nodeFill.color.b &&
+      style.opacity === nodeFill.opacity
+    );
+  } else if (
+    (nodeFill.type === "GRADIENT_LINEAR" && style.type === "GRADIENT_LINEAR") ||
+    (nodeFill.type === "GRADIENT_RADIAL" && style.type === "GRADIENT_RADIAL") ||
+    (nodeFill.type === "GRADIENT_ANGULAR" &&
+      style.type === "GRADIENT_ANGULAR") ||
+    (nodeFill.type === "GRADIENT_DIAMOND" && style.type === "GRADIENT_DIAMOND")
+  ) {
+    return determineFill([style]) === determineFill([nodeFill]);
+  }
+
+  return false;
+}
+
+export function newCheckFills(node, errors, libraries, localStylesLibrary) {
+  if (
+    (node.fills.length && node.visible === true) ||
+    typeof node.fills === "symbol"
+  ) {
+    let nodeFills = node.fills;
+    let fillStyleId = node.fillStyleId;
+
+    if (typeof nodeFills === "symbol") {
+      return errors.push(
+        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+      );
+    }
+
+    if (typeof fillStyleId === "symbol") {
+      return;
+    }
+
+    // If the fills are visible, aren't an image or a video, then lint them.
+    if (
+      node.fillStyleId === "" &&
+      node.fills[0].type !== "IMAGE" &&
+      node.fills[0].type !== "VIDEO" &&
+      node.fills[0].visible === true
+    ) {
+      let matchingFills = [];
+      let suggestedFills = [];
+
+      // If we have local styles, see if there's a match with the first (visible) style.
+      if (localStylesLibrary && localStylesLibrary.fills) {
+        matchingFills = localStylesLibrary.fills
+          .map(fillStyle => ({
+            name: fillStyle.name,
+            id: fillStyle.id,
+            key: fillStyle.id.replace(/S:|,/g, ""),
+            value: fillStyle.name,
+            source: "Local Library",
+            paint: fillStyle.paint
+          }))
+          .filter(fillStyle => checkMatchingFills(fillStyle, nodeFills[0]));
+      }
+
+      if (matchingFills.length === 0 && libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.fills && library.fills.length > 0) {
+            for (const fillStyle of library.fills) {
+              const style = fillStyle;
+
+              if (checkMatchingFills(style.paint, nodeFills[0])) {
+                matchingFills.push({
+                  name: style.name,
+                  id: style.id,
+                  key: style.id.replace(/S:|,/g, ""),
+                  value: style.name,
+                  source: library.name
+                });
+              } else if (
+                style.type === "GRADIENT" &&
+                nodeFills[0].type === "GRADIENT"
+              ) {
+                suggestedFills.push(fillStyle);
+              }
+            }
+          }
+        }
+      }
+
+      let currentFill = determineFill(node.fills);
+
+      if (matchingFills.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            currentFill,
+            matchingFills
+          )
+        );
+      } else if (suggestedFills.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            currentFill,
+            null,
+            suggestedFills
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(node, "fill", "Missing fill style", currentFill)
+        );
+      }
+    } else {
+      return;
+    }
+  }
+}
+
 export function checkFills(node, errors) {
   if (
     (node.fills.length && node.visible === true) ||
@@ -325,7 +451,28 @@ export function checkStrokes(node, errors) {
   }
 }
 
-export function checkType(node, errors, libraries) {
+function checkMatchingStyles(style, textObject) {
+  let lineHeightCheck;
+
+  if (style.lineHeight.value !== undefined) {
+    lineHeightCheck = style.lineHeight.value;
+  } else {
+    lineHeightCheck = "Auto";
+  }
+
+  return (
+    style.fontFamily === textObject.font &&
+    style.fontStyle === textObject.fontStyle &&
+    style.fontSize === textObject.fontSize &&
+    lineHeightCheck === textObject.lineHeight &&
+    style.letterSpacing.value === textObject.letterSpacingValue &&
+    style.letterSpacing.unit === textObject.letterSpacingUnit &&
+    style.textCase === textObject.textCase &&
+    style.paragraphSpacing === textObject.paragraphSpacing
+  );
+}
+
+export function checkType(node, errors, libraries, localStylesLibrary) {
   if (node.textStyleId === "" && node.visible === true) {
     let textObject = {
       font: "",
@@ -373,69 +520,64 @@ export function checkType(node, errors, libraries) {
       textObject.lineHeight = "Auto";
     }
 
-    // Find matching styles in the libraries
     let matchingStyles = [];
     let suggestedStyles = [];
 
-    if (libraries && libraries.length > 0) {
+    const checkSuggestions = library => {
+      for (const textStyle of library.text) {
+        const style = textStyle.style;
+
+        let lineHeightCheck;
+
+        if (node.lineHeight.value !== undefined) {
+          lineHeightCheck = style.lineHeight.value;
+        } else {
+          lineHeightCheck = "Auto";
+        }
+
+        if (checkMatchingStyles(style, textObject)) {
+          matchingStyles.push({
+            name: textStyle.name,
+            id: textStyle.id,
+            key: textStyle.key,
+            value:
+              textStyle.name +
+              " · " +
+              style.fontSize +
+              "/" +
+              style.lineHeight.value,
+            source: library.name
+          });
+        } else if (
+          style.fontFamily === textObject.font &&
+          style.fontStyle === textObject.fontStyle &&
+          style.fontSize === textObject.fontSize &&
+          lineHeightCheck === textObject.lineHeight
+        ) {
+          suggestedStyles.push({
+            name: textStyle.name,
+            id: textStyle.id,
+            key: textStyle.key,
+            value:
+              textStyle.name +
+              " · " +
+              style.fontSize +
+              "/" +
+              style.lineHeight.value,
+            source: library.name
+          });
+        }
+      }
+    };
+
+    if (localStylesLibrary && localStylesLibrary.text) {
+      checkSuggestions(localStylesLibrary);
+    }
+
+    if (matchingStyles.length === 0 && libraries && libraries.length > 0) {
       for (const library of libraries) {
         if (library.text && library.text.length > 0) {
-          for (const textStyle of library.text) {
-            const style = textStyle.style;
-
-            let lineHeightCheck;
-
-            // same check for line height so we dont' compared
-            // an undefined value to a defined one
-            if (node.lineHeight.value !== undefined) {
-              lineHeightCheck = style.lineHeight.value;
-            } else {
-              lineHeightCheck = "Auto";
-            }
-
-            if (
-              style.fontFamily === textObject.font &&
-              style.fontStyle === textObject.fontStyle &&
-              style.fontSize === textObject.fontSize &&
-              lineHeightCheck === textObject.lineHeight &&
-              style.letterSpacing.value === textObject.letterSpacingValue &&
-              style.letterSpacing.unit === textObject.letterSpacingUnit &&
-              style.textCase === textObject.textCase &&
-              style.paragraphSpacing === textObject.paragraphSpacing
-            ) {
-              console.log("match found!");
-              matchingStyles.push({
-                name: textStyle.name,
-                id: textStyle.id,
-                key: textStyle.key,
-                value:
-                  textStyle.name +
-                  " · " +
-                  style.fontSize +
-                  "/" +
-                  style.lineHeight.value,
-                source: library.name
-              });
-            } else if (
-              style.fontFamily === textObject.font &&
-              style.fontStyle === textObject.fontStyle &&
-              style.fontSize === textObject.fontSize &&
-              lineHeightCheck === textObject.lineHeight
-            ) {
-              suggestedStyles.push({
-                name: textStyle.name,
-                id: textStyle.id,
-                key: textStyle.key,
-                value:
-                  textStyle.name +
-                  " · " +
-                  style.fontSize +
-                  "/" +
-                  style.lineHeight.value,
-                source: library.name
-              });
-            }
-          }
+          checkSuggestions(library);
         }
       }
     }
