@@ -20,11 +20,14 @@ let borderRadiusArray = [0, 2, 4, 8, 16, 24, 32];
 let originalNodeTree: readonly any[] = [];
 let lintVectors = false;
 let localStylesLibrary = {};
+
+// Styles used in our page
 const usedRemoteStyles = {
-  fills: {},
-  strokes: {},
-  text: {},
-  effects: {}
+  name: "Remote Styles",
+  fills: [],
+  strokes: [],
+  text: [],
+  effects: []
 };
 
 figma.skipInvisibleInstanceChildren = true;
@@ -548,9 +551,12 @@ figma.ui.onmessage = msg => {
   if (msg.type === "run-app") {
     if (figma.currentPage.selection.length === 0) {
       figma.notify("Select a frame(s) to get started", { timeout: 2000 });
+
+      // If the user hasn't selected anything, show the empty state.
       figma.ui.postMessage({
         type: "show-empty-state"
       });
+
       return;
     } else {
       let nodes = figma.currentPage.selection;
@@ -562,6 +568,7 @@ figma.ui.onmessage = msg => {
       // refreshing the tree and live updating errors.
       originalNodeTree = nodes;
 
+      // Show the preloader until we're ready to render content.
       figma.ui.postMessage({
         type: "show-preloader"
       });
@@ -586,116 +593,129 @@ figma.ui.onmessage = msg => {
             });
           }
 
-          function* findRemoteStylesGen(node, layerCount = { count: 0 }) {
-            if (layerCount.count % 500 === 0) {
-              yield new Promise(resolve => setTimeout(resolve, 3));
-            }
-
-            if (node.fillStyleId) {
-              if (usedRemoteStyles.fills[node.fillStyleId]) {
-                usedRemoteStyles.fills[node.fillStyleId].count += 1;
-              } else {
-                usedRemoteStyles.fills[node.fillStyleId] = {
-                  id: node.fillStyleId,
-                  type: "fill",
-                  count: 1
-                };
-              }
-            }
-
-            if (node.strokeStyleId) {
-              if (usedRemoteStyles.strokes[node.strokeStyleId]) {
-                usedRemoteStyles.strokes[node.strokeStyleId].count += 1;
-              } else {
-                usedRemoteStyles.strokes[node.strokeStyleId] = {
-                  id: node.strokeStyleId,
-                  type: "stroke",
-                  count: 1
-                };
-              }
-            }
-
-            if (node.type === "TEXT" && node.textStyleId) {
-              if (usedRemoteStyles.text[node.textStyleId]) {
-                usedRemoteStyles.text[node.textStyleId].count += 1;
-              } else {
-                usedRemoteStyles.text[node.textStyleId] = {
-                  id: node.textStyleId,
-                  type: "text",
-                  count: 1
-                };
-              }
-            }
-
-            if (node.effectStyleId) {
-              if (usedRemoteStyles.effects[node.effectStyleId]) {
-                usedRemoteStyles.effects[node.effectStyleId].count += 1;
-              } else {
-                usedRemoteStyles.effects[node.effectStyleId] = {
-                  id: node.effectStyleId,
-                  type: "effect",
-                  count: 1
-                };
-              }
-            }
-
-            // Add other style types (stroke, effect, text) here using the same logic as above
-
-            if ("children" in node) {
-              for (const child of node.children) {
-                layerCount.count += 1;
-                yield* findRemoteStylesGen(child, layerCount);
-              }
-            }
-          }
-
           async function findRemoteStyles() {
             const currentPage = figma.currentPage;
 
-            const gen = findRemoteStylesGen(currentPage);
+            const nodes = currentPage
+              .findAllWithCriteria({
+                types: [
+                  "TEXT",
+                  "FRAME",
+                  "COMPONENT",
+                  "RECTANGLE",
+                  "ELLIPSE",
+                  "INSTANCE",
+                  "VECTOR",
+                  "LINE"
+                ]
+              })
+              .filter(node => {
+                // Ignore hidden layers
+                // if (!node.visible) return false;
 
-            while (true) {
-              const result = gen.next();
-              if (result.done) break;
-              await result.value;
-            }
-
-            for (const type in usedRemoteStyles) {
-              const promises = [];
-              let count = 0;
-
-              for (const styleId in usedRemoteStyles[type]) {
-                if (count % 10 === 0) {
-                  await delay(3);
-                }
-
-                let key = styleId;
-                key = key.replace("S:", "");
-                key = key.split(",")[0];
-
-                promises.push(
-                  figma
-                    .importStyleByKeyAsync(key)
-                    .then(style => {
-                      usedRemoteStyles[type][key] = {
-                        count: usedRemoteStyles[type][styleId],
-                        styleData: style
-                      };
-                    })
-                    .catch(err => {
-                      console.error(
-                        `Error fetching style, make sure the library is enabled under your assets tab: ${key}`,
-                        err
-                      );
-                    })
+                // Check for remote styles
+                return (
+                  node.fillStyleId ||
+                  node.strokeStyleId ||
+                  (node.type === "TEXT" && node.textStyleId) ||
+                  node.effectStyleId
                 );
+              });
 
-                count += 1;
+            // Process the nodes to collect remote style information
+            // Finish converting this to an array
+            // REturn if theres a count
+            // Remove importing
+            for (const node of nodes) {
+              if (node.fillStyleId) {
+                const styleId = node.fillStyleId;
+                if (
+                  !usedRemoteStyles.fills.find(style => style.id === styleId) &&
+                  typeof styleId !== "symbol"
+                ) {
+                  const style = figma.getStyleById(styleId);
+                  usedRemoteStyles.fills.push({
+                    id: node.fillStyleId,
+                    type: "fill",
+                    paint: style.paints[0],
+                    name: style.name,
+                    count: style.consumers.length
+                  });
+                }
               }
-              await Promise.all(promises);
+
+              if (node.strokeStyleId) {
+                const styleId = node.strokeStyleId;
+                if (
+                  !usedRemoteStyles.strokes.find(
+                    style => style.id === styleId
+                  ) &&
+                  typeof styleId !== "symbol"
+                ) {
+                  const style = figma.getStyleById(styleId);
+                  usedRemoteStyles.strokes.push({
+                    id: node.strokeStyleId,
+                    type: "stroke",
+                    paint: style.paints[0],
+                    name: style.name,
+                    count: style.consumers.length
+                  });
+                }
+              }
+
+              if (node.type === "TEXT" && node.textStyleId) {
+                const styleId = node.textStyleId;
+                if (
+                  !usedRemoteStyles.text.find(style => style.id === styleId) &&
+                  typeof styleId !== "symbol"
+                ) {
+                  const style = figma.getStyleById(styleId);
+                  usedRemoteStyles.text.push({
+                    id: node.textStyleId,
+                    type: "text",
+                    name: style.name,
+                    description: style.description,
+                    key: style.key,
+                    count: style.consumers.length,
+                    style: {
+                      fontStyle: style.fontName.style,
+                      fontSize: style.fontSize,
+                      textDecoration: style.textDecoration,
+                      letterSpacing: style.letterSpacing,
+                      lineHeight: style.lineHeight,
+                      paragraphIndent: style.paragraphIndent,
+                      paragraphSpacing: style.paragraphSpacing,
+                      fontFamily: style.fontName.family,
+                      textAlignHorizontal: style.textAlignHorizontal,
+                      textAlignVertical: style.textAlignVertical,
+                      textAutoResize: style.textAutoResize,
+                      textCase: style.textCase
+                    }
+                  });
+                }
+              }
+
+              if (node.effectStyleId) {
+                const styleId = node.effectStyleId;
+                if (
+                  !usedRemoteStyles.effects.find(
+                    style => style.id === styleId
+                  ) &&
+                  typeof styleId !== "symbol"
+                ) {
+                  const style = figma.getStyleById(styleId);
+                  usedRemoteStyles.effects.push({
+                    id: node.effectStyleId,
+                    type: "effect",
+                    effects: style.effects,
+                    name: style.name,
+                    count: style.consumers.length
+                  });
+                }
+              }
             }
 
-            console.log("Used remote styles:", usedRemoteStyles);
+            console.log("Remote styles:", usedRemoteStyles);
           }
 
           await findRemoteStyles();
@@ -729,6 +749,7 @@ figma.ui.onmessage = msg => {
 
           // Wait for the localStylesLibrary to be updated
           await updateLocalStylesLibrary();
+          console.log(localStylesLibrary);
 
           // Now that libraries are available, call lint with libraries and localStylesLibrary, then send the message
           figma.ui.postMessage({
@@ -821,7 +842,13 @@ figma.ui.onmessage = msg => {
     // }
 
     // checkFills(node, errors);
-    newCheckFills(node, errors, libraries, localStylesLibrary);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
     checkStrokes(node, errors);
@@ -850,7 +877,13 @@ figma.ui.onmessage = msg => {
     let errors = [];
 
     // checkFills(node, errors);
-    newCheckFills(node, errors, libraries, localStylesLibrary);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
     checkStrokes(node, errors);
     checkRadius(node, errors, borderRadiusArray);
     checkEffects(node, errors);
@@ -872,8 +905,14 @@ figma.ui.onmessage = msg => {
   function lintTextRules(node, libraries) {
     let errors = [];
 
-    checkType(node, errors, libraries, localStylesLibrary);
-    newCheckFills(node, errors, libraries, localStylesLibrary);
+    checkType(node, errors, libraries, localStylesLibrary, usedRemoteStyles);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     // We could also comment out checkFills and use a custom function instead
     // Take a look at line 122 in lintingFunction.ts for an example.

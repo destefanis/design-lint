@@ -85,6 +85,12 @@
   margin-left: 4px;
   padding: 4px 8px;
   text-transform: capitalize;
+  cursor: pointer;
+  transition: border-color 50ms ease;
+}
+
+.pill:hover {
+  border-color: #666;
 }
 
 .pill-divider {
@@ -102,6 +108,10 @@
   background: #18a0fb;
   border-color: #18a0fb;
   color: #fff;
+}
+
+.selected:hover {
+  border-color: #18a0fb;
 }
 
 .is-visible {
@@ -176,7 +186,7 @@
 }
 
 .error-list-item:hover {
-  border-color: #18a0fb;
+  border-color: #d3d3d3;
 }
 
 .flex-row {

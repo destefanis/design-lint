@@ -269,7 +269,13 @@ function checkMatchingFills(style, nodeFill) {
   return false;
 }
 
-export function newCheckFills(node, errors, libraries, localStylesLibrary) {
+export function newCheckFills(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
   if (
     (node.fills.length && node.visible === true) ||
     typeof node.fills === "symbol"
@@ -297,18 +303,37 @@ export function newCheckFills(node, errors, libraries, localStylesLibrary) {
       let matchingFills = [];
       let suggestedFills = [];
 
-      // If we have local styles, see if there's a match with the first (visible) style.
-      if (localStylesLibrary && localStylesLibrary.fills) {
-        matchingFills = localStylesLibrary.fills
+      if (importedStyles && importedStyles.fills) {
+        matchingFills = importedStyles.fills
           .map(fillStyle => ({
             name: fillStyle.name,
             id: fillStyle.id,
             key: fillStyle.id.replace(/S:|,/g, ""),
             value: fillStyle.name,
-            source: "Local Library",
-            paint: fillStyle.paint
+            source: "Remote Style",
+            paint: fillStyle.paint,
+            count: fillStyle.count
           }))
-          .filter(fillStyle => checkMatchingFills(fillStyle, nodeFills[0]));
+          .filter(fillStyle =>
+            checkMatchingFills(fillStyle.paint, nodeFills[0])
+          );
+      }
+
+      if (matchingFills.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.fills) {
+          matchingFills = localStylesLibrary.fills
+            .map(fillStyle => ({
+              name: fillStyle.name,
+              id: fillStyle.id,
+              key: fillStyle.id.replace(/S:|,/g, ""),
+              value: fillStyle.name,
+              source: "Local Library",
+              paint: fillStyle.paint
+            }))
+            .filter(fillStyle =>
+              checkMatchingFills(fillStyle.paint, nodeFills[0])
+            );
+        }
       }
 
       if (matchingFills.length === 0 && libraries && libraries.length > 0) {
@@ -472,7 +497,13 @@ function checkMatchingStyles(style, textObject) {
   );
 }
 
-export function checkType(node, errors, libraries, localStylesLibrary) {
+export function checkType(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
   if (node.textStyleId === "" && node.visible === true) {
     let textObject = {
       font: "",
@@ -569,6 +600,11 @@ export function checkType(node, errors, libraries, localStylesLibrary) {
         }
       }
     };
+
+    // See if we have matches with remote styles
+    if (importedStyles && importedStyles.text) {
+      checkSuggestions(importedStyles);
+    }
 
     if (localStylesLibrary && localStylesLibrary.text) {
       checkSuggestions(localStylesLibrary);
