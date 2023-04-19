@@ -45,7 +45,19 @@ function BulkErrorList(props) {
       item.errors.forEach(error => {
         // Check if the error.matches exists and has content
         const hasMatches = error.matches && error.matches.length > 0;
-        const hasSuggestions = error.matches && error.matches.length > 0;
+        const hasSuggestions =
+          error.suggestions && error.suggestions.length > 0;
+
+        // Sort matches and suggestions by count (how often they're used)
+        if (hasMatches) {
+          error.matches.sort((a, b) => (b.count || 0) - (a.count || 0));
+        } else if (hasSuggestions) {
+          error.suggestions.sort((a, b) => (b.count || 0) - (a.count || 0));
+          // Remove style suggestions with deprecated in the title.
+          error.suggestions = error.suggestions.filter(suggestion => {
+            return !suggestion.name.toLowerCase().includes("deprecated");
+          });
+        }
 
         // Create a unique key based on error properties and whether it's a match
         const errorKey = `${error.type}_${error.message}_${error.value}_${hasSuggestions}_${hasMatches}`;
@@ -92,7 +104,8 @@ function BulkErrorList(props) {
           type: "apply-styles",
           error: error,
           field: "matches",
-          index: 0
+          index: 0,
+          count: error.count
         }
       },
       "*"
@@ -106,7 +119,8 @@ function BulkErrorList(props) {
           type: "apply-styles",
           error: error,
           field: "suggestions",
-          index: 0
+          index: 0,
+          count: error.count
         }
       },
       "*"

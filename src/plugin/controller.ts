@@ -3,8 +3,10 @@ import {
   checkEffects,
   checkFills,
   checkStrokes,
+  newCheckStrokes,
   checkType,
-  newCheckFills
+  newCheckFills,
+  newCheckEffects
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
@@ -234,17 +236,10 @@ figma.ui.onmessage = msg => {
     return false;
   }
 
-  // Function to check if a style key exists locally
-  function isStyleIdLocal(styleId) {
-    const localStyles = figma.getLocalPaintStyles();
-
-    for (const paint of localStyles) {
-      if (paint.id === styleId) {
-        return true;
-      }
-    }
-
-    return false;
+  // Check if a style key exists in use, like local styles but checks remote styles too.
+  function isStyleInUse(styleId) {
+    const style = figma.getStyleById(styleId);
+    return style !== null;
   }
 
   // If a style is local, we can apply it
@@ -270,11 +265,22 @@ figma.ui.onmessage = msg => {
       node.fillStyleId = styleId;
     }
 
+    function applyLocalStrokeStyle(node, styleId) {
+      node.strokeStyleId = styleId;
+    }
+
+    function applyLocalEffectStyle(node, styleId) {
+      node.effectStyleId = styleId;
+    }
+
     async function applyStylesToNodes(field, index) {
       const styleKey = msg.error[field][index].key;
       const styleId = msg.error[field][index].id;
 
-      if (msg.error.type === "text" && isStyleKeyLocal(styleKey)) {
+      if (
+        (msg.error.type === "text" && isStyleInUse(styleId)) ||
+        (msg.error.type === "text" && isStyleKeyLocal(styleKey))
+      ) {
         for (const nodeId of msg.error.nodes) {
           const node = figma.getNodeById(nodeId);
 
@@ -282,12 +288,37 @@ figma.ui.onmessage = msg => {
             applyLocalStyle(node, styleId);
           }
         }
-      } else if (msg.error.type === "fill" && isStyleIdLocal(styleId)) {
+      } else if (
+        (msg.error.type === "fill" && isStyleInUse(styleId)) ||
+        (msg.error.type === "fill" && isStyleKeyLocal(styleKey))
+      ) {
         for (const nodeId of msg.error.nodes) {
           const node = figma.getNodeById(nodeId);
 
           if (node) {
             applyLocalFillStyle(node, styleId);
+          }
+        }
+      } else if (
+        (msg.error.type === "stroke" && isStyleInUse(styleId)) ||
+        (msg.error.type === "stroke" && isStyleKeyLocal(styleKey))
+      ) {
+        for (const nodeId of msg.error.nodes) {
+          const node = figma.getNodeById(nodeId);
+
+          if (node) {
+            applyLocalStrokeStyle(node, styleId);
+          }
+        }
+      } else if (
+        (msg.error.type === "effects" && isStyleInUse(styleId)) ||
+        (msg.error.type === "effects" && isStyleKeyLocal(styleKey))
+      ) {
+        for (const nodeId of msg.error.nodes) {
+          const node = figma.getNodeById(nodeId);
+
+          if (node) {
+            applyLocalEffectStyle(node, styleId);
           }
         }
       } else {
@@ -313,6 +344,8 @@ figma.ui.onmessage = msg => {
                 await applyRemoteStyle(node, importedStyle);
               } else if (node && msg.error.type === "fill") {
                 node.fillStyleId = importedStyle.id;
+              } else if (node && msg.error.type === "stroke") {
+                node.strokeStyleId = importedStyle.id;
               }
             }
             await delay(3);
@@ -610,9 +643,6 @@ figma.ui.onmessage = msg => {
                 ]
               })
               .filter(node => {
-                // Ignore hidden layers
-                // if (!node.visible) return false;
-
                 // Check for remote styles
                 return (
                   node.fillStyleId ||
@@ -622,10 +652,6 @@ figma.ui.onmessage = msg => {
                 );
               });
 
-            // Process the nodes to collect remote style information
-            // Finish converting this to an array
-            // REturn if theres a count
-            // Remove importing
             for (const node of nodes) {
               if (node.fillStyleId) {
                 const styleId = node.fillStyleId;
@@ -792,22 +818,22 @@ figma.ui.onmessage = msg => {
       }
       case "BOOLEAN_OPERATION":
       case "VECTOR": {
-        return lintVectorRules(node);
+        return lintVectorRules(node, libraries);
       }
       case "POLYGON":
       case "STAR":
       case "ELLIPSE": {
-        return lintShapeRules(node);
+        return lintShapeRules(node, libraries);
       }
       case "FRAME": {
         return lintFrameRules(node, libraries);
       }
       case "SECTION": {
-        return lintSectionRules(node);
+        return lintSectionRules(node, libraries);
       }
       case "INSTANCE":
       case "RECTANGLE": {
-        return lintRectangleRules(node);
+        return lintRectangleRules(node, libraries);
       }
       case "COMPONENT": {
         return lintComponentRules(node, libraries);
@@ -817,13 +843,13 @@ figma.ui.onmessage = msg => {
         // the variants within the set are still linted as components (lintComponentRules)
         // this type is generally only present where the variant is defined so it
         // doesn't need as many linting requirements.
-        return lintVariantWrapperRules(node);
+        return lintVariantWrapperRules(node, libraries);
       }
       case "TEXT": {
         return lintTextRules(node, libraries);
       }
       case "LINE": {
-        return lintLineRules(node);
+        return lintLineRules(node, libraries);
       }
       default: {
         // Do nothing
@@ -841,7 +867,6 @@ figma.ui.onmessage = msg => {
     //   );
     // }
 
-    // checkFills(node, errors);
     newCheckFills(
       node,
       errors,
@@ -850,25 +875,56 @@ figma.ui.onmessage = msg => {
       usedRemoteStyles
     );
     checkRadius(node, errors, borderRadiusArray);
-    checkEffects(node, errors);
-    checkStrokes(node, errors);
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
 
-  function lintVariantWrapperRules(node) {
+  function lintVariantWrapperRules(node, libraries) {
     let errors = [];
 
-    checkFills(node, errors);
+    // checkFills(node, errors);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
 
-  function lintLineRules(node) {
+  function lintLineRules(node, libraries) {
     let errors = [];
 
-    checkStrokes(node, errors);
-    checkEffects(node, errors);
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
@@ -884,17 +940,35 @@ figma.ui.onmessage = msg => {
       localStylesLibrary,
       usedRemoteStyles
     );
-    checkStrokes(node, errors);
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
     checkRadius(node, errors, borderRadiusArray);
-    checkEffects(node, errors);
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
 
-  function lintSectionRules(node) {
+  function lintSectionRules(node, libraries) {
     let errors = [];
 
-    checkFills(node, errors);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
     // For some reason section strokes aren't accessible via the API yet.
     // checkStrokes(node, errors);
     checkRadius(node, errors, borderRadiusArray);
@@ -914,45 +988,108 @@ figma.ui.onmessage = msg => {
       usedRemoteStyles
     );
 
-    // We could also comment out checkFills and use a custom function instead
-    // Take a look at line 122 in lintingFunction.ts for an example.
-    // customCheckTextFills(node, errors);
-    checkEffects(node, errors);
-    checkStrokes(node, errors);
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
 
-  function lintRectangleRules(node) {
+  function lintRectangleRules(node, libraries) {
     let errors = [];
 
-    checkFills(node, errors);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
     checkRadius(node, errors, borderRadiusArray);
-    checkStrokes(node, errors);
-    checkEffects(node, errors);
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }
 
-  function lintVectorRules(node) {
+  function lintVectorRules(node, libraries) {
     let errors = [];
 
     // This can be enabled by the user in settings.
     if (lintVectors === true) {
-      checkFills(node, errors);
-      checkStrokes(node, errors);
-      checkEffects(node, errors);
+      newCheckFills(
+        node,
+        errors,
+        libraries,
+        localStylesLibrary,
+        usedRemoteStyles
+      );
+      newCheckStrokes(
+        node,
+        errors,
+        libraries,
+        localStylesLibrary,
+        usedRemoteStyles
+      );
+      newCheckEffects(
+        node,
+        errors,
+        libraries,
+        localStylesLibrary,
+        usedRemoteStyles
+      );
     }
 
     return errors;
   }
 
-  function lintShapeRules(node) {
+  function lintShapeRules(node, libraries) {
     let errors = [];
 
-    checkFills(node, errors);
-    checkStrokes(node, errors);
-    checkEffects(node, errors);
+    newCheckFills(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckStrokes(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
+    newCheckEffects(
+      node,
+      errors,
+      libraries,
+      localStylesLibrary,
+      usedRemoteStyles
+    );
 
     return errors;
   }

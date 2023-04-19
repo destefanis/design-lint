@@ -182,6 +182,171 @@ export function customCheckTextFills(node, errors) {
   }
 }
 
+// Compares colors to see if they're equal.
+function colorsAreEqual(color1, color2) {
+  const threshold = 0.0001;
+  const rDiff = Math.abs(color1.r - color2.r);
+  const gDiff = Math.abs(color1.g - color2.g);
+  const bDiff = Math.abs(color1.b - color2.b);
+  const aDiff = Math.abs(color1.a - color2.a);
+
+  return (
+    rDiff < threshold &&
+    gDiff < threshold &&
+    bDiff < threshold &&
+    aDiff < threshold
+  );
+}
+
+// Helper function for comparing effect types to see if there's a match.
+function effectsMatch(nodeEffects, styleEffects) {
+  if (nodeEffects.length !== styleEffects.length) return false;
+
+  return nodeEffects.every((nodeEffect, index) => {
+    const styleEffect = styleEffects[index];
+
+    if (nodeEffect.type !== styleEffect.type) return false;
+    if (nodeEffect.radius !== styleEffect.radius) return false;
+
+    if (nodeEffect.color) {
+      const nodeColor = convertColor(nodeEffect.color);
+      const styleColor = convertColor(styleEffect.color);
+
+      if (!colorsAreEqual(nodeColor, styleColor)) return false;
+    }
+
+    if (
+      nodeEffect.type === "DROP_SHADOW" ||
+      nodeEffect.type === "INNER_SHADOW"
+    ) {
+      if (
+        nodeEffect.offset.x !== styleEffect.offset.x ||
+        nodeEffect.offset.y !== styleEffect.offset.y ||
+        nodeEffect.spread !== styleEffect.spread
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+export function newCheckEffects(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
+  if (node.effects.length && node.visible === true) {
+    let effectStyleId = node.effectStyleId;
+
+    if (typeof effectStyleId === "symbol") {
+      return;
+    }
+
+    if (node.effectStyleId === "") {
+      let matchingEffects = [];
+
+      // Generate currentStyle string
+      let currentStyle = node.effects
+        .map(effect => {
+          let type = effect.type
+            .replace(/_/g, " ")
+            .toLowerCase()
+            .replace(/\b[a-z]/g, l => l.toUpperCase());
+          let radius = effect.radius;
+          let offsetX = effect.offset ? effect.offset.x : "";
+          let offsetY = effect.offset ? effect.offset.y : "";
+          let color = effect.color
+            ? RGBToHex(...Object.values(convertColor(effect.color)))
+            : "";
+
+          if (type === "DROP_SHADOW" || type === "INNER_SHADOW") {
+            return `${type} ${color} ${radius}px X: ${offsetX}, Y: ${offsetY}`;
+          } else {
+            return `${type} ${radius}px`;
+          }
+        })
+        .join(", ");
+
+      if (importedStyles && importedStyles.effects) {
+        matchingEffects = importedStyles.effects
+          .map(effectStyle => ({
+            name: effectStyle.name,
+            id: effectStyle.id,
+            key: effectStyle.id.replace(/S:|,/g, ""),
+            value: effectStyle.name,
+            source: "Remote Style",
+            effects: effectStyle.effects
+          }))
+          .filter(effectStyle =>
+            effectsMatch(node.effects, effectStyle.effects)
+          );
+      }
+
+      if (matchingEffects.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.effects) {
+          matchingEffects = localStylesLibrary.effects
+            .map(effectStyle => ({
+              name: effectStyle.name,
+              id: effectStyle.id,
+              key: effectStyle.id.replace(/S:|,/g, ""),
+              value: effectStyle.name,
+              source: "Local Library",
+              effects: effectStyle.effects
+            }))
+            .filter(effectStyle =>
+              effectsMatch(node.effects, effectStyle.effects)
+            );
+        }
+      }
+
+      if (libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.effects && library.effects.length > 0) {
+            for (const effectStyle of library.effects) {
+              if (effectsMatch(node.effects, effectStyle.effects)) {
+                matchingEffects.push({
+                  name: effectStyle.name,
+                  key: effectStyle.id.replace(/S:|,/g, ""),
+                  id: effectStyle.id,
+                  value: effectStyle.name,
+                  source: library.name
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (matchingEffects.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "effects",
+            "Missing effects style",
+            currentStyle,
+            matchingEffects
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(
+            node,
+            "effects",
+            "Missing effects style",
+            currentStyle
+          )
+        );
+      }
+    } else {
+      return;
+    }
+  }
+}
+
 // Check for effects like shadows, blurs etc.
 export function checkEffects(node, errors) {
   if (node.effects.length && node.visible === true) {
@@ -246,8 +411,10 @@ export function checkEffects(node, errors) {
 
 // Check library and local styles for matching
 function checkMatchingFills(style, nodeFill) {
-  // Style is really library.style.paint
-  // Node fill is essentially a fill object.
+  // If we pass an array, we need to just check the first fill as that's what is visible.
+  if (Array.isArray(nodeFill)) {
+    nodeFill = nodeFill[nodeFill.length - 1];
+  }
 
   if (nodeFill.type === "SOLID" && style.type === "SOLID") {
     return (
@@ -314,9 +481,7 @@ export function newCheckFills(
             paint: fillStyle.paint,
             count: fillStyle.count
           }))
-          .filter(fillStyle =>
-            checkMatchingFills(fillStyle.paint, nodeFills[0])
-          );
+          .filter(fillStyle => checkMatchingFills(fillStyle.paint, nodeFills));
       }
 
       if (matchingFills.length === 0) {
@@ -331,7 +496,7 @@ export function newCheckFills(
               paint: fillStyle.paint
             }))
             .filter(fillStyle =>
-              checkMatchingFills(fillStyle.paint, nodeFills[0])
+              checkMatchingFills(fillStyle.paint, nodeFills)
             );
         }
       }
@@ -342,7 +507,7 @@ export function newCheckFills(
             for (const fillStyle of library.fills) {
               const style = fillStyle;
 
-              if (checkMatchingFills(style.paint, nodeFills[0])) {
+              if (checkMatchingFills(style.paint, nodeFills)) {
                 matchingFills.push({
                   name: style.name,
                   id: style.id,
@@ -430,6 +595,116 @@ export function checkFills(node, errors) {
           determineFill(node.fills)
         )
       );
+    } else {
+      return;
+    }
+  }
+}
+
+export function newCheckStrokes(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
+  if (node.strokes.length && node.visible === true) {
+    let strokeStyleId = node.strokeStyleId;
+
+    if (typeof strokeStyleId === "symbol") {
+      return;
+    }
+
+    if (node.strokeStyleId === "") {
+      let matchingStrokes = [];
+
+      let strokeObject = {
+        strokeWeight: "",
+        strokeAlign: "",
+        strokeFills: []
+      };
+
+      let strokeWeight = node.strokeWeight;
+
+      if (typeof strokeWeight === "symbol") {
+        strokeWeight = `${node.strokeTopWeight}, ${node.strokeRightWeight}, ${node.strokeBottomWeight}, ${node.strokeLeftWeight}`;
+      }
+
+      strokeObject.strokeWeight = strokeWeight;
+      strokeObject.strokeAlign = node.strokeAlign;
+      strokeObject.strokeFills = determineFill(node.strokes);
+
+      // If there are multiple strokes on a node,
+      // it's probbaly intentional or shouldn't be matched.
+      if (node.strokes.length > 1) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Mutiple fills on a stroke",
+            `Stroke: ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`
+          )
+        );
+      }
+
+      // We only want to check the first stroke for a missing color.
+      let firstStroke = node.strokes[node.strokes.length - 1];
+
+      if (importedStyles && importedStyles.fills) {
+        matchingStrokes = importedStyles.fills
+          .map(strokeStyle => ({
+            name: strokeStyle.name,
+            id: strokeStyle.id,
+            key: strokeStyle.id.replace(/S:|,/g, ""),
+            value: strokeStyle.name,
+            source: "Remote Style",
+            paint: strokeStyle.paint,
+            count: strokeStyle.count
+          }))
+          .filter(strokeStyle =>
+            checkMatchingFills(strokeStyle.paint, firstStroke)
+          );
+      }
+
+      if (matchingStrokes.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.fills) {
+          matchingStrokes = localStylesLibrary.fills
+            .map(strokeStyle => ({
+              name: strokeStyle.name,
+              id: strokeStyle.id,
+              key: strokeStyle.id.replace(/S:|,/g, ""),
+              value: strokeStyle.name,
+              source: "Local Library",
+              paint: strokeStyle.paint
+            }))
+            .filter(strokeStyle =>
+              checkMatchingFills(strokeStyle.paint, firstStroke)
+            );
+        }
+      }
+
+      let currentStroke = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
+
+      if (matchingStrokes.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            currentStroke,
+            matchingStrokes
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            currentStroke
+          )
+        );
+      }
     } else {
       return;
     }
@@ -571,6 +846,7 @@ export function checkType(
             name: textStyle.name,
             id: textStyle.id,
             key: textStyle.key,
+            count: textStyle.count,
             value:
               textStyle.name +
               " · " +
@@ -582,13 +858,13 @@ export function checkType(
         } else if (
           style.fontFamily === textObject.font &&
           style.fontStyle === textObject.fontStyle &&
-          style.fontSize === textObject.fontSize &&
-          lineHeightCheck === textObject.lineHeight
+          style.fontSize === textObject.fontSize
         ) {
           suggestedStyles.push({
             name: textStyle.name,
             id: textStyle.id,
             key: textStyle.key,
+            count: textStyle.count,
             value:
               textStyle.name +
               " · " +
