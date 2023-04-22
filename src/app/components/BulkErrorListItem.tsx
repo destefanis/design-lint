@@ -1,4 +1,5 @@
 import * as React from "react";
+import StyleContent from "./StyleContent";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion/dist/framer-motion";
 
@@ -45,7 +46,7 @@ function BulkErrorListItem(props) {
   }
 
   function truncate(string) {
-    return string.length > 52 ? string.substring(0, 49) + "..." : string;
+    return string.length > 46 ? string.substring(0, 46) + "..." : string;
   }
 
   const variants = {
@@ -66,7 +67,9 @@ function BulkErrorListItem(props) {
       type={error.type.toLowerCase()}
     >
       <div className="flex-row" ref={ref} onClick={showMenu}>
-        <span className="error-type">
+        <span
+          className={`error-type error-background-${error.type.toLowerCase()}`}
+        >
           <img
             src={require("../assets/error-type/" +
               error.type.toLowerCase() +
@@ -76,7 +79,10 @@ function BulkErrorListItem(props) {
         <span className="error-description">
           {error.nodes.length > 1 ? (
             <div className="error-description__message">
-              {error.message} ({error.count})
+              {error.message}{" "}
+              <span className="error-description__count">
+                · ({error.count})
+              </span>
             </div>
           ) : (
             <div className="error-description__message">{error.message}</div>
@@ -161,8 +167,13 @@ function BulkErrorListItem(props) {
       {error.matches && (
         <div className="auto-fix-content">
           <div className="auto-fix-style">
-            <span className="style-source">Matching Style</span>
-            <span className="style-name">{error.matches[0].name}</span>
+            {/* <span className="style-source">Matching Style</span> */}
+            {/* <span className="style-name">{truncate(error.matches[0].name)}</span> */}
+            <StyleContent
+              style={error.matches[0]}
+              type={error.type.toLowerCase()}
+              error={error}
+            />
           </div>
           <motion.button
             whileTap={{ scale: 0.98, opacity: 0.8 }}
@@ -171,7 +182,11 @@ function BulkErrorListItem(props) {
               handleFixAll(error);
             }}
           >
-            ✨ Fix All
+            <img
+              className="button-sparkles"
+              src={require("../assets/sparkles.svg")}
+            />
+            <span className="auto-fix-button-label">Fix All</span>
           </motion.button>
         </div>
       )}

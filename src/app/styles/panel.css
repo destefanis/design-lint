@@ -90,7 +90,7 @@
 }
 
 .pill:hover {
-  border-color: #666;
+  border-color: #c1c1c1;
 }
 
 .pill-divider {
@@ -168,10 +168,10 @@
 .error-list-item {
   position: relative;
   padding: 12px 12px 12px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #dcddde99;
   color: #333333;
   margin-bottom: 12px;
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
   flex-flow: row wrap;
   align-content: center;
@@ -180,12 +180,12 @@
   line-height: 13px;
   font-weight: 600;
   transition: border-color 100ms ease;
-  box-shadow: 0px 2px 2px 0px #0000000a;
+  box-shadow: 0px 2px 2px 0px #d2d2d240;
   background: #fff;
 }
 
 .error-list-item:hover {
-  border-color: #d3d3d3;
+  border-color: #c1c1c1;
 }
 
 .flex-row {
@@ -216,6 +216,19 @@
   margin-left: 12px;
 }
 
+.error-description__message {
+  cursor: pointer;
+}
+
+.error-description__message:hover {
+  color: #111;
+}
+
+.error-description__count {
+  color: #666;
+  font-weight: 400;
+}
+
 .error-type {
   display: flex;
   justify-content: center;
@@ -234,6 +247,22 @@
   margin: auto;
   height: 12px;
   width: 12px;
+}
+
+.error-background-fill {
+  background: #fe62621a;
+}
+
+.error-background-text {
+  background: #18a0fb1a;
+}
+
+.error-background-stroke {
+  background: #6f2dbd1a;
+}
+
+.error-background-radius {
+  background: #06d6a01a;
 }
 
 .context-icon {

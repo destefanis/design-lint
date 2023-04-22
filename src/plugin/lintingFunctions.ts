@@ -7,7 +7,8 @@ export function createErrorObject(
   message,
   value?,
   matches?,
-  suggestions?
+  suggestions?,
+  fillColor?
 ) {
   let error = {
     message: "",
@@ -15,12 +16,14 @@ export function createErrorObject(
     node: "",
     value: "",
     ...(matches && { matches: matches }),
-    ...(suggestions && { suggestions: suggestions })
+    ...(suggestions && { suggestions: suggestions }),
+    fillColor: ""
   };
 
   error.message = message;
   error.type = type;
   error.node = node;
+  error.fillColor = fillColor;
 
   if (value !== undefined) {
     error.value = value;
@@ -409,6 +412,48 @@ export function checkEffects(node, errors) {
   }
 }
 
+function gradientToCSS(nodeFill) {
+  const nodeFillType = nodeFill.type;
+  let cssGradient = "";
+
+  if (nodeFillType === "GRADIENT_LINEAR") {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `linear-gradient(${stops})`;
+  } else if (
+    nodeFillType === "GRADIENT_RADIAL" ||
+    nodeFillType === "GRADIENT_DIAMOND"
+  ) {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `radial-gradient(${stops})`;
+  } else if (nodeFillType === "GRADIENT_ANGULAR") {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `conic-gradient(${stops})`;
+  }
+
+  return cssGradient;
+}
+
 // Check library and local styles for matching
 function checkMatchingFills(style, nodeFill) {
   // If we pass an array, we need to just check the first fill as that's what is visible.
@@ -527,6 +572,14 @@ export function newCheckFills(
       }
 
       let currentFill = determineFill(node.fills);
+      let nodeFillType = nodeFills[0].type;
+      let cssSyntax = null;
+
+      if (nodeFillType === "SOLID") {
+        cssSyntax = currentFill;
+      } else if (nodeFillType !== "SOLID") {
+        cssSyntax = gradientToCSS(nodeFills[0]);
+      }
 
       if (matchingFills.length > 0) {
         return errors.push(
@@ -535,7 +588,9 @@ export function newCheckFills(
             "fill",
             "Missing fill style",
             currentFill,
-            matchingFills
+            matchingFills,
+            null,
+            cssSyntax
           )
         );
       } else if (suggestedFills.length > 0) {
@@ -546,7 +601,8 @@ export function newCheckFills(
             "Missing fill style",
             currentFill,
             null,
-            suggestedFills
+            suggestedFills,
+            cssSyntax
           )
         );
       } else {
@@ -683,7 +739,38 @@ export function newCheckStrokes(
         }
       }
 
+      if (matchingStrokes.length === 0 && libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.fills && library.fills.length > 0) {
+            for (const fillStyle of library.fills) {
+              const style = fillStyle;
+
+              if (checkMatchingFills(style.paint, firstStroke)) {
+                matchingStrokes.push({
+                  name: style.name,
+                  id: style.id,
+                  key: style.id.replace(/S:|,/g, ""),
+                  value: style.name,
+                  source: library.name,
+                  paint: style.paint
+                });
+              }
+            }
+          }
+        }
+      }
+
       let currentStroke = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
+      let strokeFill = strokeObject.strokeFills;
+
+      let nodeFillType = node.strokes[0].type;
+      let cssSyntax = null;
+
+      if (nodeFillType === "SOLID") {
+        cssSyntax = strokeFill;
+      } else if (nodeFillType !== "SOLID") {
+        cssSyntax = gradientToCSS(node.strokes[0]);
+      }
 
       if (matchingStrokes.length > 0) {
         return errors.push(
@@ -692,7 +779,9 @@ export function newCheckStrokes(
             "stroke",
             "Missing stroke style",
             currentStroke,
-            matchingStrokes
+            matchingStrokes,
+            null,
+            cssSyntax
           )
         );
       } else {
@@ -701,7 +790,10 @@ export function newCheckStrokes(
             node,
             "stroke",
             "Missing stroke style",
-            currentStroke
+            currentStroke,
+            null,
+            null,
+            cssSyntax
           )
         );
       }
