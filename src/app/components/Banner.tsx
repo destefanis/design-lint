@@ -1,0 +1,53 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion/dist/framer-motion";
+
+function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = () => {
+    if (!isLoading) {
+      setIsLoading(true);
+
+      handleFixAllErrors();
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    }
+  };
+
+  return (
+    <div className="banner-wrapper">
+      <div className="banner">
+        <span>{totalErrorsWithMatches} fixes found</span>
+        <motion.button
+          whileTap={{ scale: 0.98, opacity: 0.8 }}
+          onClick={handleClick}
+          className={
+            isLoading
+              ? "loading-button disabled auto-fix-button"
+              : "loading-button auto-fix-button"
+          }
+        >
+          {isLoading ? (
+            <div className="button-loading-dots">
+              <span className="button-dot" />
+              <span className="button-dot" />
+              <span className="button-dot" />
+            </div>
+          ) : (
+            <>
+              <img
+                className="button-sparkles"
+                src={require("../assets/sparkles.svg")}
+              />
+              <span className="auto-fix-button-label">Fix All</span>
+            </>
+          )}
+        </motion.button>
+      </div>
+    </div>
+  );
+}
+
+export default Banner;

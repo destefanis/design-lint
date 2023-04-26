@@ -12,6 +12,7 @@ import BulkErrorList from "./BulkErrorList";
 import "../styles/figma.ds.css";
 import "../styles/ui.css";
 import "../styles/empty-state.css";
+import "react-tooltip/dist/react-tooltip.css";
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
@@ -103,6 +104,31 @@ const App = ({}) => {
     } else {
       setIgnoreErrorArray([error].concat(ignoredErrorArray));
     }
+  };
+
+  const updateBorderRadius = value => {
+    let borderArray = [...borderRadiusValues, value];
+    setBorderRadiusValues([...borderRadiusValues, value]);
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-border-radius",
+          radiusValues: borderArray
+        }
+      },
+      "*"
+    );
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-errors",
+          libraries: librariesRef.current
+        }
+      },
+      "*"
+    );
   };
 
   const updateErrorArray = errors => {
@@ -234,6 +260,8 @@ const App = ({}) => {
       } else if (type === "fetched border radius") {
         // Update border radius values from storage
         let clientStorage = JSON.parse(storage);
+        // Sort the array first
+        clientStorage = clientStorage.sort((a, b) => a - b);
         setBorderRadiusValues([...clientStorage]);
       } else if (type === "reset storage") {
         // let clientStorage = JSON.parse(storage);
@@ -321,6 +349,7 @@ const App = ({}) => {
               errorArray={errorArray}
               ignoredErrorArray={ignoredErrorArray}
               onIgnoredUpdate={updateIgnoredErrors}
+              updateBorderRadius={updateBorderRadius}
               onIgnoreAll={ignoreAll}
               ignoredErrors={ignoredErrorArray}
               onClick={updateVisibility}

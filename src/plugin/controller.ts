@@ -1,8 +1,5 @@
 import {
   checkRadius,
-  checkEffects,
-  checkFills,
-  checkStrokes,
   newCheckStrokes,
   checkType,
   newCheckFills,
@@ -185,18 +182,24 @@ figma.ui.onmessage = msg => {
 
   // For when the user updates the border radius values to lint from the settings menu.
   if (msg.type === "update-border-radius") {
-    let newString = msg.radiusValues.replace(/\s+/g, "");
-    let newRadiusArray = newString.split(",");
-    newRadiusArray = newRadiusArray
-      .filter(x => x.trim().length && !isNaN(x))
-      .map(Number);
+    let newRadiusArray = null;
+    if (typeof msg.radiusValues === "string") {
+      let newString = msg.radiusValues.replace(/\s+/g, "");
+      newRadiusArray = newString.split(",");
+      newRadiusArray = newRadiusArray
+        .filter(x => x.trim().length && !isNaN(x))
+        .map(Number);
 
-    // Most users won't add 0 to the array of border radius so let's add it in for them.
-    if (newRadiusArray.indexOf(0) === -1) {
-      newRadiusArray.unshift(0);
+      // Most users won't add 0 to the array of border radius so let's add it in for them.
+      if (newRadiusArray.indexOf(0) === -1) {
+        newRadiusArray.unshift(0);
+      }
+    } else {
+      newRadiusArray = msg.radiusValues;
     }
 
     // Update the array we pass into checkRadius for linting.
+    newRadiusArray = newRadiusArray.sort((a, b) => a - b);
     borderRadiusArray = newRadiusArray;
 
     // Save this value in client storage.
@@ -798,6 +801,7 @@ figma.ui.onmessage = msg => {
       figma.clientStorage.getAsync("storedRadiusValues").then(result => {
         if (result.length) {
           borderRadiusArray = JSON.parse(result);
+          borderRadiusArray = borderRadiusArray.sort((a, b) => a - b);
 
           figma.ui.postMessage({
             type: "fetched border radius",

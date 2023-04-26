@@ -3,6 +3,7 @@ import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
 import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
 import PreloaderCSS from "./PreloaderCSS";
+import Banner from "./Banner";
 
 function BulkErrorList(props) {
   const availableFilters = [
@@ -52,6 +53,7 @@ function BulkErrorList(props) {
         if (hasMatches) {
           error.matches.sort((a, b) => (b.count || 0) - (a.count || 0));
         } else if (hasSuggestions) {
+          console.log(error.suggestions);
           error.suggestions.sort((a, b) => (b.count || 0) - (a.count || 0));
           // Remove style suggestions with deprecated in the title.
           error.suggestions = error.suggestions.filter(suggestion => {
@@ -81,8 +83,28 @@ function BulkErrorList(props) {
   );
   bulkErrorList.sort((a, b) => b.count - a.count);
 
+  // Create an array of errors that have matches
+  const errorsWithMatches = bulkErrorList.filter(error => {
+    return error.matches && error.matches.length > 0;
+  });
+
+  // Calculate the total number of errors with matches
+  const totalErrorsWithMatches = errorsWithMatches.reduce((total, error) => {
+    return total + error.count;
+  }, 0);
+
+  const handleFixAllFromBanner = () => {
+    errorsWithMatches.forEach(error => {
+      handleFixAll(error);
+    });
+  };
+
   function handleIgnoreChange(error) {
     props.onIgnoredUpdate(error);
+  }
+
+  function handleBorderRadiusUpdate(value) {
+    props.updateBorderRadius(value);
   }
 
   function handleSelectAll(error) {
@@ -112,14 +134,14 @@ function BulkErrorList(props) {
     );
   }
 
-  function handleSuggestion(error) {
+  function handleSuggestion(error, index) {
     parent.postMessage(
       {
         pluginMessage: {
           type: "apply-styles",
           error: error,
           field: "suggestions",
-          index: 0,
+          index: index,
           count: error.count
         }
       },
@@ -200,6 +222,7 @@ function BulkErrorList(props) {
       handleIgnoreAll={handleIgnoreAll}
       handleFixAll={handleFixAll}
       handleSuggestion={handleSuggestion}
+      handleBorderRadiusUpdate={handleBorderRadiusUpdate}
     />
   ));
 
@@ -215,9 +238,15 @@ function BulkErrorList(props) {
   };
 
   const pageVariants = {
-    initial: { opacity: 1, x: 10 },
-    enter: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -10 }
+    initial: { opacity: 1, y: 0 },
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 1, y: 0 }
+  };
+
+  const variants = {
+    initial: { opacity: 0, y: 12 },
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -12 }
   };
 
   return (
@@ -253,6 +282,20 @@ function BulkErrorList(props) {
           <PreloaderCSS />
         ) : bulkErrorList.length ? (
           <AnimatePresence mode="popLayout">
+            {totalErrorsWithMatches > 0 && (
+              <motion.div
+                key="banner"
+                variants={variants}
+                initial="initial"
+                animate="enter"
+                exit="exit"
+              >
+                <Banner
+                  totalErrorsWithMatches={totalErrorsWithMatches}
+                  handleFixAllErrors={handleFixAllFromBanner}
+                />
+              </motion.div>
+            )}
             <motion.ul
               variants={listVariants}
               initial="hidden"

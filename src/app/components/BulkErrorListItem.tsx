@@ -2,9 +2,8 @@ import * as React from "react";
 import StyleContent from "./StyleContent";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion/dist/framer-motion";
-
-// A copy of ErrorListItem with slight differences for showing
-// in the bulk list of errors.
+import Button from "./Button";
+import SuggestionButton from "./SuggestionButton";
 
 function BulkErrorListItem(props) {
   const ref = useRef();
@@ -41,8 +40,12 @@ function BulkErrorListItem(props) {
     props.handleFixAll(error);
   }
 
-  function handleSuggestion(error) {
-    props.handleSuggestion(error);
+  function handleBorderRadiusUpdate(value) {
+    props.handleBorderRadiusUpdate(value);
+  }
+
+  function handleSuggestion(error, index) {
+    props.handleSuggestion(error, index);
   }
 
   function truncate(string) {
@@ -88,7 +91,9 @@ function BulkErrorListItem(props) {
             <div className="error-description__message">{error.message}</div>
           )}
           {error.value ? (
-            <div className="current-value">{truncate(error.value)}</div>
+            <div className="current-value tooltip" data-text="Tooltip">
+              {truncate(error.value)}
+            </div>
           ) : null}
         </span>
         <motion.span
@@ -131,6 +136,19 @@ function BulkErrorListItem(props) {
             >
               Ignore All
             </li>
+            {error.type === "radius" && (
+              <li
+                className="select-menu__list-item"
+                key="list-item-radius"
+                onClick={event => {
+                  event.stopPropagation();
+                  handleBorderRadiusUpdate(error.value);
+                  hideMenu();
+                }}
+              >
+                Allow This Radius
+              </li>
+            )}
           </ul>
         ) : (
           <ul
@@ -161,51 +179,68 @@ function BulkErrorListItem(props) {
             >
               Ignore
             </li>
+            {error.type === "radius" && (
+              <li
+                className="select-menu__list-item"
+                key="list-item-radius"
+                onClick={event => {
+                  event.stopPropagation();
+                  handleBorderRadiusUpdate(error.value);
+                  hideMenu();
+                }}
+              >
+                Allow This Radius
+              </li>
+            )}
           </ul>
         )}
       </div>
       {error.matches && (
         <div className="auto-fix-content">
           <div className="auto-fix-style">
-            {/* <span className="style-source">Matching Style</span> */}
-            {/* <span className="style-name">{truncate(error.matches[0].name)}</span> */}
             <StyleContent
               style={error.matches[0]}
               type={error.type.toLowerCase()}
               error={error}
             />
           </div>
-          <motion.button
-            whileTap={{ scale: 0.98, opacity: 0.8 }}
-            className="auto-fix-button"
-            onClick={() => {
-              handleFixAll(error);
-            }}
-          >
-            <img
-              className="button-sparkles"
-              src={require("../assets/sparkles.svg")}
-            />
-            <span className="auto-fix-button-label">Fix All</span>
-          </motion.button>
+          <Button error={error} applyStyle={handleFixAll} />
         </div>
       )}
       {error.suggestions && (
-        <div className="auto-fix-content">
-          <div className="auto-fix-style">
-            <span className="style-source">Style Suggestions</span>
-            <span className="style-name">{error.suggestions[0].value}</span>
+        <>
+          <span className="suggestion-label">Suggestions</span>
+          <div className="auto-fix-suggestion">
+            <div className="auto-fix-style">
+              <StyleContent
+                style={error.suggestions[0]}
+                type={error.type.toLowerCase()}
+                error={error}
+              />
+            </div>
+            <SuggestionButton
+              error={error}
+              index={0}
+              applyStyle={handleSuggestion}
+            />
           </div>
-          <motion.button
-            whileTap={{ scale: 0.98, opacity: 0.8 }}
-            className="auto-fix-button"
-            onClick={() => {
-              handleSuggestion(error);
-            }}
-          >
-            Apply
-          </motion.button>
-        </div>
+          {error.suggestions[1] && (
+            <div className="auto-fix-suggestion suggestion-last">
+              <div className="auto-fix-style">
+                <StyleContent
+                  style={error.suggestions[1]}
+                  type={error.type.toLowerCase()}
+                  error={error}
+                />
+              </div>
+              <SuggestionButton
+                error={error}
+                index={1}
+                applyStyle={handleSuggestion}
+              />
+            </div>
+          )}
+        </>
       )}
     </motion.li>
   );

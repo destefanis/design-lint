@@ -46,7 +46,7 @@ function Navigation(props) {
             onClick={layersClick}
             whileTap={{ scale: 0.98, opacity: 0.8 }}
           >
-            Layers View
+            Layers
           </motion.div>
           <motion.div
             className={`nav-item ${activePage === "library" ? "active" : ""}`}

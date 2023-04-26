@@ -57,7 +57,20 @@ export function determineFill(fills) {
         );
       });
       let gradientValueString = gradientValues.toString();
-      fillValues.push(`${fill.type} ${gradientValueString}`);
+      gradientValueString = gradientValueString.replace(/,/g, ", ");
+      let gradientType = null;
+
+      if (fill.type === "GRADIENT_LINEAR") {
+        gradientType = "Linear Gradient";
+      } else if (fill.type === "GRADIENT_RADIAL") {
+        gradientType = "Radial Gradient";
+      } else if (fill.type === "GRADIENT_ANGULAR") {
+        gradientType = "Angular Gradient";
+      } else if (fill.type === "GRADIENT_DIAMOND") {
+        gradientType = "Diamond Gradient";
+      }
+
+      fillValues.push(`${gradientType} ${gradientValueString}`);
     }
   });
 
