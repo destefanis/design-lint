@@ -9,6 +9,10 @@
   position: relative;
 }
 
+.empty-state .button {
+  cursor: pointer;
+}
+
 .empty-state {
   width: 100%;
   position: relative;
@@ -56,6 +60,10 @@
   color: #152fa2;
   text-align: center;
   padding-bottom: 16px;
+}
+
+.button-scan-page {
+  margin-top: 8px;
 }
 
 .preloader {

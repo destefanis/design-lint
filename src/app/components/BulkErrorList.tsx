@@ -53,7 +53,6 @@ function BulkErrorList(props) {
         if (hasMatches) {
           error.matches.sort((a, b) => (b.count || 0) - (a.count || 0));
         } else if (hasSuggestions) {
-          console.log(error.suggestions);
           error.suggestions.sort((a, b) => (b.count || 0) - (a.count || 0));
           // Remove style suggestions with deprecated in the title.
           error.suggestions = error.suggestions.filter(suggestion => {

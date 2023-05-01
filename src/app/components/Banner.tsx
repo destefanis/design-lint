@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion/dist/framer-motion";
 
 function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [timeoutId, setTimeoutId] = useState(null);
 
   const handleClick = () => {
     if (!isLoading) {
@@ -10,11 +11,22 @@ function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
 
       handleFixAllErrors();
 
-      setTimeout(() => {
+      const id = setTimeout(() => {
         setIsLoading(false);
       }, 2000);
+
+      setTimeoutId(id);
     }
   };
+
+  // Set up a cleanup function to cancel the timeout when the component is unmounted
+  useEffect(() => {
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [timeoutId]);
 
   return (
     <div className="banner-wrapper">

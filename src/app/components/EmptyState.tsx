@@ -6,6 +6,10 @@ function EmptyState(props) {
     props.onHandleRunApp();
   };
 
+  const onScanEntirePage = () => {
+    props.onScanEntirePage();
+  };
+
   return (
     <motion.div
       className="empty-state-wrapper"
@@ -34,6 +38,12 @@ function EmptyState(props) {
           onClick={onRunApp}
         >
           Run Design Lint
+        </button>
+        <button
+          className="button button--primary button-scan-page"
+          onClick={onScanEntirePage}
+        >
+          Scan Entire Page
         </button>
       </div>
     </motion.div>

@@ -53,7 +53,7 @@ function Navigation(props) {
             onClick={libraryClick}
             whileTap={{ scale: 0.98, opacity: 0.8 }}
           >
-            ✨ Magic Fix
+            Library
           </motion.div>
 
           <div className="nav-icon-wrapper">

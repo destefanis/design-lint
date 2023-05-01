@@ -179,7 +179,26 @@ const App = ({}) => {
 
   const onRunApp = React.useCallback(() => {
     parent.postMessage(
-      { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
+      {
+        pluginMessage: {
+          type: "run-app",
+          lintVectors: lintVectors,
+          selection: "user"
+        }
+      },
+      "*"
+    );
+  }, []);
+
+  const onScanEntirePage = React.useCallback(() => {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "run-app",
+          lintVectors: lintVectors,
+          selection: "page"
+        }
+      },
       "*"
     );
   }, []);
@@ -361,7 +380,10 @@ const App = ({}) => {
       ) : emptyState === false ? (
         <PreloaderCSS />
       ) : (
-        <EmptyState onHandleRunApp={onRunApp} />
+        <EmptyState
+          onHandleRunApp={onRunApp}
+          onScanEntirePage={onScanEntirePage}
+        />
       )}
 
       {Object.keys(activeError).length !== 0 && errorArray.length ? (

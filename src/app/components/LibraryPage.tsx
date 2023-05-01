@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion } from "framer-motion/dist/framer-motion";
+import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import "../styles/library.css";
 
 const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
@@ -30,14 +30,27 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
     );
   };
 
+  const variants = {
+    initial: { opacity: 0, y: 12, scale: 1 },
+    enter: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -12, scale: 1 }
+  };
+
   return (
-    <div>
+    <div className="library-wrapper">
+      <div className="library-description">
+        <h4 className="library-title">Local Styles</h4>
+        <p>
+          Design Lint uses styles found in your file for suggestions and
+          automatic fixes first.
+        </p>
+      </div>
       <ul className="library-list">
         <li className="library-list-item" key="local-styles">
           <div className="library-icon-wrapper">
             <img
               className="library-icon"
-              src={require("../assets/library.svg")}
+              src={require("../assets/map-marker.svg")}
             />
           </div>
           <div className="library-list-item-content">
@@ -48,10 +61,30 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
           </div>
         </li>
       </ul>
-      {hasLibraries ? (
-        <ul className="library-list">
+      <div className="library-description library-saved-section">
+        <h4 className="library-title">Saved Libraries</h4>
+        <div>
+          <p>Want to automatically fix errors using styles from a library?</p>
+          <ul>
+            <li>Open the file where the styles are defined.</li>
+            <li>Run the plugin and click "Save as Library."</li>
+            <li>Restart Design Lint—your library is ready to use!</li>
+          </ul>
+        </div>
+      </div>
+
+      <ul className="library-list">
+        <AnimatePresence>
           {libraries.map((library, index) => (
-            <li className="library-list-item" key={index}>
+            <motion.li
+              className="library-list-item"
+              key={index}
+              positionTransition
+              variants={variants}
+              initial="initial"
+              animate="enter"
+              exit="exit"
+            >
               <div className="library-icon-wrapper">
                 <img
                   className="library-icon"
@@ -71,49 +104,24 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
               >
                 <img src={require("../assets/subtract.svg")} />
               </motion.button>
-            </li>
+            </motion.li>
           ))}
-          <li
-            className="library-list-item"
-            key="import"
-            onClick={onLibraryImport}
-          >
-            <div className="library-icon-wrapper">
-              <img
-                className="library-icon"
-                src={require("../assets/add.svg")}
-              />
-            </div>
-            Save Library
-          </li>
-        </ul>
-      ) : (
-        <motion.div className="empty-state-wrapper">
-          <div className="background-wrapper">
+        </AnimatePresence>
+        <motion.li
+          className="library-list-item save-library"
+          key="import"
+          onClick={onLibraryImport}
+          whileTap={{ scale: 0.98, opacity: 0.8 }}
+        >
+          <div className="library-icon-wrapper">
             <img
-              className="empty-state-background"
-              src={require("../assets/mesh-background.png")}
+              className="library-icon"
+              src={require("../assets/add-blue.svg")}
             />
           </div>
-          <div className="empty-state">
-            <div className="empty-state__image">
-              <img
-                className="layer-icon"
-                src={require("../assets/new-logo.svg")}
-              />
-            </div>
-            <div className="empty-state__title">
-              Automatically fix errors by importing your styles.
-            </div>
-            <button
-              className="button button--primary button--full"
-              onClick={onLibraryImport}
-            >
-              Import Library
-            </button>
-          </div>
-        </motion.div>
-      )}
+          <h3 className="save-library-label">Save Library</h3>
+        </motion.li>
+      </ul>
     </div>
   );
 };

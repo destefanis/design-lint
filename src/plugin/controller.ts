@@ -356,10 +356,13 @@ figma.ui.onmessage = msg => {
         }
       }
     }
-
+    ``;
     // we pass in suggestions or messages as fields
     // index is which of the multiple styles they chose from in the suggestions array.
     applyStylesToNodes(msg.field, msg.index);
+    figma.notify(`Fixed ${msg.count} missing ${msg.error.type} styles`, {
+      timeout: 500
+    });
   }
 
   if (msg.type === "select-multiple-layers") {
@@ -585,8 +588,10 @@ figma.ui.onmessage = msg => {
 
   // Initialize the app
   if (msg.type === "run-app") {
-    if (figma.currentPage.selection.length === 0) {
-      figma.notify("Select a frame(s) to get started", { timeout: 2000 });
+    if (figma.currentPage.selection.length === 0 && msg.selection === "user") {
+      figma.notify(`Select some layers, then try running again!`, {
+        timeout: 2000
+      });
 
       // If the user hasn't selected anything, show the empty state.
       figma.ui.postMessage({
@@ -595,10 +600,18 @@ figma.ui.onmessage = msg => {
 
       return;
     } else {
-      let nodes = figma.currentPage.selection;
+      let nodes = null;
       let firstNode = [];
 
-      firstNode.push(figma.currentPage.selection[0]);
+      // Determine whether we scan the page for the user,
+      // or use their selection
+      if (msg.selection === "user") {
+        nodes = figma.currentPage.selection;
+        firstNode.push(figma.currentPage.selection[0]);
+      } else if (msg.selection === "page") {
+        nodes = figma.currentPage.children;
+        firstNode.push(nodes[0]);
+      }
 
       // Maintain the original tree structure so we can enable
       // refreshing the tree and live updating errors.
@@ -668,7 +681,8 @@ figma.ui.onmessage = msg => {
                     type: "fill",
                     paint: style.paints[0],
                     name: style.name,
-                    count: style.consumers.length
+                    count: style.consumers.length,
+                    consumers: style.consumers
                   });
                 }
               }
@@ -687,7 +701,8 @@ figma.ui.onmessage = msg => {
                     type: "stroke",
                     paint: style.paints[0],
                     name: style.name,
-                    count: style.consumers.length
+                    count: style.consumers.length,
+                    consumers: style.consumers
                   });
                 }
               }
@@ -706,6 +721,7 @@ figma.ui.onmessage = msg => {
                     description: style.description,
                     key: style.key,
                     count: style.consumers.length,
+                    consumers: style.consumers,
                     style: {
                       fontStyle: style.fontName.style,
                       fontSize: style.fontSize,
@@ -738,7 +754,8 @@ figma.ui.onmessage = msg => {
                     type: "effect",
                     effects: style.effects,
                     name: style.name,
-                    count: style.consumers.length
+                    count: style.consumers.length,
+                    consumers: style.consumers
                   });
                 }
               }
