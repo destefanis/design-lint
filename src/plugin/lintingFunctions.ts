@@ -425,7 +425,7 @@ export function checkEffects(node, errors) {
   }
 }
 
-function gradientToCSS(nodeFill) {
+export function gradientToCSS(nodeFill) {
   const nodeFillType = nodeFill.type;
   let cssGradient = "";
 

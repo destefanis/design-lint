@@ -4,6 +4,7 @@ import { useState } from "react";
 import Navigation from "./Navigation";
 import NodeList from "./NodeList";
 import LibraryPage from "./LibraryPage";
+import StylesPage from "./StylesPage";
 import PreloaderCSS from "./PreloaderCSS";
 import EmptyState from "./EmptyState";
 import Panel from "./Panel";
@@ -38,6 +39,7 @@ const App = ({}) => {
   const [emptyState, setEmptyState] = React.useState(false);
   const [libraries, setLibraries] = useState([]);
   const [localStyles, setLocalStyles] = useState({});
+  const [stylesInUse, setStylesInUse] = useState({});
   const librariesRef = React.useRef([]);
 
   window.addEventListener("keydown", function(e) {
@@ -327,6 +329,8 @@ const App = ({}) => {
         setLibraries(message);
       } else if (type === "local-styles-imported") {
         setLocalStyles(message);
+      } else if (type === "remote-styles-imported") {
+        setStylesInUse(message);
       }
     };
   }, []);
@@ -362,6 +366,8 @@ const App = ({}) => {
               onUpdateLibraries={handleUpdateLibraries}
               localStyles={localStyles}
             />
+          ) : activePage === "styles" ? (
+            <StylesPage stylesInUse={stylesInUse} />
           ) : (
             <BulkErrorList
               libraries={libraries}

@@ -74,7 +74,7 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
       </div>
 
       <ul className="library-list">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {libraries.map((library, index) => (
             <motion.li
               className="library-list-item"
