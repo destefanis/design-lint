@@ -1,20 +1,34 @@
 import React, { useState } from "react";
-import StyleContent from "./StyleContent";
+import StyleListItemContent from "./StyleListItemContent";
+import { motion } from "framer-motion/dist/framer-motion";
+
+// Duplicate component that matches styleContent but has very small differences to work on the styles page.
 
 function ListItem({ style, index }) {
-  // Use state to keep track of whether the list item is open or collapsed
   const [isOpen, setIsOpen] = useState(false);
 
-  // Function to toggle the isOpen state on click
   const handleToggle = () => {
     setIsOpen(prevIsOpen => !prevIsOpen);
   };
 
-  function truncateStyle(string) {
-    return string.length > 28 ? string.substring(0, 28) + "..." : string;
+  function handleSelectAll(nodeArray) {
+    const arrays = Object.values(nodeArray);
+
+    // Flatten the arrays into a single array using Array.prototype.flat
+    const combinedArray = arrays.flat();
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "select-multiple-layers",
+          nodeArray: combinedArray
+        }
+      },
+      "*"
+    );
   }
 
-  function handleSelectAll(nodeArray) {
+  function handleSelect(nodeArray) {
     parent.postMessage(
       {
         pluginMessage: {
@@ -26,46 +40,45 @@ function ListItem({ style, index }) {
     );
   }
 
-  // Helper function to convert the first letter to uppercase and the rest to lowercase
   function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-  // Conditionally apply the "open" class based on the isOpen state
   const listItemClass = isOpen
-    ? "overview-list-item list-item--open"
-    : "overview-list-item";
+    ? "overview-list-item"
+    : "overview-list-item list-item--open";
 
   return (
     <li className={listItemClass} key={index}>
-      <div className="overview-content" onClick={handleToggle}>
-        <StyleContent
+      <div className="overview-content">
+        <StyleListItemContent
           style={style}
           type={style.type.toLowerCase()}
           error={style}
         />
-        <img
+        <motion.img
+          whileTap={{ scale: 0.9, opacity: 0.8 }}
+          onClick={() => handleSelectAll(style.groupedConsumers)}
           className="overview-icon overview-content-select"
           src={require("../assets/select-all.svg")}
         />
-        <img
+        {/* <img
           className="overview-icon overview-content-arrow"
           src={require("../assets/chevron.svg")}
-        />
-        {/* <span className="overview-style-name">{truncateStyle(style.name)}</span> */}
+        /> */}
       </div>
       <ul className="consumer-sublist">
         {Object.entries(style.groupedConsumers).map(([nodeType, nodeIds]) => (
           <li
             className="consumer-sublist-item"
             key={`${style.name}-${nodeType}`}
-            onClick={() => handleSelectAll(nodeIds)} // Pass the array of node IDs
+            onClick={() => handleSelect(nodeIds)}
           >
             <img
               className="sublist-item-icon"
               src={require(`../assets/${nodeType.toLowerCase()}.svg`)}
             />
-            <span>
+            <span className="sublist-item-label">
               <span className="sublist-item-count">{nodeIds.length}</span>{" "}
               {capitalizeFirstLetter(nodeType)} Layers
             </span>

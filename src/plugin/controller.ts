@@ -9,6 +9,9 @@ import {
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
 } from "./lintingFunctions";
+
+import { fetchRemoteStyles, groupLibrary } from "./remoteStyleFunctions";
+
 const {
   getLocalPaintStyles,
   getLocalTextStyles,
@@ -23,7 +26,7 @@ let lintVectors = false;
 let localStylesLibrary = {};
 
 // Styles used in our page
-const usedRemoteStyles = {
+let usedRemoteStyles = {
   name: "Remote Styles",
   fills: [],
   strokes: [],
@@ -147,6 +150,30 @@ figma.ui.onmessage = msg => {
       type: "updated errors",
       errors: lint(originalNodeTree, msg.libraries)
     });
+  }
+
+  // Used only to update the styles page when its selected.
+  async function handleUpdateStylesPage() {
+    const resetRemoteStyles = {
+      name: "Remote Styles",
+      fills: [],
+      strokes: [],
+      text: [],
+      effects: []
+    };
+
+    await fetchRemoteStyles(resetRemoteStyles);
+
+    const libraryWithGroupedConsumers = groupLibrary(resetRemoteStyles);
+
+    figma.ui.postMessage({
+      type: "remote-styles-imported",
+      message: libraryWithGroupedConsumers
+    });
+  }
+
+  if (msg.type === "update-styles-page") {
+    handleUpdateStylesPage();
   }
 
   // Updates client storage with a new ignored error
@@ -381,7 +408,7 @@ figma.ui.onmessage = msg => {
     figma.currentPage.selection = nodesToBeSelected;
     figma.viewport.scrollAndZoomIntoView(nodesToBeSelected);
     figma.notify(`${nodesToBeSelected.length} layers selected`, {
-      timeout: 1000
+      timeout: 750
     });
   }
 
@@ -728,13 +755,26 @@ figma.ui.onmessage = msg => {
                     // If the stroke style does not exist, create a new style object and push it to the usedRemoteStyles.strokes array
                     const style = figma.getStyleById(styleId);
 
+                    let nodeFillType = style.paints[0].type;
+                    let cssSyntax = null;
+
+                    if (nodeFillType === "SOLID") {
+                      cssSyntax = determineFill(style.paints);
+                    } else if (
+                      nodeFillType !== "IMAGE" &&
+                      nodeFillType !== "VIDEO"
+                    ) {
+                      cssSyntax = gradientToCSS(node.strokes[0]);
+                    }
+
                     usedRemoteStyles.strokes.push({
                       id: node.strokeStyleId,
                       type: "stroke",
                       paint: style.paints[0],
                       name: style.name,
                       count: 1,
-                      consumers: [node]
+                      consumers: [node],
+                      fillColor: cssSyntax
                     });
                   }
                 }
@@ -812,7 +852,7 @@ figma.ui.onmessage = msg => {
               }
             }
 
-            console.log("Remote styles:", usedRemoteStyles);
+            // console.log("Remote styles:", usedRemoteStyles);
           }
 
           await findRemoteStyles();
@@ -859,7 +899,7 @@ figma.ui.onmessage = msg => {
           const libraryWithGroupedConsumers = applyGroupingToLibrary(
             usedRemoteStyles
           );
-          console.log(libraryWithGroupedConsumers);
+
           figma.ui.postMessage({
             type: "remote-styles-imported",
             message: libraryWithGroupedConsumers
@@ -894,7 +934,6 @@ figma.ui.onmessage = msg => {
 
           // Wait for the localStylesLibrary to be updated
           await updateLocalStylesLibrary();
-          console.log(localStylesLibrary);
 
           // Now that libraries are available, call lint with libraries and localStylesLibrary, then send the message
           figma.ui.postMessage({

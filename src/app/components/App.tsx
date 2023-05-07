@@ -41,6 +41,7 @@ const App = ({}) => {
   const [localStyles, setLocalStyles] = useState({});
   const [stylesInUse, setStylesInUse] = useState({});
   const librariesRef = React.useRef([]);
+  const activePageRef = React.useRef(activePage);
 
   window.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
@@ -212,6 +213,10 @@ const App = ({}) => {
   }, [libraries]);
 
   React.useEffect(() => {
+    activePageRef.current = activePage;
+  }, [activePage]);
+
+  React.useEffect(() => {
     onRunApp();
 
     window.onmessage = event => {
@@ -320,6 +325,19 @@ const App = ({}) => {
           },
           "*"
         );
+
+        // When a change happens and the styles page is active
+        // We update the styles as the user makes changes
+        if (activePageRef.current === "styles") {
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "update-styles-page"
+              }
+            },
+            "*"
+          );
+        }
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
         updateErrorArray(errors);

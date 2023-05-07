@@ -49,10 +49,10 @@ function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
             </div>
           ) : (
             <>
-              <img
+              {/* <img
                 className="button-sparkles"
                 src={require("../assets/sparkles.svg")}
-              />
+              /> */}
               <span className="auto-fix-button-label">Fix All</span>
             </>
           )}

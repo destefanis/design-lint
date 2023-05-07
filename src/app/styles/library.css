@@ -93,8 +93,20 @@
 /* Styles Page */
 .styles-overview-wrapper {
   height: calc(100% - 41px);
-  padding: 0 16px 12px 16px;
+  padding: 0 0 12px;
   overflow-y: scroll;
+}
+
+.style-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.styles-overview-wrapper h4 {
+  font-weight: 400;
+  color: #666;
+  padding: 0 16px;
+  margin: 16px 0 4px;
 }
 
 .style-overview-list {
@@ -106,10 +118,13 @@
 .overview-list-item {
   display: flex;
   flex-flow: column;
-  padding: 0 0 16px;
-  border-bottom: #dcddde;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
   flex-grow: 1;
-  cursor: pointer;
+}
+
+.list-item--open {
+  padding: 12px 12px 4px 16px;
 }
 
 .overview-list-item:hover .overview-icon {
@@ -123,6 +138,7 @@
 .overview-content {
   display: flex;
   flex-flow: row;
+  height: 24px;
 }
 
 .overview-content .style-list-item {
@@ -133,9 +149,9 @@
   margin-right: 8px;
 }
 
-.list-item--open .overview-icon {
+/* .list-item--open .overview-icon {
   display: block;
-}
+} */
 
 .list-item--open .consumer-sublist {
   display: block;
@@ -145,11 +161,17 @@
   display: none;
   margin-left: auto;
   align-self: flex-end;
-  height: 16px;
+  height: 24px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.overview-icon:hover {
+  background-color: #f9f9f9;
 }
 
 .overview-content-select {
-  padding-right: 12px;
+  cursor: pointer;
 }
 
 .list-item--open .overview-content-arrow {
@@ -157,10 +179,7 @@
 }
 
 .consumer-sublist {
-  margin: 8px 0 0;
-  background: #f9f9f9;
-  border-radius: 16px;
-  padding: 16px 16px 8px;
+  padding: 12px 2px 0;
   list-style: none;
 }
 
@@ -170,10 +189,26 @@
   align-items: center;
   line-height: 16px;
   margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.sublist-item-label {
+  color: #333;
+}
+
+.consumer-sublist-item:hover .sublist-item-label {
+  color: #000;
+  text-decoration: underline;
+}
+
+.consumer-sublist-item:hover .sublist-item-count {
+  color: #000;
+  text-decoration: underline;
 }
 
 .sublist-item-icon {
-  margin-right: 8px;
+  margin-right: 10px;
+  opacity: 50%;
 }
 
 .sublist-item-count {
