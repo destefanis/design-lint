@@ -4,8 +4,12 @@ import TotalErrorCount from "./TotalErrorCount";
 import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
 import PreloaderCSS from "./PreloaderCSS";
 import Banner from "./Banner";
+import Modal from "./Modal";
 
 function BulkErrorList(props) {
+  const [currentError, setCurrentError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const availableFilters = [
     "All",
     "text",
@@ -104,6 +108,20 @@ function BulkErrorList(props) {
 
   function handleBorderRadiusUpdate(value) {
     props.updateBorderRadius(value);
+  }
+
+  function handleCreateStyle(error) {
+    setCurrentError(error); // Set the current error based on the clicked item
+    setIsModalOpen(true); // Open the modal
+    // parent.postMessage(
+    //   {
+    //     pluginMessage: {
+    //       type: "create-style",
+    //       error: error
+    //     }
+    //   },
+    //   "*"
+    // );
   }
 
   function handleSelectAll(error) {
@@ -217,6 +235,7 @@ function BulkErrorList(props) {
       key={`${error.node.id}-${error.type}-${index}`}
       handleIgnoreChange={handleIgnoreChange}
       handleSelectAll={handleSelectAll}
+      handleCreateStyle={handleCreateStyle}
       handleSelect={handleSelect}
       handleIgnoreAll={handleIgnoreAll}
       handleFixAll={handleFixAll}
@@ -321,6 +340,11 @@ function BulkErrorList(props) {
       <div className="footer sticky-footer">
         <TotalErrorCount errorArray={filteredErrorArray} />
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        error={currentError}
+      />
     </motion.div>
   );
 }

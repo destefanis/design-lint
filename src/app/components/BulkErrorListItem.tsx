@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion/dist/framer-motion";
 import Button from "./Button";
 import SuggestionButton from "./SuggestionButton";
+import "../styles/modal.css";
 
 function BulkErrorListItem(props) {
   const ref = useRef();
@@ -44,6 +45,19 @@ function BulkErrorListItem(props) {
     props.handleBorderRadiusUpdate(value);
   }
 
+  function handleCreateStyle(error) {
+    props.handleCreateStyle(error);
+    // parent.postMessage(
+    //   {
+    //     pluginMessage: {
+    //       type: "create-style",
+    //       error: error
+    //     }
+    //   },
+    //   "*"
+    // );
+  }
+
   function handleSuggestion(error, index) {
     props.handleSuggestion(error, index);
   }
@@ -57,6 +71,9 @@ function BulkErrorListItem(props) {
     enter: { opacity: 1, y: 0, scale: 1 },
     exit: { opacity: 0, y: -12, scale: 0.96 }
   };
+
+  const hasNoMatches = !error.matches || error.matches.length === 0;
+  const errorTypeIsNotRadius = error.type !== "radius";
 
   return (
     <motion.li
@@ -136,9 +153,22 @@ function BulkErrorListItem(props) {
             >
               Ignore All
             </li>
+            {errorTypeIsNotRadius && hasNoMatches && (
+              <li
+                className="select-menu__list-item select-menu__list-border"
+                key="list-item-create-style"
+                onClick={event => {
+                  event.stopPropagation();
+                  handleCreateStyle(error);
+                  hideMenu();
+                }}
+              >
+                Create Style
+              </li>
+            )}
             {error.type === "radius" && (
               <li
-                className="select-menu__list-item"
+                className="select-menu__list-item select-menu__list-border"
                 key="list-item-radius"
                 onClick={event => {
                   event.stopPropagation();
@@ -179,9 +209,22 @@ function BulkErrorListItem(props) {
             >
               Ignore
             </li>
+            {errorTypeIsNotRadius && hasNoMatches && (
+              <li
+                className="select-menu__list-item select-menu__list-border"
+                key="list-item-create-style"
+                onClick={event => {
+                  event.stopPropagation();
+                  handleCreateStyle(error);
+                  hideMenu();
+                }}
+              >
+                Create Style
+              </li>
+            )}
             {error.type === "radius" && (
               <li
-                className="select-menu__list-item"
+                className="select-menu__list-item select-menu__list-border"
                 key="list-item-radius"
                 onClick={event => {
                   event.stopPropagation();

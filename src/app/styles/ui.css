@@ -574,9 +574,28 @@ body {
   top: 44px;
   width: 132px;
   border-radius: 8px;
+  overflow: hidden;
 }
 
 .menu-items .select-menu__list-item {
   padding-left: 12px;
   cursor: pointer;
+  /* border-radius: 4px; */
+}
+
+.select-menu__list-item {
+  cursor: pointer;
+}
+
+.menu-items {
+  /* padding: 8px 0 0; */
+}
+
+.select-menu__list-border {
+  border-top: 2px solid #333;
+  padding-top: 8px;
+  padding-bottom: 6px;
+  height: auto;
+  margin-top: 8px;
+  margin-bottom: -4px;
 }

@@ -240,7 +240,9 @@ figma.ui.onmessage = msg => {
       storage: JSON.stringify(borderRadiusArray)
     });
 
-    figma.notify("Saved new border radius values", { timeout: 1000 });
+    figma.notify("Saved border radius, this can be changed in settings", {
+      timeout: 1500
+    });
   }
 
   if (msg.type === "reset-border-radius") {
@@ -410,6 +412,185 @@ figma.ui.onmessage = msg => {
     figma.notify(`${nodesToBeSelected.length} layers selected`, {
       timeout: 750
     });
+  }
+
+  function createPaintStyleFromNode(node, nodeArray, title) {
+    // Check if the node has at least one fill
+    if (node.fills && node.fills.length > 0) {
+      // Get the first fill of the node
+      const fill = node.fills[0];
+      let currentFill = determineFill(node.fills);
+
+      // Create a new paint style based on the fill properties of the node
+      const newPaintStyle = figma.createPaintStyle();
+
+      // Set the name and paint of the new paint style
+      if (title !== "") {
+        newPaintStyle.name = title;
+      } else {
+        newPaintStyle.name = `New Fill - ${currentFill}`;
+      }
+
+      newPaintStyle.paints = [fill];
+
+      // Apply the new style to all of the layers the error exists on
+      for (const node of nodeArray) {
+        const layer = figma.getNodeById(node);
+
+        layer.fillStyleId = newPaintStyle.id;
+      }
+
+      // Notify the user that the paint style has been created and applied
+      figma.notify("Fill style created and applied!");
+    }
+  }
+
+  function roundToDecimalPlaces(value, decimalPlaces) {
+    const multiplier = Math.pow(10, decimalPlaces);
+    return Math.round(value * multiplier) / multiplier;
+  }
+
+  function createStrokeStyleFromNode(node, nodeArray, title) {
+    if (node.strokes && node.strokes.length > 0) {
+      const stroke = node.strokes[0];
+
+      const newStrokeStyle = figma.createPaintStyle();
+
+      newStrokeStyle.name = "New Stroke Style";
+
+      if (title !== "") {
+        newStrokeStyle.name = title;
+      } else {
+        newStrokeStyle.name = "New Stroke Style";
+      }
+
+      newStrokeStyle.paints = [stroke];
+
+      // Apply the new style to all of the layers the error exists on
+      for (const node of nodeArray) {
+        const layer = figma.getNodeById(node);
+
+        layer.strokeStyleId = newStrokeStyle.id;
+      }
+
+      figma.notify("Stroke style created and applied!");
+    }
+  }
+
+  function createEffectStyleFromNode(node, nodeArray, title) {
+    // Check if the node has at least one effect
+    if (node.effects && node.effects.length > 0) {
+      // Get the effects of the node
+      const effects = node.effects;
+
+      let effectType = node.effects[0].type;
+      if (effectType === "DROP_SHADOW") {
+        effectType = "Drop Shadow";
+      } else if (effectType === "INNER_SHADOW") {
+        effectType = "Inner Shadow";
+      } else if (effectType === "LAYER_BLUR") {
+        effectType = "Layer Blur";
+      } else {
+        effectType = "Background Blur";
+      }
+
+      const effectRadius = node.effects[0].radius;
+      const roundedRadius = roundToDecimalPlaces(effectRadius, 1);
+
+      // Create a new effect style based on the effect properties of the node
+      const newEffectStyle = figma.createEffectStyle();
+
+      if (title !== "") {
+        newEffectStyle.name = title;
+      } else {
+        newEffectStyle.name = `${effectType} - Radius: ${roundedRadius}`;
+      }
+
+      newEffectStyle.effects = effects;
+
+      // Apply the new style to all of the layers the error exists on
+      for (const node of nodeArray) {
+        const layer = figma.getNodeById(node);
+
+        layer.effectStyleId = newEffectStyle.id;
+      }
+
+      // Notify the user that the effect style has been created and applied
+      figma.notify("Effect style created and applied successfully!");
+    } else {
+      // Notify the user to select a node with an effect
+      figma.notify(
+        "Please select a node with an effect to create an effect style."
+      );
+    }
+  }
+
+  // Utility for creating new text styles from the select menu
+  async function createTextStyleFromNode(node, nodeArray, title) {
+    if (node.type === "TEXT") {
+      // Load the font used in the text node
+      await figma.loadFontAsync(node.fontName);
+
+      // Get the properties of the text node
+      const textStyle = {
+        fontFamily: node.fontName.family,
+        fontStyle: node.fontName.style,
+        fontSize: node.fontSize,
+        letterSpacing: node.letterSpacing,
+        lineHeight: node.lineHeight,
+        paragraphIndent: node.paragraphIndent,
+        paragraphSpacing: node.paragraphSpacing,
+        textCase: node.textCase,
+        textDecoration: node.textDecoration
+      };
+
+      // Create a new text style based on the properties of the text node
+      const newTextStyle = figma.createTextStyle();
+
+      if (title !== "") {
+        newTextStyle.name = title;
+      } else {
+        newTextStyle.name = `${textStyle.fontFamily} ${textStyle.fontStyle}`;
+      }
+
+      newTextStyle.fontName = {
+        family: textStyle.fontFamily,
+        style: textStyle.fontStyle
+      };
+      newTextStyle.fontSize = textStyle.fontSize;
+      newTextStyle.letterSpacing = textStyle.letterSpacing;
+      newTextStyle.lineHeight = textStyle.lineHeight;
+      newTextStyle.paragraphIndent = textStyle.paragraphIndent;
+      newTextStyle.paragraphSpacing = textStyle.paragraphSpacing;
+      newTextStyle.textCase = textStyle.textCase;
+      newTextStyle.textDecoration = textStyle.textDecoration;
+
+      // Apply the new style to all of the layers the error exists on
+      for (const textNode of nodeArray) {
+        const layer = figma.getNodeById(textNode);
+
+        if (layer.type === "TEXT") {
+          layer.textStyleId = newTextStyle.id;
+        }
+      }
+
+      figma.notify("Text style created and applied!");
+    }
+  }
+
+  if (msg.type === "create-style") {
+    // Grab a node to use so we have properties to create a style
+    const node = figma.getNodeById(msg.error.nodes[0]);
+
+    if (msg.error.type === "text") {
+      createTextStyleFromNode(node, msg.error.nodes, msg.title);
+    } else if (msg.error.type === "fill") {
+      createPaintStyleFromNode(node, msg.error.nodes, msg.title);
+    } else if (msg.error.type === "effects") {
+      createEffectStyleFromNode(node, msg.error.nodes, msg.title);
+    } else if (msg.error.type === "stroke") {
+      createStrokeStyleFromNode(node, msg.error.nodes, msg.title);
+    }
   }
 
   // Serialize nodes to pass back to the UI.

@@ -19,6 +19,17 @@ function Navigation(props) {
   };
 
   const stylesClick = () => {
+    if (activePage !== "styles") {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "update-styles-page"
+          }
+        },
+        "*"
+      );
+    }
+
     props.onPageSelection("styles");
   };
 
