@@ -37,11 +37,20 @@
   font-size: 11px;
   font-weight: 600;
   color: #111;
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.modal-subtitle {
+  color: #666;
+  font-size: 11px;
+  margin-top: 0;
+  margin-bottom: 12px;
 }
 
 .modal-wrapper {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px;
   text-align: left;
   width: 90%;
@@ -54,7 +63,7 @@
   font-size: 11px;
   font-weight: 500;
   padding: 12px;
-  border-radius: 0;
+  border-radius: 4px;
   border: 1px solid #e5e5e5;
   line-height: 16px;
   outline-color: #499df6;
@@ -72,13 +81,14 @@
   font-size: 11px;
   font-weight: 500;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
+  text-align: center;
 }
 
 .modal-cancel {
-  color: #333;
-  border: 1px solid #333;
+  color: #666;
+  border: 1px solid #666;
   margin-right: 6px;
 }
 

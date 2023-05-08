@@ -46,16 +46,19 @@ function BulkErrorListItem(props) {
   }
 
   function handleCreateStyle(error) {
-    props.handleCreateStyle(error);
-    // parent.postMessage(
-    //   {
-    //     pluginMessage: {
-    //       type: "create-style",
-    //       error: error
-    //     }
-    //   },
-    //   "*"
-    // );
+    if (error.value !== "Mixed values") {
+      props.handleCreateStyle(error);
+    } else {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "notify-user",
+            message: "Sorry! You can't create styles from mixed fill values."
+          }
+        },
+        "*"
+      );
+    }
   }
 
   function handleSuggestion(error, index) {

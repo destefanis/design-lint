@@ -166,14 +166,33 @@ figma.ui.onmessage = msg => {
 
     const libraryWithGroupedConsumers = groupLibrary(resetRemoteStyles);
 
+    libraryWithGroupedConsumers.fills.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    libraryWithGroupedConsumers.text.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    libraryWithGroupedConsumers.strokes.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    libraryWithGroupedConsumers.effects.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
     figma.ui.postMessage({
       type: "remote-styles-imported",
       message: libraryWithGroupedConsumers
     });
   }
 
+  // Updates all the styles listed on the styles page.
   if (msg.type === "update-styles-page") {
     handleUpdateStylesPage();
+  }
+
+  // Notify the user of an issue.
+  if (msg.type === "notify-user") {
+    figma.notify(msg.message, { timeout: 1000 });
   }
 
   // Updates client storage with a new ignored error
@@ -441,7 +460,9 @@ figma.ui.onmessage = msg => {
       }
 
       // Notify the user that the paint style has been created and applied
-      figma.notify("Fill style created and applied!");
+      figma.notify(
+        `Fill style created and applied to ${nodeArray.length} layers`
+      );
     }
   }
 
@@ -473,7 +494,9 @@ figma.ui.onmessage = msg => {
         layer.strokeStyleId = newStrokeStyle.id;
       }
 
-      figma.notify("Stroke style created and applied!");
+      figma.notify(
+        `Stroke style created and applied to ${nodeArray.length} layers`
+      );
     }
   }
 
@@ -516,11 +539,8 @@ figma.ui.onmessage = msg => {
       }
 
       // Notify the user that the effect style has been created and applied
-      figma.notify("Effect style created and applied successfully!");
-    } else {
-      // Notify the user to select a node with an effect
       figma.notify(
-        "Please select a node with an effect to create an effect style."
+        `Effect style created and applied to ${nodeArray.length} layers`
       );
     }
   }
@@ -528,8 +548,17 @@ figma.ui.onmessage = msg => {
   // Utility for creating new text styles from the select menu
   async function createTextStyleFromNode(node, nodeArray, title) {
     if (node.type === "TEXT") {
-      // Load the font used in the text node
-      await figma.loadFontAsync(node.fontName);
+      // // Load the font used in the text node
+      // await figma.loadFontAsync(node.fontName);
+
+      try {
+        await figma.loadFontAsync(node.fontName);
+      } catch (error) {
+        figma.notify(
+          `Couldn't create a style because the following font isn't available: ${node.fontName.family}`
+        );
+        return;
+      }
 
       // Get the properties of the text node
       const textStyle = {
@@ -574,7 +603,9 @@ figma.ui.onmessage = msg => {
         }
       }
 
-      figma.notify("Text style created and applied!");
+      figma.notify(
+        `Text style created and applied to ${nodeArray.length} layers`
+      );
     }
   }
 
@@ -1076,6 +1107,12 @@ figma.ui.onmessage = msg => {
               })
             );
           };
+
+          // Organize the array alphabtically
+          usedRemoteStyles.fills.sort((a, b) => a.name.localeCompare(b.name));
+          usedRemoteStyles.text.sort((a, b) => a.name.localeCompare(b.name));
+          usedRemoteStyles.strokes.sort((a, b) => a.name.localeCompare(b.name));
+          usedRemoteStyles.effects.sort((a, b) => a.name.localeCompare(b.name));
 
           const libraryWithGroupedConsumers = applyGroupingToLibrary(
             usedRemoteStyles

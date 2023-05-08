@@ -77,6 +77,7 @@ const Modal = ({ isOpen, onClose, error }) => {
             onClick={e => e.stopPropagation()}
           >
             <h3 className="modal-title">Create Style</h3>
+            <p className="modal-subtitle">{error.value}</p>
             <div className="modal-close" onClick={handleClose}>
               <img
                 className="modal-close-icon"
@@ -90,7 +91,7 @@ const Modal = ({ isOpen, onClose, error }) => {
               value={title}
               onChange={e => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`New ${error.type} Style Name`}
+              placeholder={`Style Name`}
             />
             <div className="modal-button-wrapper">
               <motion.div
