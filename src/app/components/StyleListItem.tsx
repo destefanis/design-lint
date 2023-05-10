@@ -49,7 +49,7 @@ function ListItem({ style, index }) {
     : "overview-list-item list-item--open";
 
   return (
-    <li className={listItemClass} key={index}>
+    <li className={listItemClass} key={`style item - ${style.name}-${index}`}>
       <div className="overview-content">
         <StyleListItemContent
           style={style}

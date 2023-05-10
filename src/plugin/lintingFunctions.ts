@@ -8,7 +8,8 @@ export function createErrorObject(
   value?,
   matches?,
   suggestions?,
-  fillColor?
+  fillColor?,
+  textProperties?
 ) {
   let error = {
     message: "",
@@ -17,13 +18,15 @@ export function createErrorObject(
     value: "",
     ...(matches && { matches: matches }),
     ...(suggestions && { suggestions: suggestions }),
-    fillColor: ""
+    fillColor: "",
+    textProperties: {}
   };
 
   error.message = message;
   error.type = type;
   error.node = node;
   error.fillColor = fillColor;
+  error.textProperties = textProperties;
 
   if (value !== undefined) {
     error.value = value;
@@ -965,19 +968,22 @@ export function checkType(
           style.fontStyle === textObject.fontStyle &&
           style.fontSize === textObject.fontSize
         ) {
-          suggestedStyles.push({
-            name: textStyle.name,
-            id: textStyle.id,
-            key: textStyle.key,
-            count: textStyle.count,
-            value:
-              textStyle.name +
-              " · " +
-              style.fontSize +
-              "/" +
-              style.lineHeight.value,
-            source: library.name
-          });
+          if (!suggestedStyles.some(obj => obj.name === textStyle.name)) {
+            suggestedStyles.push({
+              name: textStyle.name,
+              id: textStyle.id,
+              key: textStyle.key,
+              count: textStyle.count,
+              value:
+                textStyle.name +
+                " · " +
+                style.fontSize +
+                "/" +
+                style.lineHeight.value,
+              source: library.name,
+              textProperties: textStyle.style
+            });
+          }
         }
       }
     };
@@ -1021,7 +1027,9 @@ export function checkType(
           "Missing text style",
           currentStyle,
           null,
-          suggestedStyles
+          suggestedStyles,
+          null,
+          textObject
         )
       );
     } else {

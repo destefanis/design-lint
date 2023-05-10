@@ -15,25 +15,41 @@ const StylesPage = ({ stylesInUse }) => {
           <h4>Fill Styles</h4>
           <ul className="style-overview-list">
             {stylesInUse.fills.map((style, index) => (
-              <StyleListItem style={style} index={index} />
+              <StyleListItem
+                style={style}
+                index={index}
+                key={`style item - ${style.name}-${index}`}
+              />
             ))}
           </ul>
           <h4>Text Styles</h4>
           <ul className="style-overview-list">
             {stylesInUse.text.map((style, index) => (
-              <StyleListItem style={style} index={index} />
+              <StyleListItem
+                style={style}
+                index={index}
+                key={`style item - ${style.name}-${index}`}
+              />
             ))}
           </ul>
           <h4>Effect Styles</h4>
           <ul className="style-overview-list">
             {stylesInUse.effects.map((style, index) => (
-              <StyleListItem style={style} index={index} />
+              <StyleListItem
+                style={style}
+                index={index}
+                key={`style item - ${style.name}-${index}`}
+              />
             ))}
           </ul>
           <h4>Stroke Styles</h4>
           <ul className="style-overview-list">
             {stylesInUse.strokes.map((style, index) => (
-              <StyleListItem style={style} index={index} />
+              <StyleListItem
+                style={style}
+                index={index}
+                key={`style item - ${style.name}-${index}`}
+              />
             ))}
           </ul>
         </div>

@@ -5,10 +5,14 @@ import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
 import PreloaderCSS from "./PreloaderCSS";
 import Banner from "./Banner";
 import Modal from "./Modal";
+import StylesPanel from "./StylesPanel";
 
 function BulkErrorList(props) {
   const [currentError, setCurrentError] = useState(null);
+  const [panelError, setPanelError] = useState(null);
+  const [panelStyleSuggestion, setPanelStyleSuggestion] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [panelVisible, setPanelVisible] = React.useState(false);
 
   const availableFilters = [
     "All",
@@ -106,22 +110,25 @@ function BulkErrorList(props) {
     props.onIgnoredUpdate(error);
   }
 
+  function handlePanelVisible(boolean) {
+    setPanelVisible(boolean);
+  }
+
+  function handleUpdatePanelError(error) {
+    setPanelError(error);
+  }
+
+  function handleUpdatePanelSuggestion(index) {
+    setPanelStyleSuggestion(index);
+  }
+
   function handleBorderRadiusUpdate(value) {
     props.updateBorderRadius(value);
   }
 
   function handleCreateStyle(error) {
-    setCurrentError(error); // Set the current error based on the clicked item
-    setIsModalOpen(true); // Open the modal
-    // parent.postMessage(
-    //   {
-    //     pluginMessage: {
-    //       type: "create-style",
-    //       error: error
-    //     }
-    //   },
-    //   "*"
-    // );
+    setCurrentError(error);
+    setIsModalOpen(true);
   }
 
   function handleSelectAll(error) {
@@ -241,6 +248,9 @@ function BulkErrorList(props) {
       handleFixAll={handleFixAll}
       handleSuggestion={handleSuggestion}
       handleBorderRadiusUpdate={handleBorderRadiusUpdate}
+      handlePanelVisible={handlePanelVisible}
+      handleUpdatePanelError={handleUpdatePanelError}
+      handleUpdatePanelSuggestion={handleUpdatePanelSuggestion}
     />
   ));
 
@@ -262,9 +272,9 @@ function BulkErrorList(props) {
   };
 
   const variants = {
-    initial: { opacity: 0, y: 12 },
+    initial: { opacity: 0, y: -12 },
     enter: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -12 }
+    exit: { opacity: 0, y: 12 }
   };
 
   return (
@@ -344,6 +354,12 @@ function BulkErrorList(props) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         error={currentError}
+      />
+      <StylesPanel
+        panelVisible={panelVisible}
+        onHandlePanelVisible={handlePanelVisible}
+        error={panelError}
+        suggestion={panelStyleSuggestion}
       />
     </motion.div>
   );

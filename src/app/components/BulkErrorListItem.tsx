@@ -21,6 +21,12 @@ function BulkErrorListItem(props) {
     setMenuState(false);
   };
 
+  function handlePanelVisible(boolean, error, index) {
+    props.handlePanelVisible(boolean);
+    props.handleUpdatePanelError(error);
+    props.handleUpdatePanelSuggestion(index);
+  }
+
   function handleIgnoreChange(error) {
     props.handleIgnoreChange(error);
   }
@@ -70,9 +76,9 @@ function BulkErrorListItem(props) {
   }
 
   const variants = {
-    initial: { opacity: 0, y: 12, scale: 1 },
+    initial: { opacity: 0, y: -12, scale: 1 },
     enter: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: -12, scale: 0.96 }
+    exit: { opacity: 0, y: 12, scale: 1 }
   };
 
   const hasNoMatches = !error.matches || error.matches.length === 0;
@@ -257,7 +263,13 @@ function BulkErrorListItem(props) {
         <>
           <span className="suggestion-label">Suggestions</span>
           <div className="auto-fix-suggestion">
-            <div className="auto-fix-style">
+            <div
+              className="auto-fix-style auto-fix-style-clickable"
+              onClick={event => {
+                event.stopPropagation();
+                handlePanelVisible(true, error, 0);
+              }}
+            >
               <StyleContent
                 style={error.suggestions[0]}
                 type={error.type.toLowerCase()}
@@ -272,7 +284,13 @@ function BulkErrorListItem(props) {
           </div>
           {error.suggestions[1] && (
             <div className="auto-fix-suggestion suggestion-last">
-              <div className="auto-fix-style">
+              <div
+                className="auto-fix-style auto-fix-style-clickable"
+                onClick={event => {
+                  event.stopPropagation();
+                  handlePanelVisible(true, error, 1);
+                }}
+              >
                 <StyleContent
                   style={error.suggestions[1]}
                   type={error.type.toLowerCase()}

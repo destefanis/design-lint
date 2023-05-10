@@ -9,7 +9,6 @@
   background: #fff;
   display: flex;
   flex-flow: column;
-  box-shadow: 8px 0 16px rgba(0, 0, 0, 0.16);
 }
 
 .panel-header {
@@ -37,13 +36,74 @@
   text-overflow: ellipsis;
 }
 
+.panel-header .button--icon {
+  border-radius: 8px;
+}
+
 .panel-collapse-icon {
-  width: 16px;
+  width: 14px;
 }
 
 .panel-body {
   flex: 1;
   overflow-y: auto;
+}
+
+.style-comparison {
+  padding: 0 16px;
+}
+
+.comparison-row {
+  height: 32px;
+  display: flex;
+  flex-flow: row;
+  margin-bottom: 0;
+}
+
+.comparison-row-item {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  /* flex-grow: 1; */
+  align-self: center;
+  height: 16px;
+  flex-basis: 33%;
+}
+
+.row-item-grow {
+  flex-grow: 1;
+}
+
+.difference {
+  color: #fe6262;
+  padding-left: 2px;
+  font-size: 11px;
+}
+
+.comparison-icon {
+  margin-right: 8px;
+  opacity: 50%;
+}
+
+.comparison-label {
+  margin-right: 4px;
+  opacity: 50%;
+}
+
+.comparison-wrapper {
+  margin-bottom: 32px;
+}
+
+.comparison-title {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #111;
+}
+
+.comparison-value {
+  text-transform: capitalize;
 }
 
 .panel-body-errors {

@@ -279,6 +279,12 @@ body {
   align-self: center;
 }
 
+.auto-fix-style-clickable:hover .style-name {
+  text-decoration: underline;
+  color: #111;
+  cursor: pointer;
+}
+
 .style-source {
   font-size: 9px;
   font-weight: 400;
