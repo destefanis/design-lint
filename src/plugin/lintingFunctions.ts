@@ -472,6 +472,11 @@ export function gradientToCSS(nodeFill) {
 
 // Check library and local styles for matching
 function checkMatchingFills(style, nodeFill) {
+  // If style or nodeFill is undefined, return false
+  if (!style || !nodeFill) {
+    return false;
+  }
+
   // If we pass an array, we need to just check the first fill as that's what is visible.
   if (Array.isArray(nodeFill)) {
     nodeFill = nodeFill[nodeFill.length - 1];
@@ -880,6 +885,11 @@ function checkMatchingStyles(style, textObject) {
   );
 }
 
+function roundToDecimalPlaces(value, decimalPlaces) {
+  const multiplier = Math.pow(10, decimalPlaces);
+  return Math.round(value * multiplier) / multiplier;
+}
+
 export function checkType(
   node,
   errors,
@@ -1005,7 +1015,20 @@ export function checkType(
       }
     }
 
-    let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
+    let lineHeightFormatted = null;
+
+    if (textObject.lineHeight === "Auto") {
+      lineHeightFormatted = "Auto";
+    } else {
+      let roundedLineHeight = roundToDecimalPlaces(textObject.lineHeight, 1);
+      if (node.lineHeight.unit === "PERCENT") {
+        lineHeightFormatted = roundedLineHeight + "%";
+      } else {
+        lineHeightFormatted = roundedLineHeight;
+      }
+    }
+
+    let currentStyle = `${textObject.font} ${textObject.fontStyle} · ${textObject.fontSize}/${lineHeightFormatted}`;
 
     // Create error object with fixes if matching styles are found
     if (matchingStyles.length > 0) {

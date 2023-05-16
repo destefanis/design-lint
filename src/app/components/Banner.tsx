@@ -31,7 +31,12 @@ function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
   return (
     <div className="banner-wrapper">
       <div className="banner">
-        <span>{totalErrorsWithMatches} Auto Fixes</span>
+        <span>
+          Automatic Fixes Available{" "}
+          <span className="error-description__count">
+            · ({totalErrorsWithMatches})
+          </span>
+        </span>
         <motion.button
           whileTap={{ scale: 0.98, opacity: 0.8 }}
           onClick={handleClick}

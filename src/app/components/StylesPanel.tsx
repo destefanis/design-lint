@@ -9,8 +9,6 @@ function StylesPanel(props) {
   const error = props.error;
   let suggestion = null;
 
-  console.log(props.error);
-
   const variants = {
     open: { opacity: 1, x: 0 },
     closed: { opacity: 0, x: "100%" }

@@ -31,7 +31,7 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
   };
 
   const variants = {
-    initial: { opacity: 0, y: 12, scale: 1 },
+    initial: { opacity: 0, y: -12, scale: 1 },
     enter: { opacity: 1, y: 0, scale: 1 },
     exit: { opacity: 0, y: -12, scale: 1 }
   };
@@ -106,21 +106,26 @@ const LibraryPage = ({ libraries = [], onUpdateLibraries, localStyles }) => {
               </motion.button>
             </motion.li>
           ))}
+          <motion.li
+            className="library-list-item save-library"
+            key="import"
+            positionTransition
+            onClick={onLibraryImport}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+            variants={variants}
+            initial="enter"
+            animate="enter"
+            exit="exit"
+          >
+            <div className="library-icon-wrapper">
+              <img
+                className="library-icon"
+                src={require("../assets/add-blue.svg")}
+              />
+            </div>
+            <h3 className="save-library-label">Save Library</h3>
+          </motion.li>
         </AnimatePresence>
-        <motion.li
-          className="library-list-item save-library"
-          key="import"
-          onClick={onLibraryImport}
-          whileTap={{ scale: 0.98, opacity: 0.8 }}
-        >
-          <div className="library-icon-wrapper">
-            <img
-              className="library-icon"
-              src={require("../assets/add-blue.svg")}
-            />
-          </div>
-          <h3 className="save-library-label">Save Library</h3>
-        </motion.li>
       </ul>
     </div>
   );
