@@ -34,7 +34,7 @@ function SettingsForm(props) {
   return (
     <div className="settings-row">
       <div className="settings-form" onSubmit={handleSubmit}>
-        <h3 className="settings-title">Border radius</h3>
+        <h3 className="settings-title">Border Radius</h3>
         <div className="settings-label">
           Set your preferred border radius values separated by commas (ex: "2,
           4, 6, 8").

@@ -298,6 +298,7 @@ body {
 }
 
 .style-name {
+  line-height: 16px;
   font-weight: 400;
 }
 

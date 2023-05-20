@@ -105,8 +105,8 @@
 }
 
 .styles-overview-wrapper h4 {
-  font-weight: 400;
-  color: #666;
+  font-weight: 600;
+  color: #111;
   padding: 0 16px;
   margin: 16px 0 4px;
 }
@@ -126,7 +126,7 @@
 }
 
 .list-item--open {
-  padding: 12px 12px 4px 16px;
+  padding: 12px 12px 8px 16px;
 }
 
 .overview-list-item:hover .overview-icon {
@@ -215,5 +215,5 @@
 
 .sublist-item-count {
   display: inline-block;
-  padding-right: 1px;
+  /* padding-right: 1px; */
 }

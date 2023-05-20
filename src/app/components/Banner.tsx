@@ -31,8 +31,11 @@ function Banner({ totalErrorsWithMatches, handleFixAllErrors }) {
   return (
     <div className="banner-wrapper">
       <div className="banner">
-        <span>
-          Automatic Fixes Available{" "}
+        <span className={`error-type error-background-banner`}>
+          <img src={require("../assets/sparkles.svg")} />
+        </span>
+        <span className="banner-label">
+          Automatic Fixes{" "}
           <span className="error-description__count">
             · ({totalErrorsWithMatches})
           </span>

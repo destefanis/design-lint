@@ -232,7 +232,7 @@
 }
 
 .banner {
-  height: 46px;
+  height: 52px;
   padding: 12px 8px 12px 12px;
   border: 1px solid #dcddde99;
   color: #333333;
@@ -250,7 +250,12 @@
   background: #fff;
 }
 
-.banner span {
+.banner .error-background-banner {
+  background-color: #06d69e10;
+  margin-right: 12px;
+}
+
+.banner-label {
   margin: auto 0;
 }
 
@@ -360,7 +365,8 @@
 }
 
 .error-background-fill {
-  background: #fe62621a;
+  /* background: #fe62621a; */
+  background: #6f2dbd1a;
 }
 
 .error-background-text {
@@ -368,7 +374,8 @@
 }
 
 .error-background-stroke {
-  background: #6f2dbd1a;
+  /* background: #6f2dbd1a; */
+  background: #fe62621a;
 }
 
 .error-background-radius {
@@ -432,9 +439,9 @@
 }
 
 .settings-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
-  color: #333333;
+  color: #111;
   padding-bottom: 8px;
   margin: 0;
 }
@@ -445,6 +452,10 @@
   line-height: 1.4;
   color: #333333;
   padding-bottom: 12px;
+}
+
+.settings-no-padding {
+  padding-bottom: 0;
 }
 
 .settings-input {
