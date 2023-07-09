@@ -60,6 +60,13 @@ export function checkRadius(node, errors, radiusValues) {
     if (cornerType === 0) {
       return;
     }
+    if (cornerType === node.height) {
+      return;
+    }
+  }
+
+  if (typeof node.boundVariables.bottomLeftRadius !== "undefined") {
+    return;
   }
 
   // If the radius isn't even on all sides, check each corner.
@@ -233,6 +240,10 @@ export function checkEffects(node, errors) {
 }
 
 export function checkFills(node, errors) {
+  if (typeof node.boundVariables.fills !== "undefined") {
+    return;
+  }
+
   if (
     (node.fills.length && node.visible === true) ||
     typeof node.fills === "symbol"
@@ -275,6 +286,10 @@ export function checkFills(node, errors) {
 
 export function checkStrokes(node, errors) {
   if (node.strokes.length) {
+    if (typeof node.boundVariables.strokes !== "undefined") {
+      return;
+    }
+
     if (node.strokeStyleId === "" && node.visible === true) {
       let strokeObject = {
         strokeWeight: "",
