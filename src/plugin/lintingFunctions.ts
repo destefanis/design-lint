@@ -9,17 +9,20 @@ export function createErrorObject(
   matches?,
   suggestions?,
   fillColor?,
-  textProperties?
+  textProperties?,
+  variableMatches?,
+  variableSuggestions?
 ) {
   let error = {
     message: "",
     type: "",
     node: "",
     value: "",
-    ...(matches && { matches: matches }),
     ...(suggestions && { suggestions: suggestions }),
     fillColor: "",
-    textProperties: {}
+    textProperties: {},
+    ...(variableMatches && { variableMatches: variableMatches }),
+    ...(variableSuggestions && { variableSuggestions: variableSuggestions })
   };
 
   error.message = message;
@@ -83,6 +86,10 @@ export function determineFill(fills) {
 // Lint border radius
 export function checkRadius(node, errors, radiusValues) {
   let cornerType = node.cornerRadius;
+
+  if (typeof node.boundVariables.bottomLeftRadius !== "undefined") {
+    return;
+  }
 
   if (typeof cornerType !== "symbol") {
     if (cornerType === 0) {
@@ -502,13 +509,45 @@ function checkMatchingFills(style, nodeFill) {
   return false;
 }
 
+function checkMatchingVariableFill(variableFill, nodeFill) {
+  // If style or nodeFill is undefined, return false
+  if (!variableFill || !nodeFill) {
+    return false;
+  }
+
+  // If we pass an array, we need to just check the first fill as that's what is visible.
+  if (Array.isArray(nodeFill)) {
+    nodeFill = nodeFill[nodeFill.length - 1];
+  }
+
+  // Variables can only be regular colors so our check for a match
+  // is a simple comparison.
+  if (nodeFill.type === "SOLID") {
+    return (
+      variableFill.paint.r === nodeFill.color.r &&
+      variableFill.paint.g === nodeFill.color.g &&
+      variableFill.paint.b === nodeFill.color.b &&
+      variableFill.paint.a === nodeFill.opacity
+    );
+  }
+
+  return false;
+}
+
 export function newCheckFills(
   node,
   errors,
   libraries,
   localStylesLibrary,
-  importedStyles
+  importedStyles,
+  variables
 ) {
+  // Make sure this node isn't already using a variable.
+  if (typeof node.boundVariables.fills !== "undefined") {
+    return;
+  }
+
+  // Check if the node is using mixed fills (aka more than one).
   if (
     (node.fills.length && node.visible === true) ||
     typeof node.fills === "symbol"
@@ -535,6 +574,28 @@ export function newCheckFills(
     ) {
       let matchingFills = [];
       let suggestedFills = [];
+
+      // Don't used matching fills here we need to use a new variable
+      // then pass that to our new object key
+      if (variables) {
+        matchingFills = variables
+          .map(variableFill => {
+            let firstKey = Object.keys(variableFill.valuesByMode)[0];
+            let variablePaint = variableFill.valuesByMode[firstKey];
+            return {
+              name: variableFill.name,
+              id: variableFill.id,
+              key: variableFill.id.replace(/S:|,/g, ""),
+              value: variableFill.name,
+              source: "Remote Variable",
+              paint: variablePaint,
+              count: variableFill.count
+            };
+          })
+          .filter(variableFill =>
+            checkMatchingVariableFill(variableFill, nodeFills)
+          );
+      }
 
       if (importedStyles && importedStyles.fills) {
         matchingFills = importedStyles.fills
@@ -687,6 +748,10 @@ export function newCheckStrokes(
 ) {
   if (node.strokes.length && node.visible === true) {
     let strokeStyleId = node.strokeStyleId;
+
+    if (typeof node.boundVariables.strokes !== "undefined") {
+      return;
+    }
 
     if (typeof strokeStyleId === "symbol") {
       return;
