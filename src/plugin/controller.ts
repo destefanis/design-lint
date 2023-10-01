@@ -1241,7 +1241,7 @@ figma.ui.onmessage = msg => {
                         variableId
                       );
 
-                      console.log(variable);
+                      // console.log(variable);
 
                       if (variable === null) {
                         return;
@@ -1395,7 +1395,7 @@ figma.ui.onmessage = msg => {
             //   type: "variables-imported",
             //   message: variablesWithGroupedConsumers
             // });
-            console.log(variablesWithGroupedConsumers);
+            // console.log(variablesWithGroupedConsumers);
           });
 
           // Now that libraries are available, call lint with libraries and localStylesLibrary, then send the message

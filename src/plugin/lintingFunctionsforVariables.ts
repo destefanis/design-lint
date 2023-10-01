@@ -9,17 +9,20 @@ export function createErrorObject(
   matches?,
   suggestions?,
   fillColor?,
-  textProperties?
+  textProperties?,
+  variableMatches?,
+  variableSuggestions?
 ) {
   let error = {
     message: "",
     type: "",
     node: "",
     value: "",
-    ...(matches && { matches: matches }),
     ...(suggestions && { suggestions: suggestions }),
     fillColor: "",
-    textProperties: {}
+    textProperties: {},
+    ...(variableMatches && { variableMatches: variableMatches }),
+    ...(variableSuggestions && { variableSuggestions: variableSuggestions })
   };
 
   error.message = message;
@@ -83,6 +86,10 @@ export function determineFill(fills) {
 // Lint border radius
 export function checkRadius(node, errors, radiusValues) {
   let cornerType = node.cornerRadius;
+
+  if (typeof node.boundVariables.bottomLeftRadius !== "undefined") {
+    return;
+  }
 
   if (typeof cornerType !== "symbol") {
     if (cornerType === 0) {
@@ -502,13 +509,45 @@ function checkMatchingFills(style, nodeFill) {
   return false;
 }
 
+function checkMatchingVariableFill(variableFill, nodeFill) {
+  // If style or nodeFill is undefined, return false
+  if (!variableFill || !nodeFill) {
+    return false;
+  }
+
+  // If we pass an array, we need to just check the first fill as that's what is visible.
+  if (Array.isArray(nodeFill)) {
+    nodeFill = nodeFill[nodeFill.length - 1];
+  }
+
+  // Variables can only be regular colors so our check for a match
+  // is a simple comparison.
+  if (nodeFill.type === "SOLID") {
+    return (
+      variableFill.paint.r === nodeFill.color.r &&
+      variableFill.paint.g === nodeFill.color.g &&
+      variableFill.paint.b === nodeFill.color.b &&
+      variableFill.paint.a === nodeFill.opacity
+    );
+  }
+
+  return false;
+}
+
 export function newCheckFills(
   node,
   errors,
   libraries,
   localStylesLibrary,
-  importedStyles
+  importedStyles,
+  variables
 ) {
+  // Make sure this node isn't already using a variable.
+  if (typeof node.boundVariables.fills !== "undefined") {
+    return;
+  }
+
+  // Check if the node is using mixed fills (aka more than one).
   if (
     (node.fills.length && node.visible === true) ||
     typeof node.fills === "symbol"
@@ -536,103 +575,131 @@ export function newCheckFills(
       let matchingFills = [];
       let suggestedFills = [];
 
-      if (importedStyles && importedStyles.fills) {
-        matchingFills = importedStyles.fills
-          .map(fillStyle => ({
-            name: fillStyle.name,
-            id: fillStyle.id,
-            key: fillStyle.id.replace(/S:|,/g, ""),
-            value: fillStyle.name,
-            source: "Remote Style",
-            paint: fillStyle.paint,
-            count: fillStyle.count
-          }))
-          .filter(fillStyle => checkMatchingFills(fillStyle.paint, nodeFills));
+      // Don't used matching fills here we need to use a new variable
+      // then pass that to our new object key
+      if (variables) {
+        matchingFills = variables
+          .map(variableFill => {
+            let firstKey = Object.keys(variableFill.valuesByMode)[0];
+            let variablePaint = variableFill.valuesByMode[firstKey];
+            return {
+              name: variableFill.name,
+              id: variableFill.id,
+              key: variableFill.id.replace(/S:|,/g, ""),
+              value: variableFill.name,
+              source: "Remote Variable",
+              paint: variablePaint,
+              count: variableFill.count
+            };
+          })
+          .filter(variableFill =>
+            checkMatchingVariableFill(variableFill, nodeFills)
+          );
       }
 
+      // Variables is being overriden I think?
       if (matchingFills.length === 0) {
-        if (localStylesLibrary && localStylesLibrary.fills) {
-          matchingFills = localStylesLibrary.fills
+        if (importedStyles && importedStyles.fills) {
+          matchingFills = importedStyles.fills
             .map(fillStyle => ({
               name: fillStyle.name,
               id: fillStyle.id,
               key: fillStyle.id.replace(/S:|,/g, ""),
               value: fillStyle.name,
-              source: "Local Library",
-              paint: fillStyle.paint
+              source: "Remote Style",
+              paint: fillStyle.paint,
+              count: fillStyle.count
             }))
             .filter(fillStyle =>
               checkMatchingFills(fillStyle.paint, nodeFills)
             );
         }
-      }
 
-      if (matchingFills.length === 0 && libraries && libraries.length > 0) {
-        for (const library of libraries) {
-          if (library.fills && library.fills.length > 0) {
-            for (const fillStyle of library.fills) {
-              const style = fillStyle;
+        if (matchingFills.length === 0) {
+          if (localStylesLibrary && localStylesLibrary.fills) {
+            matchingFills = localStylesLibrary.fills
+              .map(fillStyle => ({
+                name: fillStyle.name,
+                id: fillStyle.id,
+                key: fillStyle.id.replace(/S:|,/g, ""),
+                value: fillStyle.name,
+                source: "Local Library",
+                paint: fillStyle.paint
+              }))
+              .filter(fillStyle =>
+                checkMatchingFills(fillStyle.paint, nodeFills)
+              );
+          }
+        }
 
-              if (checkMatchingFills(style.paint, nodeFills)) {
-                matchingFills.push({
-                  name: style.name,
-                  id: style.id,
-                  key: style.id.replace(/S:|,/g, ""),
-                  value: style.name,
-                  source: library.name
-                });
-              } else if (
-                style.type === "GRADIENT" &&
-                nodeFills[0].type === "GRADIENT"
-              ) {
-                suggestedFills.push(fillStyle);
+        if (matchingFills.length === 0 && libraries && libraries.length > 0) {
+          for (const library of libraries) {
+            if (library.fills && library.fills.length > 0) {
+              for (const fillStyle of library.fills) {
+                const style = fillStyle;
+
+                if (checkMatchingFills(style.paint, nodeFills)) {
+                  matchingFills.push({
+                    name: style.name,
+                    id: style.id,
+                    key: style.id.replace(/S:|,/g, ""),
+                    value: style.name,
+                    source: library.name
+                  });
+                } else if (
+                  style.type === "GRADIENT" &&
+                  nodeFills[0].type === "GRADIENT"
+                ) {
+                  suggestedFills.push(fillStyle);
+                }
               }
             }
           }
         }
-      }
 
-      let currentFill = determineFill(node.fills);
-      let nodeFillType = nodeFills[0].type;
-      let cssSyntax = null;
+        let currentFill = determineFill(node.fills);
+        let nodeFillType = nodeFills[0].type;
+        let cssSyntax = null;
 
-      if (nodeFillType === "SOLID") {
-        cssSyntax = currentFill;
-      } else if (nodeFillType !== "SOLID") {
-        cssSyntax = gradientToCSS(nodeFills[0]);
-      }
+        if (nodeFillType === "SOLID") {
+          cssSyntax = currentFill;
+        } else if (nodeFillType !== "SOLID") {
+          cssSyntax = gradientToCSS(nodeFills[0]);
+        }
 
-      if (matchingFills.length > 0) {
-        return errors.push(
-          createErrorObject(
-            node,
-            "fill",
-            "Missing fill style",
-            currentFill,
-            matchingFills,
-            null,
-            cssSyntax
-          )
-        );
-      } else if (suggestedFills.length > 0) {
-        return errors.push(
-          createErrorObject(
-            node,
-            "fill",
-            "Missing fill style",
-            currentFill,
-            null,
-            suggestedFills,
-            cssSyntax
-          )
-        );
+        if (matchingFills.length > 0) {
+          console.log(matchingFills);
+          return errors.push(
+            createErrorObject(
+              node,
+              "fill",
+              "Missing fill style",
+              currentFill,
+              matchingFills,
+              null,
+              cssSyntax
+            )
+          );
+        } else if (suggestedFills.length > 0) {
+          return errors.push(
+            createErrorObject(
+              node,
+              "fill",
+              "Missing fill style",
+              currentFill,
+              null,
+              suggestedFills,
+              cssSyntax
+            )
+          );
+        } else {
+          return errors.push(
+            createErrorObject(node, "fill", "Missing fill style", currentFill)
+          );
+        }
       } else {
-        return errors.push(
-          createErrorObject(node, "fill", "Missing fill style", currentFill)
-        );
+        return;
       }
-    } else {
-      return;
     }
   }
 }
@@ -687,6 +754,10 @@ export function newCheckStrokes(
 ) {
   if (node.strokes.length && node.visible === true) {
     let strokeStyleId = node.strokeStyleId;
+
+    if (typeof node.boundVariables.strokes !== "undefined") {
+      return;
+    }
 
     if (typeof strokeStyleId === "symbol") {
       return;
