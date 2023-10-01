@@ -514,6 +514,10 @@ export function newCheckFills(
   importedStyles,
   variables
 ) {
+  if (typeof node.boundVariables.fills !== "undefined") {
+    return;
+  }
+
   if (
     (node.fills.length && node.visible === true) ||
     typeof node.fills === "symbol"
@@ -690,6 +694,10 @@ export function newCheckStrokes(
   localStylesLibrary,
   importedStyles
 ) {
+  if (typeof node.boundVariables.strokes !== "undefined") {
+    return;
+  }
+
   if (node.strokes.length && node.visible === true) {
     let strokeStyleId = node.strokeStyleId;
 
