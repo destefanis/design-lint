@@ -9,7 +9,9 @@ export function createErrorObject(
   matches?,
   suggestions?,
   fillColor?,
-  textProperties?
+  textProperties?,
+  variableMatches?,
+  variableSuggestions?
 ) {
   let error = {
     message: "",
@@ -19,7 +21,9 @@ export function createErrorObject(
     ...(matches && { matches: matches }),
     ...(suggestions && { suggestions: suggestions }),
     fillColor: "",
-    textProperties: {}
+    textProperties: {},
+    ...(variableMatches && { variableMatches: variableMatches }),
+    ...(variableSuggestions && { variableSuggestions: variableSuggestions })
   };
 
   error.message = message;
@@ -507,7 +511,8 @@ export function newCheckFills(
   errors,
   libraries,
   localStylesLibrary,
-  importedStyles
+  importedStyles,
+  variables
 ) {
   if (
     (node.fills.length && node.visible === true) ||
@@ -951,7 +956,7 @@ export function checkType(
       for (const textStyle of library.text) {
         const style = textStyle.style;
 
-        let lineHeightCheck;
+        let lineHeightCheck: string;
 
         if (node.lineHeight.value !== undefined) {
           lineHeightCheck = style.lineHeight.value;

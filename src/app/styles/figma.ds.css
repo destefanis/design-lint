@@ -4,7 +4,7 @@
 }
 
 /*  Typography */
-@font-face {
+/* @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 400;
@@ -32,7 +32,7 @@
       format("woff2"),
     url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7")
       format("woff");
-}
+} */
 
 .label {
   display: -webkit-box;
