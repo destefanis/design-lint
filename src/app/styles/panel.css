@@ -9,7 +9,6 @@
   background: #fff;
   display: flex;
   flex-flow: column;
-  box-shadow: 8px 0 16px rgba(0, 0, 0, 0.16);
 }
 
 .panel-header {
@@ -37,8 +36,12 @@
   text-overflow: ellipsis;
 }
 
+.panel-header .button--icon {
+  border-radius: 8px;
+}
+
 .panel-collapse-icon {
-  width: 16px;
+  width: 14px;
 }
 
 .panel-body {
@@ -46,8 +49,65 @@
   overflow-y: auto;
 }
 
+.style-comparison {
+  padding: 0 16px;
+}
+
+.comparison-row {
+  height: 32px;
+  display: flex;
+  flex-flow: row;
+  margin-bottom: 0;
+}
+
+.comparison-row-item {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  /* flex-grow: 1; */
+  align-self: center;
+  height: 16px;
+  flex-basis: 33%;
+}
+
+.row-item-grow {
+  flex-grow: 1;
+}
+
+.difference {
+  color: #fe6262;
+  padding-left: 2px;
+  font-size: 11px;
+}
+
+.comparison-icon {
+  margin-right: 8px;
+  opacity: 50%;
+}
+
+.comparison-label {
+  margin-right: 4px;
+  opacity: 50%;
+}
+
+.comparison-wrapper {
+  margin-bottom: 32px;
+}
+
+.comparison-title {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #111;
+}
+
+.comparison-value {
+  text-transform: capitalize;
+}
+
 .panel-body-errors {
-  padding-top: 16px;
+  /* padding-top: 16px; */
   height: 100%;
 }
 
@@ -85,6 +145,12 @@
   margin-left: 4px;
   padding: 4px 8px;
   text-transform: capitalize;
+  cursor: pointer;
+  transition: border-color 50ms ease;
+}
+
+.pill:hover {
+  border-color: #c1c1c1;
 }
 
 .pill-divider {
@@ -95,13 +161,18 @@
   font-size: 10px;
   line-height: 14px;
   margin-left: 4px;
-  padding: 4px 4px;
+  padding: 4px;
+  color: #e5e5e5;
 }
 
 .selected {
   background: #18a0fb;
   border-color: #18a0fb;
   color: #fff;
+}
+
+.selected:hover {
+  border-color: #18a0fb;
 }
 
 .is-visible {
@@ -147,19 +218,23 @@
 }
 
 .errors-list {
-  margin: -16px 0 0;
-  padding: 0 16px 84px;
-  /* overflow-y: scroll; */
+  margin: 0;
+  padding: 0 16px 164px;
 }
 
 .errors-list-panel {
   margin: 0;
 }
 
-.error-list-item {
-  position: relative;
-  padding: 12px 16px 12px 12px;
-  border: 1px solid #e5e5e5;
+.banner-wrapper {
+  padding: 0 16px;
+  /* margin-bottom: 12px; */
+}
+
+.banner {
+  height: 52px;
+  padding: 12px 8px 12px 12px;
+  border: 1px solid #dcddde99;
   color: #333333;
   margin-bottom: 12px;
   border-radius: 12px;
@@ -171,14 +246,41 @@
   line-height: 13px;
   font-weight: 600;
   transition: border-color 100ms ease;
-  box-shadow: 0px 2px 2px 0px #0000000a;
+  box-shadow: 0px 2px 2px 0px #d2d2d240;
   background: #fff;
 }
 
-.error-list-item:hover {
-  border-color: #18a0fb;
-  cursor: pointer;
+.banner .error-background-banner {
+  background-color: #06d69e10;
+  margin-right: 12px;
 }
+
+.banner-label {
+  margin: auto 0;
+}
+
+.error-list-item {
+  position: relative;
+  padding: 12px 12px 12px 12px;
+  border: 1px solid #dcddde99;
+  color: #333333;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  display: flex;
+  flex-flow: row wrap;
+  align-content: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 13px;
+  font-weight: 600;
+  transition: border-color 100ms ease;
+  box-shadow: 0px 2px 2px 0px #d2d2d240;
+  background: #fff;
+}
+
+/* .error-list-item:hover {
+  border-color: #c1c1c1;
+} */
 
 .flex-row {
   width: 100%;
@@ -203,9 +305,43 @@
   font-weight: 400;
 }
 
+/* .tooltip {
+  position: relative;
+}
+
+.tooltip:before {
+  top: -8px;
+  content: attr(data-text);
+  position: absolute;
+  font-size: 9px;
+  padding: 8px;
+  border-radius: 4px;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  display: none;
+}
+
+.tooltip:hover:before {
+  display: block;
+} */
+
 .error-description {
   align-self: center;
   margin-left: 12px;
+}
+
+.error-description__message {
+  cursor: pointer;
+}
+
+.error-description__message:hover {
+  color: #111;
+}
+
+.error-description__count {
+  color: #666;
+  font-weight: 400;
 }
 
 .error-type {
@@ -226,6 +362,24 @@
   margin: auto;
   height: 12px;
   width: 12px;
+}
+
+.error-background-fill {
+  /* background: #fe62621a; */
+  background: #6f2dbd1a;
+}
+
+.error-background-text {
+  background: #18a0fb1a;
+}
+
+.error-background-stroke {
+  /* background: #6f2dbd1a; */
+  background: #fe62621a;
+}
+
+.error-background-radius {
+  background: #06d6a01a;
 }
 
 .context-icon {
@@ -285,9 +439,9 @@
 }
 
 .settings-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
-  color: #333333;
+  color: #111;
   padding-bottom: 8px;
   margin: 0;
 }
@@ -298,6 +452,10 @@
   line-height: 1.4;
   color: #333333;
   padding-bottom: 12px;
+}
+
+.settings-no-padding {
+  padding-bottom: 0;
 }
 
 .settings-input {

@@ -3,7 +3,8 @@ import { useState } from "react";
 
 import Navigation from "./Navigation";
 import NodeList from "./NodeList";
-import Preloader from "./Preloader";
+import LibraryPage from "./LibraryPage";
+import StylesPage from "./StylesPage";
 import PreloaderCSS from "./PreloaderCSS";
 import EmptyState from "./EmptyState";
 import Panel from "./Panel";
@@ -12,6 +13,7 @@ import BulkErrorList from "./BulkErrorList";
 import "../styles/figma.ds.css";
 import "../styles/ui.css";
 import "../styles/empty-state.css";
+import "react-tooltip/dist/react-tooltip.css";
 
 const App = ({}) => {
   const [errorArray, setErrorArray] = useState([]);
@@ -34,7 +36,12 @@ const App = ({}) => {
   ]);
   const [lintVectors, setLintVectors] = useState(false);
   const [initialLoad, setInitialLoad] = React.useState(false);
-  const [timedLoad, setTimeLoad] = React.useState(false);
+  const [emptyState, setEmptyState] = React.useState(false);
+  const [libraries, setLibraries] = useState([]);
+  const [localStyles, setLocalStyles] = useState({});
+  const [stylesInUse, setStylesInUse] = useState({});
+  const librariesRef = React.useRef([]);
+  const activePageRef = React.useRef(activePage);
 
   window.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
@@ -78,6 +85,10 @@ const App = ({}) => {
     );
   };
 
+  const handleUpdateLibraries = updatedLibraries => {
+    setLibraries(updatedLibraries);
+  };
+
   const updateActiveError = error => {
     setActiveError(error);
   };
@@ -96,6 +107,31 @@ const App = ({}) => {
     } else {
       setIgnoreErrorArray([error].concat(ignoredErrorArray));
     }
+  };
+
+  const updateBorderRadius = value => {
+    let borderArray = [...borderRadiusValues, value];
+    setBorderRadiusValues([...borderRadiusValues, value]);
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-border-radius",
+          radiusValues: borderArray
+        }
+      },
+      "*"
+    );
+
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "update-errors",
+          libraries: librariesRef.current
+        }
+      },
+      "*"
+    );
   };
 
   const updateErrorArray = errors => {
@@ -128,11 +164,6 @@ const App = ({}) => {
     }
   }
 
-  // If no layer is selected after 1 seconds, show the empty state.
-  setTimeout(function() {
-    setTimeLoad(true);
-  }, 1000);
-
   React.useEffect(() => {
     // Update client storage so the next time we run the app
     // we don't have to ignore our errors again.
@@ -151,18 +182,50 @@ const App = ({}) => {
 
   const onRunApp = React.useCallback(() => {
     parent.postMessage(
-      { pluginMessage: { type: "run-app", lintVectors: lintVectors } },
+      {
+        pluginMessage: {
+          type: "run-app",
+          lintVectors: lintVectors,
+          selection: "user"
+        }
+      },
       "*"
     );
   }, []);
+
+  const onScanEntirePage = React.useCallback(() => {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "run-app",
+          lintVectors: lintVectors,
+          selection: "page"
+        }
+      },
+      "*"
+    );
+  }, []);
+
+  // We need to always be able to access this set of arrays
+  // in order to provide it to the linting array for magic fixes.
+  React.useEffect(() => {
+    librariesRef.current = libraries;
+  }, [libraries]);
+
+  React.useEffect(() => {
+    activePageRef.current = activePage;
+  }, [activePage]);
 
   React.useEffect(() => {
     onRunApp();
 
     window.onmessage = event => {
       const { type, message, errors, storage } = event.data.pluginMessage;
-
-      if (type === "step-1") {
+      if (type === "show-preloader") {
+        setEmptyState(false);
+      } else if (type === "show-empty-state") {
+        setEmptyState(true);
+      } else if (type === "step-1") {
         // Lint the very first selected node.
         let nodeObject = JSON.parse(message);
 
@@ -200,7 +263,8 @@ const App = ({}) => {
         parent.postMessage(
           {
             pluginMessage: {
-              type: "step-3"
+              type: "step-3",
+              libraries: librariesRef.current
             }
           },
           "*"
@@ -222,22 +286,69 @@ const App = ({}) => {
       } else if (type === "fetched border radius") {
         // Update border radius values from storage
         let clientStorage = JSON.parse(storage);
+        // Sort the array first
+        clientStorage = clientStorage.sort((a, b) => a - b);
         setBorderRadiusValues([...clientStorage]);
       } else if (type === "reset storage") {
         // let clientStorage = JSON.parse(storage);
         setIgnoreErrorArray([]);
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
       } else if (type === "fetched layer") {
         setSelectedNode(() => JSON.parse(message));
 
         // Ask the controller to lint the layers for errors.
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
       } else if (type === "change") {
         // Document Changed
-        parent.postMessage({ pluginMessage: { type: "update-errors" } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "update-errors",
+              libraries: librariesRef.current
+            }
+          },
+          "*"
+        );
+
+        // When a change happens and the styles page is active
+        // We update the styles as the user makes changes
+        if (activePageRef.current === "styles") {
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "update-styles-page"
+              }
+            },
+            "*"
+          );
+        }
       } else if (type === "updated errors") {
         // Once the errors are returned, update the error array.
         updateErrorArray(errors);
+      } else if (type === "library-imported") {
+        setLibraries(message);
+      } else if (type === "library-imported-from-storage") {
+        setLibraries(message);
+      } else if (type === "local-styles-imported") {
+        setLocalStyles(message);
+      } else if (type === "remote-styles-imported") {
+        setStylesInUse(message);
       }
     };
   }, []);
@@ -267,11 +378,21 @@ const App = ({}) => {
               selectedListItems={selectedListItems}
               activeNodeIds={activeNodeIds}
             />
+          ) : activePage === "library" ? (
+            <LibraryPage
+              libraries={libraries}
+              onUpdateLibraries={handleUpdateLibraries}
+              localStyles={localStyles}
+            />
+          ) : activePage === "styles" ? (
+            <StylesPage stylesInUse={stylesInUse} />
           ) : (
             <BulkErrorList
+              libraries={libraries}
               errorArray={errorArray}
               ignoredErrorArray={ignoredErrorArray}
               onIgnoredUpdate={updateIgnoredErrors}
+              updateBorderRadius={updateBorderRadius}
               onIgnoreAll={ignoreAll}
               ignoredErrors={ignoredErrorArray}
               onClick={updateVisibility}
@@ -280,10 +401,13 @@ const App = ({}) => {
             />
           )}
         </div>
-      ) : timedLoad === false ? (
+      ) : emptyState === false ? (
         <PreloaderCSS />
       ) : (
-        <EmptyState onHandleRunApp={onRunApp} />
+        <EmptyState
+          onHandleRunApp={onRunApp}
+          onScanEntirePage={onScanEntirePage}
+        />
       )}
 
       {Object.keys(activeError).length !== 0 && errorArray.length ? (

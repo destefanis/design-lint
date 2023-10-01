@@ -202,6 +202,215 @@ body {
   position: relative;
 }
 
+.auto-fix-content {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+  border: none;
+  /* border-top: 1px solid #e5e5e5; */
+  padding: 8px 8px 8px 12px;
+  margin-top: 12px;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.suggestion-label {
+  width: 100%;
+  text-align: left;
+  margin-top: 16px;
+  margin-bottom: 4px;
+  font-weight: 400;
+  color: #666;
+  font-size: 9px;
+}
+
+.auto-fix-suggestion {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+  border: none;
+  /* border-top: 1px solid #e5e5e5; */
+  padding: 8px 8px 8px 12px;
+
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.suggestion-last {
+  margin-top: 8px;
+}
+
+.style-list-item {
+  display: flex;
+  align-items: center;
+}
+
+.style-preview {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+}
+
+.fill-preview {
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 0px 1px inset;
+}
+
+.text-preview {
+  text-align: center;
+}
+
+.text-preview span {
+  line-height: 16px;
+}
+
+/* .effect-icon {
+  
+} */
+
+/* .text-preview {
+  font-size: 12px;
+  line-height: 20px;
+} */
+
+.auto-fix-style {
+  display: flex;
+  flex-flow: column;
+  align-self: center;
+}
+
+.auto-fix-style-clickable:hover .style-name {
+  text-decoration: underline;
+  color: #111;
+  cursor: pointer;
+}
+
+.style-source {
+  font-size: 9px;
+  font-weight: 400;
+  padding-bottom: 4px;
+  color: #666666;
+}
+
+.style-value {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.style-name {
+  line-height: 16px;
+  font-weight: 400;
+}
+
+.auto-fix-button {
+  outline: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 11px;
+  height: 28px;
+  background-color: #18a0fb;
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  align-self: flex-end;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.match-button {
+  outline: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 11px;
+  height: 28px;
+  background-color: #f9f9f9;
+  border: 1px solid #666;
+  color: #333;
+  padding: 8px 12px;
+  align-self: flex-end;
+  margin-left: auto;
+  cursor: pointer;
+  width: 56px;
+}
+
+.suggestion-button {
+  width: 56px;
+  outline: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 11px;
+  height: 28px;
+  background-color: #f9f9f9;
+  border: 1px solid #333;
+  color: #333;
+  padding: 8px 12px;
+  align-self: flex-end;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.loading-button {
+  padding: 8px 12px;
+}
+
+.auto-fix-button:hover {
+  /* transition: background-color 100ms ease; */
+  /* background-color: #111; */
+  cursor: pointer;
+}
+
+.button-sparkles {
+  margin-right: 4px;
+}
+
+.loading-button.disabled {
+  /* Add styles to disable clicks on the button */
+  pointer-events: none;
+}
+
+.button-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #fff;
+  animation: scaleUpDown 0.9s infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.button-loading-dots .button-dot:nth-child(2) {
+  animation-delay: 0.2s;
+  margin: 0 3px;
+}
+
+.button-loading-dots .button-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.match-button-loading .button-dot {
+  background-color: #666;
+}
+
+@keyframes scaleUpDown {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+}
+
+.auto-fix-button-label {
+  /* position: relative;
+  top: -2px; */
+}
+
 .text img {
   fill: #18a0fb;
 }
@@ -356,7 +565,7 @@ body {
 }
 
 .menu-trigger:hover {
-  background: #eee;
+  background: #f9f9f9;
   border-radius: 16px;
   cursor: pointer;
 }
@@ -372,8 +581,28 @@ body {
   top: 44px;
   width: 132px;
   border-radius: 8px;
+  overflow: hidden;
 }
 
 .menu-items .select-menu__list-item {
   padding-left: 12px;
+  cursor: pointer;
+  /* border-radius: 4px; */
+}
+
+.select-menu__list-item {
+  cursor: pointer;
+}
+
+.menu-items {
+  /* padding: 8px 0 0; */
+}
+
+.select-menu__list-border {
+  border-top: 2px solid #333;
+  padding-top: 8px;
+  padding-bottom: 6px;
+  height: auto;
+  margin-top: 8px;
+  margin-bottom: -4px;
 }

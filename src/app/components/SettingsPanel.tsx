@@ -52,15 +52,15 @@ function SettingsPanel(props) {
         <div className="settings-wrapper">
           <div className="settings-row">
             <h3 className="settings-title">Skipping Layers</h3>
-            <div className="settings-label">
+            <div className="settings-label settings-no-padding">
               If you have an illustration or set of layers you want the linter
-              to ignore, lock them in the Figma layer list.
+              to ignore, lock them 🔒 in the layer panel.
             </div>
           </div>
           <SettingsForm borderRadiusValues={props.borderRadiusValues} />
           <div className="settings-row">
             <h3 className="settings-title">Lint Vectors (Default Off)</h3>
-            <div className="settings-label">
+            <div className="settings-label settings-no-padding">
               Illustrations, vectors, and boolean shapes often throw a lot of
               errors as they rarely use styles for fills. If you'd like to lint
               them as well, check the box below.
@@ -76,7 +76,7 @@ function SettingsPanel(props) {
             </div>
           </div>
           <div className="settings-row">
-            <h3 className="settings-title">Ignored errors</h3>
+            <h3 className="settings-title">Ignored Errors</h3>
             {props.ignoredErrorArray.length > 0 ? (
               <React.Fragment>
                 <div className="settings-label">

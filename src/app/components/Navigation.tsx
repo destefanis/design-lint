@@ -14,6 +14,25 @@ function Navigation(props) {
     props.onPageSelection("bulk");
   };
 
+  const libraryClick = () => {
+    props.onPageSelection("library");
+  };
+
+  const stylesClick = () => {
+    if (activePage !== "styles") {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: "update-styles-page"
+          }
+        },
+        "*"
+      );
+    }
+
+    props.onPageSelection("styles");
+  };
+
   const handleLintRulesChange = boolean => {
     props.updateLintRules(boolean);
   };
@@ -42,7 +61,21 @@ function Navigation(props) {
             onClick={layersClick}
             whileTap={{ scale: 0.98, opacity: 0.8 }}
           >
-            Layers View
+            Layers
+          </motion.div>
+          <motion.div
+            className={`nav-item ${activePage === "library" ? "active" : ""}`}
+            onClick={libraryClick}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+          >
+            Library
+          </motion.div>
+          <motion.div
+            className={`nav-item ${activePage === "styles" ? "active" : ""}`}
+            onClick={stylesClick}
+            whileTap={{ scale: 0.98, opacity: 0.8 }}
+          >
+            Styles
           </motion.div>
 
           <div className="nav-icon-wrapper">

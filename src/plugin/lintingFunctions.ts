@@ -1,17 +1,36 @@
 // Linting functions
 
 // Generic function for creating an error object to pass to the app.
-export function createErrorObject(node, type, message, value?) {
+export function createErrorObject(
+  node,
+  type,
+  message,
+  value?,
+  matches?,
+  suggestions?,
+  fillColor?,
+  textProperties?,
+  variableMatches?,
+  variableSuggestions?
+) {
   let error = {
     message: "",
     type: "",
     node: "",
-    value: ""
+    value: "",
+    ...(matches && { matches: matches }),
+    ...(suggestions && { suggestions: suggestions }),
+    fillColor: "",
+    textProperties: {},
+    ...(variableMatches && { variableMatches: variableMatches }),
+    ...(variableSuggestions && { variableSuggestions: variableSuggestions })
   };
 
   error.message = message;
   error.type = type;
   error.node = node;
+  error.fillColor = fillColor;
+  error.textProperties = textProperties;
 
   if (value !== undefined) {
     error.value = value;
@@ -45,7 +64,20 @@ export function determineFill(fills) {
         );
       });
       let gradientValueString = gradientValues.toString();
-      fillValues.push(`${fill.type} ${gradientValueString}`);
+      gradientValueString = gradientValueString.replace(/,/g, ", ");
+      let gradientType = null;
+
+      if (fill.type === "GRADIENT_LINEAR") {
+        gradientType = "Linear Gradient";
+      } else if (fill.type === "GRADIENT_RADIAL") {
+        gradientType = "Radial Gradient";
+      } else if (fill.type === "GRADIENT_ANGULAR") {
+        gradientType = "Angular Gradient";
+      } else if (fill.type === "GRADIENT_DIAMOND") {
+        gradientType = "Diamond Gradient";
+      }
+
+      fillValues.push(`${gradientType} ${gradientValueString}`);
     }
   });
 
@@ -177,6 +209,171 @@ export function customCheckTextFills(node, errors) {
   }
 }
 
+// Compares colors to see if they're equal.
+function colorsAreEqual(color1, color2) {
+  const threshold = 0.0001;
+  const rDiff = Math.abs(color1.r - color2.r);
+  const gDiff = Math.abs(color1.g - color2.g);
+  const bDiff = Math.abs(color1.b - color2.b);
+  const aDiff = Math.abs(color1.a - color2.a);
+
+  return (
+    rDiff < threshold &&
+    gDiff < threshold &&
+    bDiff < threshold &&
+    aDiff < threshold
+  );
+}
+
+// Helper function for comparing effect types to see if there's a match.
+function effectsMatch(nodeEffects, styleEffects) {
+  if (nodeEffects.length !== styleEffects.length) return false;
+
+  return nodeEffects.every((nodeEffect, index) => {
+    const styleEffect = styleEffects[index];
+
+    if (nodeEffect.type !== styleEffect.type) return false;
+    if (nodeEffect.radius !== styleEffect.radius) return false;
+
+    if (nodeEffect.color) {
+      const nodeColor = convertColor(nodeEffect.color);
+      const styleColor = convertColor(styleEffect.color);
+
+      if (!colorsAreEqual(nodeColor, styleColor)) return false;
+    }
+
+    if (
+      nodeEffect.type === "DROP_SHADOW" ||
+      nodeEffect.type === "INNER_SHADOW"
+    ) {
+      if (
+        nodeEffect.offset.x !== styleEffect.offset.x ||
+        nodeEffect.offset.y !== styleEffect.offset.y ||
+        nodeEffect.spread !== styleEffect.spread
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+export function newCheckEffects(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
+  if (node.effects.length && node.visible === true) {
+    let effectStyleId = node.effectStyleId;
+
+    if (typeof effectStyleId === "symbol") {
+      return;
+    }
+
+    if (node.effectStyleId === "") {
+      let matchingEffects = [];
+
+      // Generate currentStyle string
+      let currentStyle = node.effects
+        .map(effect => {
+          let type = effect.type
+            .replace(/_/g, " ")
+            .toLowerCase()
+            .replace(/\b[a-z]/g, l => l.toUpperCase());
+          let radius = effect.radius;
+          let offsetX = effect.offset ? effect.offset.x : "";
+          let offsetY = effect.offset ? effect.offset.y : "";
+          let color = effect.color
+            ? RGBToHex(...Object.values(convertColor(effect.color)))
+            : "";
+
+          if (type === "DROP_SHADOW" || type === "INNER_SHADOW") {
+            return `${type} ${color} ${radius}px X: ${offsetX}, Y: ${offsetY}`;
+          } else {
+            return `${type} ${radius}px`;
+          }
+        })
+        .join(", ");
+
+      if (importedStyles && importedStyles.effects) {
+        matchingEffects = importedStyles.effects
+          .map(effectStyle => ({
+            name: effectStyle.name,
+            id: effectStyle.id,
+            key: effectStyle.id.replace(/S:|,/g, ""),
+            value: effectStyle.name,
+            source: "Remote Style",
+            effects: effectStyle.effects
+          }))
+          .filter(effectStyle =>
+            effectsMatch(node.effects, effectStyle.effects)
+          );
+      }
+
+      if (matchingEffects.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.effects) {
+          matchingEffects = localStylesLibrary.effects
+            .map(effectStyle => ({
+              name: effectStyle.name,
+              id: effectStyle.id,
+              key: effectStyle.id.replace(/S:|,/g, ""),
+              value: effectStyle.name,
+              source: "Local Library",
+              effects: effectStyle.effects
+            }))
+            .filter(effectStyle =>
+              effectsMatch(node.effects, effectStyle.effects)
+            );
+        }
+      }
+
+      if (libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.effects && library.effects.length > 0) {
+            for (const effectStyle of library.effects) {
+              if (effectsMatch(node.effects, effectStyle.effects)) {
+                matchingEffects.push({
+                  name: effectStyle.name,
+                  key: effectStyle.id.replace(/S:|,/g, ""),
+                  id: effectStyle.id,
+                  value: effectStyle.name,
+                  source: library.name
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (matchingEffects.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "effects",
+            "Missing effects style",
+            currentStyle,
+            matchingEffects
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(
+            node,
+            "effects",
+            "Missing effects style",
+            currentStyle
+          )
+        );
+      }
+    } else {
+      return;
+    }
+  }
+}
+
 // Check for effects like shadows, blurs etc.
 export function checkEffects(node, errors) {
   if (node.effects.length && node.visible === true) {
@@ -239,6 +436,220 @@ export function checkEffects(node, errors) {
   }
 }
 
+export function gradientToCSS(nodeFill) {
+  const nodeFillType = nodeFill.type;
+  let cssGradient = "";
+
+  if (nodeFillType === "GRADIENT_LINEAR") {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `linear-gradient(${stops})`;
+  } else if (
+    nodeFillType === "GRADIENT_RADIAL" ||
+    nodeFillType === "GRADIENT_DIAMOND"
+  ) {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `radial-gradient(${stops})`;
+  } else if (nodeFillType === "GRADIENT_ANGULAR") {
+    const stops = nodeFill.gradientStops
+      .map(stop => {
+        const color = `rgba(${Math.round(stop.color.r * 255)}, ${Math.round(
+          stop.color.g * 255
+        )}, ${Math.round(stop.color.b * 255)}, ${stop.color.a})`;
+        return `${color} ${Math.round(stop.position * 100)}%`;
+      })
+      .join(", ");
+    cssGradient = `conic-gradient(${stops})`;
+  }
+
+  return cssGradient;
+}
+
+// Check library and local styles for matching
+function checkMatchingFills(style, nodeFill) {
+  // If style or nodeFill is undefined, return false
+  if (!style || !nodeFill) {
+    return false;
+  }
+
+  // If we pass an array, we need to just check the first fill as that's what is visible.
+  if (Array.isArray(nodeFill)) {
+    nodeFill = nodeFill[nodeFill.length - 1];
+  }
+
+  if (nodeFill.type === "SOLID" && style.type === "SOLID") {
+    return (
+      style.color.r === nodeFill.color.r &&
+      style.color.g === nodeFill.color.g &&
+      style.color.b === nodeFill.color.b &&
+      style.opacity === nodeFill.opacity
+    );
+  } else if (
+    (nodeFill.type === "GRADIENT_LINEAR" && style.type === "GRADIENT_LINEAR") ||
+    (nodeFill.type === "GRADIENT_RADIAL" && style.type === "GRADIENT_RADIAL") ||
+    (nodeFill.type === "GRADIENT_ANGULAR" &&
+      style.type === "GRADIENT_ANGULAR") ||
+    (nodeFill.type === "GRADIENT_DIAMOND" && style.type === "GRADIENT_DIAMOND")
+  ) {
+    return determineFill([style]) === determineFill([nodeFill]);
+  }
+
+  return false;
+}
+
+export function newCheckFills(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles,
+  variables
+) {
+  if (typeof node.boundVariables.fills !== "undefined") {
+    return;
+  }
+
+  if (
+    (node.fills.length && node.visible === true) ||
+    typeof node.fills === "symbol"
+  ) {
+    let nodeFills = node.fills;
+    let fillStyleId = node.fillStyleId;
+
+    if (typeof nodeFills === "symbol") {
+      return errors.push(
+        createErrorObject(node, "fill", "Missing fill style", "Mixed values")
+      );
+    }
+
+    if (typeof fillStyleId === "symbol") {
+      return;
+    }
+
+    // If the fills are visible, aren't an image or a video, then lint them.
+    if (
+      node.fillStyleId === "" &&
+      node.fills[0].type !== "IMAGE" &&
+      node.fills[0].type !== "VIDEO" &&
+      node.fills[0].visible === true
+    ) {
+      let matchingFills = [];
+      let suggestedFills = [];
+
+      if (importedStyles && importedStyles.fills) {
+        matchingFills = importedStyles.fills
+          .map(fillStyle => ({
+            name: fillStyle.name,
+            id: fillStyle.id,
+            key: fillStyle.id.replace(/S:|,/g, ""),
+            value: fillStyle.name,
+            source: "Remote Style",
+            paint: fillStyle.paint,
+            count: fillStyle.count
+          }))
+          .filter(fillStyle => checkMatchingFills(fillStyle.paint, nodeFills));
+      }
+
+      if (matchingFills.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.fills) {
+          matchingFills = localStylesLibrary.fills
+            .map(fillStyle => ({
+              name: fillStyle.name,
+              id: fillStyle.id,
+              key: fillStyle.id.replace(/S:|,/g, ""),
+              value: fillStyle.name,
+              source: "Local Library",
+              paint: fillStyle.paint
+            }))
+            .filter(fillStyle =>
+              checkMatchingFills(fillStyle.paint, nodeFills)
+            );
+        }
+      }
+
+      if (matchingFills.length === 0 && libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.fills && library.fills.length > 0) {
+            for (const fillStyle of library.fills) {
+              const style = fillStyle;
+
+              if (checkMatchingFills(style.paint, nodeFills)) {
+                matchingFills.push({
+                  name: style.name,
+                  id: style.id,
+                  key: style.id.replace(/S:|,/g, ""),
+                  value: style.name,
+                  source: library.name
+                });
+              } else if (
+                style.type === "GRADIENT" &&
+                nodeFills[0].type === "GRADIENT"
+              ) {
+                suggestedFills.push(fillStyle);
+              }
+            }
+          }
+        }
+      }
+
+      let currentFill = determineFill(node.fills);
+      let nodeFillType = nodeFills[0].type;
+      let cssSyntax = null;
+
+      if (nodeFillType === "SOLID") {
+        cssSyntax = currentFill;
+      } else if (nodeFillType !== "SOLID") {
+        cssSyntax = gradientToCSS(nodeFills[0]);
+      }
+
+      if (matchingFills.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            currentFill,
+            matchingFills,
+            null,
+            cssSyntax
+          )
+        );
+      } else if (suggestedFills.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "fill",
+            "Missing fill style",
+            currentFill,
+            null,
+            suggestedFills,
+            cssSyntax
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(node, "fill", "Missing fill style", currentFill)
+        );
+      }
+    } else {
+      return;
+    }
+  }
+}
+
 export function checkFills(node, errors) {
   if (typeof node.boundVariables.fills !== "undefined") {
     return;
@@ -278,6 +689,156 @@ export function checkFills(node, errors) {
           determineFill(node.fills)
         )
       );
+    } else {
+      return;
+    }
+  }
+}
+
+export function newCheckStrokes(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
+  if (typeof node.boundVariables.strokes !== "undefined") {
+    return;
+  }
+
+  if (node.strokes.length && node.visible === true) {
+    let strokeStyleId = node.strokeStyleId;
+
+    if (typeof strokeStyleId === "symbol") {
+      return;
+    }
+
+    if (node.strokeStyleId === "") {
+      let matchingStrokes = [];
+
+      let strokeObject = {
+        strokeWeight: "",
+        strokeAlign: "",
+        strokeFills: []
+      };
+
+      let strokeWeight = node.strokeWeight;
+
+      if (typeof strokeWeight === "symbol") {
+        strokeWeight = `${node.strokeTopWeight}, ${node.strokeRightWeight}, ${node.strokeBottomWeight}, ${node.strokeLeftWeight}`;
+      }
+
+      strokeObject.strokeWeight = strokeWeight;
+      strokeObject.strokeAlign = node.strokeAlign;
+      strokeObject.strokeFills = determineFill(node.strokes);
+
+      // If there are multiple strokes on a node,
+      // it's probbaly intentional or shouldn't be matched.
+      if (node.strokes.length > 1) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Mutiple fills on a stroke",
+            `Stroke: ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`
+          )
+        );
+      }
+
+      // We only want to check the first stroke for a missing color.
+      let firstStroke = node.strokes[node.strokes.length - 1];
+
+      if (importedStyles && importedStyles.fills) {
+        matchingStrokes = importedStyles.fills
+          .map(strokeStyle => ({
+            name: strokeStyle.name,
+            id: strokeStyle.id,
+            key: strokeStyle.id.replace(/S:|,/g, ""),
+            value: strokeStyle.name,
+            source: "Remote Style",
+            paint: strokeStyle.paint,
+            count: strokeStyle.count
+          }))
+          .filter(strokeStyle =>
+            checkMatchingFills(strokeStyle.paint, firstStroke)
+          );
+      }
+
+      if (matchingStrokes.length === 0) {
+        if (localStylesLibrary && localStylesLibrary.fills) {
+          matchingStrokes = localStylesLibrary.fills
+            .map(strokeStyle => ({
+              name: strokeStyle.name,
+              id: strokeStyle.id,
+              key: strokeStyle.id.replace(/S:|,/g, ""),
+              value: strokeStyle.name,
+              source: "Local Library",
+              paint: strokeStyle.paint
+            }))
+            .filter(strokeStyle =>
+              checkMatchingFills(strokeStyle.paint, firstStroke)
+            );
+        }
+      }
+
+      if (matchingStrokes.length === 0 && libraries && libraries.length > 0) {
+        for (const library of libraries) {
+          if (library.fills && library.fills.length > 0) {
+            for (const fillStyle of library.fills) {
+              const style = fillStyle;
+
+              if (checkMatchingFills(style.paint, firstStroke)) {
+                matchingStrokes.push({
+                  name: style.name,
+                  id: style.id,
+                  key: style.id.replace(/S:|,/g, ""),
+                  value: style.name,
+                  source: library.name,
+                  paint: style.paint
+                });
+              }
+            }
+          }
+        }
+      }
+
+      let currentStroke = `${strokeObject.strokeFills} / ${strokeObject.strokeWeight} / ${strokeObject.strokeAlign}`;
+      let strokeFill = strokeObject.strokeFills;
+
+      let nodeFillType = node.strokes[0].type;
+      let cssSyntax = null;
+
+      if (nodeFillType === "SOLID") {
+        cssSyntax = strokeFill;
+      } else if (nodeFillType !== "SOLID") {
+        cssSyntax = gradientToCSS(node.strokes[0]);
+      }
+
+      if (matchingStrokes.length > 0) {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            currentStroke,
+            matchingStrokes,
+            null,
+            cssSyntax
+          )
+        );
+      } else {
+        return errors.push(
+          createErrorObject(
+            node,
+            "stroke",
+            "Missing stroke style",
+            currentStroke,
+            null,
+            null,
+            cssSyntax
+          )
+        );
+      }
     } else {
       return;
     }
@@ -328,30 +889,58 @@ export function checkStrokes(node, errors) {
   }
 }
 
-export function checkType(node, errors) {
+function checkMatchingStyles(style, textObject) {
+  let lineHeightCheck;
+
+  if (style.lineHeight.value !== undefined) {
+    lineHeightCheck = style.lineHeight.value;
+  } else {
+    lineHeightCheck = "Auto";
+  }
+
+  return (
+    style.fontFamily === textObject.font &&
+    style.fontStyle === textObject.fontStyle &&
+    style.fontSize === textObject.fontSize &&
+    lineHeightCheck === textObject.lineHeight &&
+    style.letterSpacing.value === textObject.letterSpacingValue &&
+    style.letterSpacing.unit === textObject.letterSpacingUnit &&
+    style.textCase === textObject.textCase &&
+    style.paragraphSpacing === textObject.paragraphSpacing
+  );
+}
+
+function roundToDecimalPlaces(value, decimalPlaces) {
+  const multiplier = Math.pow(10, decimalPlaces);
+  return Math.round(value * multiplier) / multiplier;
+}
+
+export function checkType(
+  node,
+  errors,
+  libraries,
+  localStylesLibrary,
+  importedStyles
+) {
   if (node.textStyleId === "" && node.visible === true) {
     let textObject = {
       font: "",
       fontStyle: "",
       fontSize: "",
-      lineHeight: {}
+      lineHeight: {},
+      letterSpacingValue: "",
+      letterSpacingUnit: "",
+      textAlignHorizontal: "",
+      textAlignVertical: "",
+      paragraphIndent: "",
+      paragraphSpacing: "",
+      textCase: ""
     };
 
     let fontStyle = node.fontName;
     let fontSize = node.fontName;
 
-    if (typeof fontSize === "symbol") {
-      return errors.push(
-        createErrorObject(
-          node,
-          "text",
-          "Missing text style",
-          "Mixed sizes or families"
-        )
-      );
-    }
-
-    if (typeof fontStyle === "symbol") {
+    if (typeof fontStyle === "symbol" || typeof fontSize === "symbol") {
       return errors.push(
         createErrorObject(
           node,
@@ -365,6 +954,13 @@ export function checkType(node, errors) {
     textObject.font = node.fontName.family;
     textObject.fontStyle = node.fontName.style;
     textObject.fontSize = node.fontSize;
+    textObject.letterSpacingValue = node.letterSpacing.value;
+    textObject.letterSpacingUnit = node.letterSpacing.unit;
+    textObject.textAlignHorizontal = node.textAlignHorizontal;
+    textObject.textAlignVertical = node.textAlignVertical;
+    textObject.paragraphIndent = node.paragraphIndent;
+    textObject.paragraphSpacing = node.paragraphSpacing;
+    textObject.textCase = node.textCase;
 
     // Line height can be "auto" or a pixel value
     if (node.lineHeight.value !== undefined) {
@@ -373,11 +969,123 @@ export function checkType(node, errors) {
       textObject.lineHeight = "Auto";
     }
 
-    let currentStyle = `${textObject.font} ${textObject.fontStyle} / ${textObject.fontSize} (${textObject.lineHeight} line-height)`;
+    let matchingStyles = [];
+    let suggestedStyles = [];
 
-    return errors.push(
-      createErrorObject(node, "text", "Missing text style", currentStyle)
-    );
+    const checkSuggestions = library => {
+      for (const textStyle of library.text) {
+        const style = textStyle.style;
+
+        let lineHeightCheck: string;
+
+        if (node.lineHeight.value !== undefined) {
+          lineHeightCheck = style.lineHeight.value;
+        } else {
+          lineHeightCheck = "Auto";
+        }
+
+        if (checkMatchingStyles(style, textObject)) {
+          matchingStyles.push({
+            name: textStyle.name,
+            id: textStyle.id,
+            key: textStyle.key,
+            count: textStyle.count,
+            value:
+              textStyle.name +
+              " · " +
+              style.fontSize +
+              "/" +
+              style.lineHeight.value,
+            source: library.name
+          });
+        } else if (
+          style.fontFamily === textObject.font &&
+          style.fontStyle === textObject.fontStyle &&
+          style.fontSize === textObject.fontSize
+        ) {
+          if (!suggestedStyles.some(obj => obj.name === textStyle.name)) {
+            suggestedStyles.push({
+              name: textStyle.name,
+              id: textStyle.id,
+              key: textStyle.key,
+              count: textStyle.count,
+              value:
+                textStyle.name +
+                " · " +
+                style.fontSize +
+                "/" +
+                style.lineHeight.value,
+              source: library.name,
+              textProperties: textStyle.style
+            });
+          }
+        }
+      }
+    };
+
+    // See if we have matches with remote styles
+    if (importedStyles && importedStyles.text) {
+      checkSuggestions(importedStyles);
+    }
+
+    if (localStylesLibrary && localStylesLibrary.text) {
+      checkSuggestions(localStylesLibrary);
+    }
+
+    if (matchingStyles.length === 0 && libraries && libraries.length > 0) {
+      for (const library of libraries) {
+        if (library.text && library.text.length > 0) {
+          checkSuggestions(library);
+        }
+      }
+    }
+
+    let lineHeightFormatted = null;
+
+    if (textObject.lineHeight === "Auto") {
+      lineHeightFormatted = "Auto";
+    } else {
+      let roundedLineHeight = roundToDecimalPlaces(textObject.lineHeight, 1);
+      if (node.lineHeight.unit === "PERCENT") {
+        lineHeightFormatted = roundedLineHeight + "%";
+      } else {
+        lineHeightFormatted = roundedLineHeight;
+      }
+    }
+
+    let currentStyle = `${textObject.font} ${textObject.fontStyle} · ${textObject.fontSize}/${lineHeightFormatted}`;
+
+    // Create error object with fixes if matching styles are found
+    if (matchingStyles.length > 0) {
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          currentStyle,
+          matchingStyles
+        )
+      );
+    } else if (suggestedStyles.length > 0) {
+      // We may not have exact matches, so we'll suggest some that are very close.
+      return errors.push(
+        createErrorObject(
+          node,
+          "text",
+          "Missing text style",
+          currentStyle,
+          null,
+          suggestedStyles,
+          null,
+          textObject
+        )
+      );
+    } else {
+      // If nothing is remotely close, just keep the error as is.
+      return errors.push(
+        createErrorObject(node, "text", "Missing text style", currentStyle)
+      );
+    }
   } else {
     return;
   }

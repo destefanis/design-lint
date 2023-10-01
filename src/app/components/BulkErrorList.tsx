@@ -3,8 +3,17 @@ import BulkErrorListItem from "./BulkErrorListItem";
 import TotalErrorCount from "./TotalErrorCount";
 import { AnimatePresence, motion } from "framer-motion/dist/framer-motion";
 import PreloaderCSS from "./PreloaderCSS";
+import Banner from "./Banner";
+import Modal from "./Modal";
+import StylesPanel from "./StylesPanel";
 
 function BulkErrorList(props) {
+  const [currentError, setCurrentError] = useState(null);
+  const [panelError, setPanelError] = useState(null);
+  const [panelStyleSuggestion, setPanelStyleSuggestion] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [panelVisible, setPanelVisible] = React.useState(false);
+
   const availableFilters = [
     "All",
     "text",
@@ -23,41 +32,103 @@ function BulkErrorList(props) {
     ignoredErrorsMap[nodeId].add(ignoredError.value);
   });
 
-  // Filter out ignored errors and create the bulk error list
-  const bulkErrorMap = {};
+  // Filter out ignored errors
   const filteredErrorArray = props.errorArray.filter(item => {
     const nodeId = item.id;
     const ignoredErrorValues = ignoredErrorsMap[nodeId] || new Set();
     item.errors = item.errors.filter(
       error => !ignoredErrorValues.has(error.value)
     );
-
-    // Create the bulk error list
-    item.errors.forEach(error => {
-      // Create a unique key based on error properties
-      const errorKey = `${error.type}_${error.message}_${error.value}`;
-      if (bulkErrorMap[errorKey]) {
-        // If the error already exists, update the nodes and count
-        bulkErrorMap[errorKey].nodes.push(error.node.id);
-        bulkErrorMap[errorKey].count++;
-      } else {
-        // If this is the first instance of this type of error, add it to the map
-        error.nodes = [error.node.id];
-        error.count = 1;
-        bulkErrorMap[errorKey] = error;
-      }
-    });
-
     return item.errors.length >= 1;
   });
 
-  // Convert the bulk error map to an array
-  const bulkErrorList = Object.values(bulkErrorMap);
+  const createBulkErrorList = (errorArray, ignoredErrorsMap) => {
+    const bulkErrorMap = {};
+    errorArray.forEach(item => {
+      const nodeId = item.id;
+      const ignoredErrorValues = ignoredErrorsMap[nodeId] || new Set();
+      item.errors = item.errors.filter(
+        error => !ignoredErrorValues.has(error.value)
+      );
 
+      item.errors.forEach(error => {
+        // Check if the error.matches exists and has content
+        const hasMatches = error.matches && error.matches.length > 0;
+        const hasSuggestions =
+          error.suggestions && error.suggestions.length > 0;
+
+        // Sort matches and suggestions by count (how often they're used)
+        if (hasMatches) {
+          error.matches.sort((a, b) => (b.count || 0) - (a.count || 0));
+        } else if (hasSuggestions) {
+          error.suggestions.sort((a, b) => (b.count || 0) - (a.count || 0));
+          // Remove style suggestions with deprecated in the title.
+          error.suggestions = error.suggestions.filter(suggestion => {
+            return !suggestion.name.toLowerCase().includes("deprecated");
+          });
+        }
+
+        // Create a unique key based on error properties and whether it's a match
+        const errorKey = `${error.type}_${error.message}_${error.value}_${hasSuggestions}_${hasMatches}`;
+        if (bulkErrorMap[errorKey]) {
+          bulkErrorMap[errorKey].nodes.push(error.node.id);
+          bulkErrorMap[errorKey].count++;
+        } else {
+          error.nodes = [error.node.id];
+          error.count = 1;
+          bulkErrorMap[errorKey] = error;
+        }
+      });
+    });
+    return Object.values(bulkErrorMap);
+  };
+
+  // Create the bulk error list using the createBulkErrorList function
+  const bulkErrorList = createBulkErrorList(
+    filteredErrorArray,
+    ignoredErrorsMap
+  );
   bulkErrorList.sort((a, b) => b.count - a.count);
+
+  // Create an array of errors that have matches
+  const errorsWithMatches = bulkErrorList.filter(error => {
+    return error.matches && error.matches.length > 0;
+  });
+
+  // Calculate the total number of errors with matches
+  const totalErrorsWithMatches = errorsWithMatches.reduce((total, error) => {
+    return total + error.count;
+  }, 0);
+
+  const handleFixAllFromBanner = () => {
+    errorsWithMatches.forEach(error => {
+      handleFixAll(error);
+    });
+  };
 
   function handleIgnoreChange(error) {
     props.onIgnoredUpdate(error);
+  }
+
+  function handlePanelVisible(boolean) {
+    setPanelVisible(boolean);
+  }
+
+  function handleUpdatePanelError(error) {
+    setPanelError(error);
+  }
+
+  function handleUpdatePanelSuggestion(index) {
+    setPanelStyleSuggestion(index);
+  }
+
+  function handleBorderRadiusUpdate(value) {
+    props.updateBorderRadius(value);
+  }
+
+  function handleCreateStyle(error) {
+    setCurrentError(error);
+    setIsModalOpen(true);
   }
 
   function handleSelectAll(error) {
@@ -66,6 +137,36 @@ function BulkErrorList(props) {
         pluginMessage: {
           type: "select-multiple-layers",
           nodeArray: error.nodes
+        }
+      },
+      "*"
+    );
+  }
+
+  function handleFixAll(error) {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "apply-styles",
+          error: error,
+          field: "matches",
+          index: 0,
+          count: error.count
+        }
+      },
+      "*"
+    );
+  }
+
+  function handleSuggestion(error, index) {
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: "apply-styles",
+          error: error,
+          field: "suggestions",
+          index: index,
+          count: error.count
         }
       },
       "*"
@@ -141,8 +242,15 @@ function BulkErrorList(props) {
       key={`${error.node.id}-${error.type}-${index}`}
       handleIgnoreChange={handleIgnoreChange}
       handleSelectAll={handleSelectAll}
+      handleCreateStyle={handleCreateStyle}
       handleSelect={handleSelect}
       handleIgnoreAll={handleIgnoreAll}
+      handleFixAll={handleFixAll}
+      handleSuggestion={handleSuggestion}
+      handleBorderRadiusUpdate={handleBorderRadiusUpdate}
+      handlePanelVisible={handlePanelVisible}
+      handleUpdatePanelError={handleUpdatePanelError}
+      handleUpdatePanelSuggestion={handleUpdatePanelSuggestion}
     />
   ));
 
@@ -158,9 +266,15 @@ function BulkErrorList(props) {
   };
 
   const pageVariants = {
-    initial: { opacity: 1, x: 10 },
-    enter: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -10 }
+    initial: { opacity: 1, y: 0 },
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 1, y: 0 }
+  };
+
+  const variants = {
+    initial: { opacity: 0, y: -12 },
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 12 }
   };
 
   return (
@@ -196,6 +310,20 @@ function BulkErrorList(props) {
           <PreloaderCSS />
         ) : bulkErrorList.length ? (
           <AnimatePresence mode="popLayout">
+            {totalErrorsWithMatches > 0 && (
+              <motion.div
+                key="banner"
+                variants={variants}
+                initial="initial"
+                animate="enter"
+                exit="exit"
+              >
+                <Banner
+                  totalErrorsWithMatches={totalErrorsWithMatches}
+                  handleFixAllErrors={handleFixAllFromBanner}
+                />
+              </motion.div>
+            )}
             <motion.ul
               variants={listVariants}
               initial="hidden"
@@ -222,6 +350,17 @@ function BulkErrorList(props) {
       <div className="footer sticky-footer">
         <TotalErrorCount errorArray={filteredErrorArray} />
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        error={currentError}
+      />
+      <StylesPanel
+        panelVisible={panelVisible}
+        onHandlePanelVisible={handlePanelVisible}
+        error={panelError}
+        suggestion={panelStyleSuggestion}
+      />
     </motion.div>
   );
 }
