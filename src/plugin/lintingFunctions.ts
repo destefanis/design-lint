@@ -97,8 +97,10 @@ export function checkRadius(node, errors, radiusValues) {
     }
   }
 
-  if (typeof node.boundVariables.bottomLeftRadius !== "undefined") {
-    return;
+  if (typeof node.boundVariables !== "undefined") {
+    if (typeof node.boundVariables.bottomLeftRadius !== "undefined") {
+      return;
+    }
   }
 
   // If the radius isn't even on all sides, check each corner.
@@ -518,8 +520,10 @@ export function newCheckFills(
   importedStyles,
   variables
 ) {
-  if (typeof node.boundVariables.fills !== "undefined") {
-    return;
+  if (typeof node.boundVariables !== "undefined") {
+    if (typeof node.boundVariables.fills !== "undefined") {
+      return;
+    }
   }
 
   if (
@@ -527,6 +531,7 @@ export function newCheckFills(
     typeof node.fills === "symbol"
   ) {
     let nodeFills = node.fills;
+
     let fillStyleId = node.fillStyleId;
 
     if (typeof nodeFills === "symbol") {
@@ -702,8 +707,10 @@ export function newCheckStrokes(
   localStylesLibrary,
   importedStyles
 ) {
-  if (typeof node.boundVariables.strokes !== "undefined") {
-    return;
+  if (typeof node.boundVariables !== "undefined") {
+    if (typeof node.boundVariables.strokes !== "undefined") {
+      return;
+    }
   }
 
   if (node.strokes.length && node.visible === true) {
@@ -847,8 +854,10 @@ export function newCheckStrokes(
 
 export function checkStrokes(node, errors) {
   if (node.strokes.length) {
-    if (typeof node.boundVariables.strokes !== "undefined") {
-      return;
+    if (typeof node.boundVariables !== "undefined") {
+      if (typeof node.boundVariables.strokes !== "undefined") {
+        return;
+      }
     }
 
     if (node.strokeStyleId === "" && node.visible === true) {
