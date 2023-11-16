@@ -921,6 +921,7 @@ figma.ui.onmessage = msg => {
             for (const node of nodes) {
               if (node.fillStyleId) {
                 const styleId = node.fillStyleId;
+
                 if (typeof styleId !== "symbol") {
                   // Check if the style with the given styleId already exists in the usedRemoteStyles.fills array
                   const existingStyle = usedRemoteStyles.fills.find(
@@ -934,6 +935,11 @@ figma.ui.onmessage = msg => {
                   } else {
                     // If the style does not exist, create a new style object and push it to the usedRemoteStyles.fills array
                     const style = figma.getStyleById(styleId);
+
+                    // Prevents against broken image fills.
+                    if (style === null) {
+                      return;
+                    }
 
                     let currentFill = determineFill(node.fills);
                     let nodeFillType = node.fills[0].type;
