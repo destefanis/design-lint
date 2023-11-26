@@ -184,7 +184,7 @@ export function customCheckTextFills(node, errors) {
 #### Import your function in controller.ts
 Once you've written some custom functions for checking specific rules, make sure to [import your function here](https://github.com/destefanis/design-lint/blob/4c3c40cdd47e93db8e01bb110d992c7235b40efd/src/plugin/controller.ts#L9-L10) in the controller.ts file.
 
-Let's say we've written a custom rule for text layers, make sure to [change what functions run for text layers here](https://github.com/destefanis/design-lint/blob/master/src/plugin/controller.ts#L367) under the `lintTextRules` function.
+Let's say we've written a custom rule for text layers, make sure to [change what functions run for text layers here](https://github.com/destefanis/design-lint/blob/8d8c38719def3c3ea8f3daf482447fa6a3f2cdcf/src/plugin/controller.ts#L1623-L1625) under the `lintTextRules` function.
 
 
 #### Changing the border radius default
