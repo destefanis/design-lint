@@ -1620,6 +1620,9 @@ figma.ui.onmessage = msg => {
       usedRemoteStyles,
       colorVariables
     );
+    // We could also comment out newCheckFills and use a custom function instead
+    // Take a look at lintingFunction.ts for an example.
+    // customCheckTextFills(node, errors);
 
     newCheckEffects(
       node,
