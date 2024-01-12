@@ -8,6 +8,7 @@
     "experimentalDecorators": true,
     "removeComments": true,
     "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "typeRoots": [
       "./node_modules/@types",

@@ -71,8 +71,10 @@ function BulkErrorListItem(props) {
     props.handleSuggestion(error, index);
   }
 
-  function truncate(string) {
-    return string.length > 46 ? string.substring(0, 46) + "..." : string;
+  function truncate(string, number = 46) {
+    return string.length > number
+      ? string.substring(0, number) + "..."
+      : string;
   }
 
   const variants = {
@@ -118,7 +120,7 @@ function BulkErrorListItem(props) {
           )}
           {error.value ? (
             <div className="current-value tooltip" data-text="Tooltip">
-              {truncate(error.value)}
+              {truncate(error.value, 100)}
             </div>
           ) : null}
         </span>

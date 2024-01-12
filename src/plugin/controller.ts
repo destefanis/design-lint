@@ -5,9 +5,13 @@ import {
   newCheckFills,
   newCheckEffects,
   determineFill,
-  gradientToCSS
+  gradientToCSS,
   // customCheckTextFills,
   // uncomment this as an example of a custom lint function ^
+  checkForDescription,
+  checkForDocumentationLinks,
+  checkForBooleanNaming,
+  checkForTextNaming
 } from "./lintingFunctions";
 
 import { fetchRemoteStyles, groupLibrary } from "./remoteStyleFunctions";
@@ -42,8 +46,9 @@ let variablesInUse = {
 };
 
 let colorVariables;
-let numbervariables;
+
 let variablesWithGroupedConsumers;
+let numbervariables;
 
 figma.skipInvisibleInstanceChildren = true;
 
@@ -175,7 +180,7 @@ figma.ui.onmessage = msg => {
 
     await fetchRemoteStyles(resetRemoteStyles);
 
-    const libraryWithGroupedConsumers = groupLibrary(resetRemoteStyles);
+    const libraryWithGroupedConsumers: any = groupLibrary(resetRemoteStyles);
 
     libraryWithGroupedConsumers.fills.sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -402,7 +407,7 @@ figma.ui.onmessage = msg => {
           for (let i = 0; i < msg.error.nodes.length; i += batchSize) {
             const batch = msg.error.nodes.slice(i, i + batchSize);
             for (const nodeId of batch) {
-              const node = figma.getNodeById(nodeId);
+              const node: any = figma.getNodeById(nodeId);
 
               if (node && node.type === "TEXT" && msg.error.type === "text") {
                 await applyRemoteStyle(node, importedStyle);
@@ -465,7 +470,7 @@ figma.ui.onmessage = msg => {
 
       // Apply the new style to all of the layers the error exists on
       for (const node of nodeArray) {
-        const layer = figma.getNodeById(node);
+        const layer: any = figma.getNodeById(node);
 
         layer.fillStyleId = newPaintStyle.id;
       }
@@ -500,7 +505,7 @@ figma.ui.onmessage = msg => {
 
       // Apply the new style to all of the layers the error exists on
       for (const node of nodeArray) {
-        const layer = figma.getNodeById(node);
+        const layer: any = figma.getNodeById(node);
 
         layer.strokeStyleId = newStrokeStyle.id;
       }
@@ -544,7 +549,7 @@ figma.ui.onmessage = msg => {
 
       // Apply the new style to all of the layers the error exists on
       for (const node of nodeArray) {
-        const layer = figma.getNodeById(node);
+        const layer: any = figma.getNodeById(node);
 
         layer.effectStyleId = newEffectStyle.id;
       }
@@ -934,7 +939,7 @@ figma.ui.onmessage = msg => {
                     existingStyle.consumers.push(node);
                   } else {
                     // If the style does not exist, create a new style object and push it to the usedRemoteStyles.fills array
-                    const style = figma.getStyleById(styleId);
+                    const style: any = figma.getStyleById(styleId);
 
                     // Prevents against broken image fills.
                     if (style === null) {
@@ -982,7 +987,7 @@ figma.ui.onmessage = msg => {
                     existingStyle.consumers.push(node);
                   } else {
                     // If the stroke style does not exist, create a new style object and push it to the usedRemoteStyles.strokes array
-                    const style = figma.getStyleById(styleId);
+                    const style: any = figma.getStyleById(styleId);
 
                     let nodeFillType = style.paints[0].type;
                     let cssSyntax = null;
@@ -1023,7 +1028,7 @@ figma.ui.onmessage = msg => {
                     existingStyle.consumers.push(node);
                   } else {
                     // If the text style does not exist, create a new style object and push it to the usedRemoteStyles.text array
-                    const style = figma.getStyleById(styleId);
+                    const style: any = figma.getStyleById(styleId);
 
                     usedRemoteStyles.text.push({
                       id: node.textStyleId,
@@ -1066,7 +1071,7 @@ figma.ui.onmessage = msg => {
                     existingStyle.consumers.push(node);
                   } else {
                     // If the effect style does not exist, create a new style object and push it to the usedRemoteStyles.effects array
-                    const style = figma.getStyleById(styleId);
+                    const style: any = figma.getStyleById(styleId);
 
                     usedRemoteStyles.effects.push({
                       id: node.effectStyleId,
@@ -1200,9 +1205,9 @@ figma.ui.onmessage = msg => {
             const isNotEmpty = obj => {
               return Object.keys(obj).length !== 0;
             };
-
+            let node: any;
             // Check each node for variables
-            for (const node of nodes) {
+            for (node of nodes) {
               // Check to see if the node has any variables being used.
               if (isNotEmpty(node.boundVariables)) {
                 // console.log(node.boundVariables);
@@ -1387,6 +1392,7 @@ figma.ui.onmessage = msg => {
             colorVariables = variablesInUse.variables.filter(
               variable => variable.type === "color"
             );
+
             numbervariables = variablesInUse.variables.filter(
               variable => variable.type === "number"
             );
@@ -1487,7 +1493,7 @@ figma.ui.onmessage = msg => {
 
   function lintComponentRules(node, libraries) {
     let errors = [];
-
+    console.log(node);
     // Example of how we can make a custom rule specifically for components
     // if (node.remote === false) {
     //   errors.push(
@@ -1518,6 +1524,10 @@ figma.ui.onmessage = msg => {
       localStylesLibrary,
       usedRemoteStyles
     );
+    checkForDescription(node, errors);
+    checkForDocumentationLinks(node, errors);
+    checkForBooleanNaming(node, errors);
+    checkForTextNaming(node, errors);
 
     return errors;
   }

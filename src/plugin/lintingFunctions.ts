@@ -1100,6 +1100,77 @@ export function checkType(
   }
 }
 
+export function checkForDescription(node, errors) {
+  if (node.description === "") {
+    errors.push(
+      createErrorObject(
+        node,
+        "component",
+        "Missing description",
+        "Add a description to this component."
+      )
+    );
+  } else {
+    return;
+  }
+}
+
+export function checkForDocumentationLinks(node, errors) {
+  if (node.documentationLinks.length === 0) {
+    errors.push(
+      createErrorObject(
+        node,
+        "component",
+        "Missing documentation link",
+        "Add a link to the documentation to this component."
+      )
+    );
+  } else {
+    return;
+  }
+}
+
+export function checkForBooleanNaming(node, errors) {
+  let data = node.componentPropertyDefinitions;
+
+  for (const key in data) {
+    let propertyType = data[key].type;
+    let propertyName = key.slice(0, key.indexOf("#"));
+    if (propertyType === "BOOLEAN") {
+      if (!propertyName.includes("👁")) {
+        errors.push(
+          createErrorObject(
+            node,
+            "component",
+            "Missing 👁 in property name",
+            "Add an 👁 in front of : " + propertyName
+          )
+        );
+      }
+    }
+  }
+}
+
+export function checkForTextNaming(node, errors) {
+  let data = node.componentPropertyDefinitions;
+  for (const key in data) {
+    let propertyType = data[key].type;
+    let propertyName = key.slice(0, key.indexOf("#"));
+    if (propertyType === "TEXT") {
+      if (!propertyName.includes("✏️")) {
+        errors.push(
+          createErrorObject(
+            node,
+            "component",
+            "Missing ✏️ in property name",
+            "Add an ✏️ in front of the text property : " + propertyName + "."
+          )
+        );
+      }
+    }
+  }
+}
+
 // Utility functions for color conversion.
 const convertColor = color => {
   const colorObj = color;

@@ -20,7 +20,8 @@ function BulkErrorList(props) {
     "fill",
     "stroke",
     "radius",
-    "effects"
+    "effects",
+    "component"
   ];
 
   const ignoredErrorsMap = {};
